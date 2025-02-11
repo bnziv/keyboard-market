@@ -32,4 +32,16 @@ public class UserService {
             throw new RuntimeException("User already exists");
         }
     }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsernameIgnoreCase(username).orElse(null);
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email).orElse(null);
+    }
+
+    public User getUserById(String id) {
+        return userRepository.findById(id).orElse(null);
+    }
 }
