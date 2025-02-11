@@ -23,6 +23,6 @@ public class Listing {
 
     private String price;
 
-    @DBRef
-    private User user;
+    @NotBlank(message = "User ID cannot be empty")
+    private String userId;
 }
