@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "./ui/button"
 
-export default function Navbar() {
+export default function NavBar() {
   const location = useLocation();
 
   return (
@@ -11,7 +11,9 @@ export default function Navbar() {
           Keyboard Market
         </Link>
         <div className="flex items-center space-x-4">
-           {/* Navigation items */}
+          <Button variant={location.pathname === "/listings" ? "default" : "ghost"} asChild>
+            <Link to="/listings">Listings</Link>
+          </Button>
         </div>
       </div>
     </nav>
