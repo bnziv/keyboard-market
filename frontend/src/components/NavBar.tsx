@@ -6,7 +6,7 @@ export default function NavBar() {
 
   return (
     <nav className="border-b">
-      <div className="container flex items-center justify-between py-4 px-6">
+      <div className="flex items-center justify-between py-4 px-6">
         <Link to="/" className="text-2xl font-bold">
           Keyboard Market
         </Link>
