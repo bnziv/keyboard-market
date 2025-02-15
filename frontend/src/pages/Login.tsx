@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toastError, toastSuccess } from "@/lib/Toast"
 import { Toaster } from "@/components/ui/sonner"
+import axios from "axios"
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState("login")
@@ -24,16 +25,93 @@ export default function Login() {
   }
 
   const validateForm = () => {
-    
+    if (activeTab === "login") {
+      if (!formData.identifier.trim()) {
+        toastError("Email/Username cannot be empty")
+        return false
+      }
+
+      if (!formData.password.trim()) {
+        toastError("Password cannot be empty")
+        return false
+      }
+    } else {
+      if (!formData.email.trim()) {
+        toastError("Email cannot be empty")
+        return false
+      }
+
+      if (!formData.username.trim()) {
+        toastError("Username cannot be empty")
+        return false
+      }
+
+      if (!formData.password.trim()) {
+        toastError("Password cannot be empty")
+        return false
+      }
+
+      if (!formData.confirmPassword.trim()) {
+        toastError("Confirm password cannot be empty")
+        return false
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        toastError("Passwords do not match")
+        return false
+      }
+    }
+
+    return true
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!validateForm()) return false
 
-    if (activeTab === "login") {
+    if (activeTab === "login") { // Login
+      try {
+        const response = await axios.post("http://localhost:8080/api/auth/login", 
+          {
+            identifier: formData.identifier,
+            password: formData.password
+          }
+        )
 
-    } else {
+        if (response.status === 200) {
+          const token = response.data
+          localStorage.setItem("jwt", token)
+          toastSuccess("Login successful")
+          setTimeout(() => window.location.href = "/listings", 2000)
+        }
+      } catch (error: any) {
+        if (error.response?.data) {
+          toastError(error.response.data.error)
+        } else {
+          toastError("Failed to login")
+        }
+      }
+    } else { // Register
+      try {
+        const response = await axios.post("http://localhost:8080/api/auth/register", 
+          {
+            email: formData.email,
+            username: formData.username,
+            password: formData.password
+          }
+        )
 
+        if (response.status === 200) {
+          toastSuccess("Registration successful")
+          setTimeout(() => window.location.href = "/login", 2000)
+        }
+      } catch (error: any) {
+        if (error.response?.data) {
+          toastError(error.response.data.error)
+        } else {
+          toastError("Failed to register")
+        }
+      }
     }
   }
 
