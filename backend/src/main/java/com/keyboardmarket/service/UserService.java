@@ -18,7 +18,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public User registerUser(User user) {
+    public String registerUser(User user) {
         if (userRepository.existsByEmailIgnoreCase(user.getEmail())) {
             throw new RuntimeException("Email '" + user.getEmail() + "' is already in use");
         }
@@ -30,7 +30,8 @@ public class UserService {
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
         try {
-            return userRepository.save(user);
+            userRepository.save(user);
+            return jwtUtil.generateToken(user.getId());
         } catch (DuplicateKeyException e) { // Edge case if it passes the previous checks
             throw new RuntimeException("User already exists");
         }

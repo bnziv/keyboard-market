@@ -79,8 +79,8 @@ export default function Login() {
         )
 
         if (response.status === 200) {
-          const token = response.data
-          localStorage.setItem("jwt", token)
+          const token = response.data.token
+          localStorage.setItem("token", token)
           toastSuccess("Login successful")
           setTimeout(() => window.location.href = "/listings", 2000)
         }
@@ -102,8 +102,10 @@ export default function Login() {
         )
 
         if (response.status === 200) {
+          const token = response.data.token
+          localStorage.setItem("token", token)
           toastSuccess("Registration successful")
-          setTimeout(() => window.location.href = "/login", 2000)
+          setTimeout(() => window.location.href = "/listings", 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {

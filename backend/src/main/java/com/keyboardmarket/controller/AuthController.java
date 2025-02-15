@@ -1,5 +1,8 @@
 package com.keyboardmarket.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +24,17 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(userService.registerUser(user));
+    public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody User user) {
+        Map<String, String> response = new HashMap<>();
+        response.put("token", userService.registerUser(user));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(userService.loginUser(loginRequest));
+    public ResponseEntity<Map<String, String>> loginUser(@RequestBody LoginRequest loginRequest) {
+        Map<String, String> response = new HashMap<>();
+        response.put("token", userService.loginUser(loginRequest));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")
