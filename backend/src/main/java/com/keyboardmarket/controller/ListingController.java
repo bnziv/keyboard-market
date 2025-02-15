@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class ListingController {
     private final ListingService listingService;
 
-    @PostMapping("/create")
+    @PostMapping
     public Listing createListing(@Valid @RequestBody Listing listing) {
         return listingService.createListing(listing);
     }
