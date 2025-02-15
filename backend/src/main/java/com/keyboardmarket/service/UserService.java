@@ -3,6 +3,7 @@ package com.keyboardmarket.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.keyboardmarket.dto.LoginRequest;
 import com.keyboardmarket.model.User;
 import com.keyboardmarket.repository.UserRepository;
 import com.mongodb.DuplicateKeyException;
@@ -31,6 +32,18 @@ public class UserService {
         } catch (DuplicateKeyException e) { // Edge case if it passes the previous checks
             throw new RuntimeException("User already exists");
         }
+    }
+
+    public String loginUser(LoginRequest loginRequest) {
+        User user = userRepository.findByUsernameIgnoreCase(loginRequest.getIdentifier())
+            .orElseGet(() -> userRepository.findByEmailIgnoreCase(loginRequest.getIdentifier())
+                    .orElseThrow(() -> new RuntimeException("User not found")));
+        
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Incorrect password");
+        }
+
+        return user.getId();
     }
 
     public User getUserByUsername(String username) {

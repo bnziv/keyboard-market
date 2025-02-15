@@ -14,11 +14,6 @@ import org.springframework.http.ResponseEntity;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(userService.registerUser(user));
-    }
-
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUser(@PathVariable String username) {
         User user = userService.getUserByUsername(username);
