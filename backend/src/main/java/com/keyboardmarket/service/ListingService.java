@@ -1,6 +1,8 @@
 package com.keyboardmarket.service;
 
 import java.util.List;
+
+import com.keyboardmarket.dto.ListingRequest;
 import com.keyboardmarket.model.Listing;
 import org.springframework.stereotype.Service;
 import com.keyboardmarket.repository.ListingRepository;
@@ -11,7 +13,14 @@ import lombok.RequiredArgsConstructor;
 public class ListingService {
     private final ListingRepository listingRepository;
 
-    public Listing createListing(Listing listing) {
+    public Listing createListing(ListingRequest listingRequest, String userId) {
+        Listing listing = new Listing();
+        listing.setTitle(listingRequest.getTitle());
+        listing.setDescription(listingRequest.getDescription());
+        listing.setPrice(listingRequest.getPrice());
+        listing.setImageUrl(listingRequest.getImageUrl());
+        listing.setUserId(userId);
+
         return listingRepository.save(listing);
     }
 

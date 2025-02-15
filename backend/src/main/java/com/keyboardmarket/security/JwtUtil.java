@@ -13,15 +13,15 @@ public class JwtUtil {
     @Value("${jwt.expiration.ms}")
     private long expirationMs;
 
-    public String generateToken(String username) {
+    public String generateToken(String userId) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userId)
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
+    public String getUserIdFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secret)
                 .build()

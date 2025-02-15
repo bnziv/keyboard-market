@@ -1,18 +1,11 @@
-package com.keyboardmarket.model;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.keyboardmarket.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-@Document(collection = "listings")
 @Data
-public class Listing {
-
-    @Id
-    private String id;
+public class ListingRequest {
 
     @NotBlank(message = "Title cannot be empty")
     private String title;
@@ -22,8 +15,6 @@ public class Listing {
 
     @NotBlank(message = "Price cannot be empty")
     private String price;
-
+    
     private String imageUrl;
-
-    private String userId;
 }

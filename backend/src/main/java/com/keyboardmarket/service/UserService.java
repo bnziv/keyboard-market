@@ -45,7 +45,7 @@ public class UserService {
             throw new RuntimeException("Incorrect password");
         }
 
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(user.getId());
     }
 
     public User getUserByUsername(String username) {
