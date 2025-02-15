@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.keyboardmarket.dto.LoginRequest;
 import com.keyboardmarket.model.User;
 import com.keyboardmarket.repository.UserRepository;
+import com.keyboardmarket.security.JwtUtil;
 import com.mongodb.DuplicateKeyException;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public User registerUser(User user) {
         if (userRepository.existsByEmailIgnoreCase(user.getEmail())) {
@@ -43,7 +45,7 @@ public class UserService {
             throw new RuntimeException("Incorrect password");
         }
 
-        return user.getId();
+        return jwtUtil.generateToken(user.getUsername());
     }
 
     public User getUserByUsername(String username) {

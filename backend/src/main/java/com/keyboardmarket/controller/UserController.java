@@ -2,7 +2,6 @@ package com.keyboardmarket.controller;
 
 import com.keyboardmarket.model.User;
 import com.keyboardmarket.service.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
