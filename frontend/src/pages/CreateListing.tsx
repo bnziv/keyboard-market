@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 export default function CreateListing() {
     const [priceType, setPriceType] = useState("price")
@@ -22,13 +24,60 @@ export default function CreateListing() {
         setFormData({...formData, [e.target.id]: e.target.value})
     }
 
+    const toastError = (message: string) => {
+        toast.error(message,
+          { style: { background: "red", color: "white", border: "1px solid red", fontSize: "16px" } }
+        )
+    }
+
+    const validateForm = () => {
+      if (!formData.title.trim()) {
+        toastError("Title cannot be empty")
+        return false
+      }
+
+      if (!formData.description.trim()) {
+        toastError("Description cannot be empty")
+        return false
+      }
+      if (formData.description.length > 1000) {
+        toastError("Description cannot be longer than 1000 characters")
+        return false
+      }
+
+      if (priceType === "price" && !formData.price) {
+        toastError("Price cannot be empty")
+        return false
+      }
+
+      if (!formData.condition) {
+        toastError("Condition cannot be empty")
+        return false
+      }
+
+      const imgurRegex = /^https?:\/\/(i\.)?imgur\.com\/[a-zA-Z0-9]+(\.jpg|\.jpeg|\.png|\.gif|\.webp)?$/;
+      if (formData.imageUrl && !imgurRegex.test(formData.imageUrl)) {
+        toastError("Invalid image URL")
+        return false
+      }
+
+      return true
+    }
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log(formData)
+        if (!validateForm()) return false
+
+        toast.success("Created a listing!",
+          { style: { background: "green", color: "white", border: "1px solid green",
+            fontSize: "16px"
+           } }
+        )
     }
 
     return (
       <div className="flex flex-col min-h-screen">
+        <Toaster duration={3000} position="top-center"/>
         <NavBar />
         <main className="flex flex-col items-center py-12">
           <h1 className="text-3xl font-bold pb-8">Create a New Listing</h1>
@@ -44,7 +93,7 @@ export default function CreateListing() {
             <div className="space-y-3">
               <RadioGroup
                 value={priceType}
-                onValueChange={function(value) {
+                onValueChange={function(value: string) {
                   setPriceType(value)
                   setFormData({...formData, price: value})
                 }}
@@ -62,7 +111,6 @@ export default function CreateListing() {
                       }
                       disabled={priceType !== "price"}
                       onChange={handleFormChange}
-                      required={priceType === "price"}
                     />
                   </div>
                 </div>
@@ -74,7 +122,7 @@ export default function CreateListing() {
             </div>
             <div>
               <Label>Condition</Label>
-              <Select required onValueChange={(value) => { setFormData({...formData, condition: value}) }}>
+              <Select onValueChange={(value) => { setFormData({...formData, condition: value}) }}>
                 <SelectTrigger id="condition">
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
