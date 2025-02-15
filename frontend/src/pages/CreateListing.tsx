@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
 import { Toaster } from "@/components/ui/sonner"
-import { toast } from "sonner"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import { toastError, toastSuccess } from "@/lib/Toast"
 
 export default function CreateListing() {
     const [priceType, setPriceType] = useState("price")
@@ -25,12 +25,6 @@ export default function CreateListing() {
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({...formData, [e.target.id]: e.target.value})
-    }
-
-    const toastError = (message: string) => {
-        toast.error(message,
-          { style: { background: "red", color: "white", border: "1px solid red", fontSize: "16px" } }
-        )
     }
 
     const validateForm = () => {
@@ -78,9 +72,7 @@ export default function CreateListing() {
           const response = await axios.post("http://localhost:8080/api/listings/create", body)
 
           if (response.status === 200) {
-            toast.success("Successfully created a listing, redirecting...", {
-              style: { background: "green", color: "white", border: "1px solid green", fontSize: "16px" },
-            });
+            toastSuccess("Successfully created a listing, redirecting...");
 
             setTimeout(() => navigate("/listings"), 2000);
           }

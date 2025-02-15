@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toastError, toastSuccess } from "@/lib/Toast"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState("login")
@@ -37,6 +39,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Toaster duration={3000} position="top-center"/>
       <NavBar />
       <main className="flex-1 py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
@@ -45,7 +48,7 @@ export default function Login() {
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <Label>Email/Username</Label>
                 <Input name="identifier" placeholder="Enter your email or username" 
@@ -62,7 +65,7 @@ export default function Login() {
             </form>
           </TabsContent>
           <TabsContent value="register">
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <Label>Email</Label>
                 <Input name="email" type="email" placeholder="Enter your email" 
