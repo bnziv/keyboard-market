@@ -8,9 +8,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 export default function CreateListing() {
     const [priceType, setPriceType] = useState("price")
+    const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         title: "",
@@ -64,15 +67,27 @@ export default function CreateListing() {
       return true
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
         if (!validateForm()) return false
 
-        toast.success("Created a listing!",
-          { style: { background: "green", color: "white", border: "1px solid green",
-            fontSize: "16px"
-           } }
-        )
+        try {
+          //TODO: Add user ID
+          const body = {...formData, userId: "123"}
+          const response = await axios.post("http://localhost:8080/api/listings/create", body)
+
+          if (response.status === 200) {
+            toast.success("Successfully created a listing, redirecting...", {
+              style: { background: "green", color: "white", border: "1px solid green", fontSize: "16px" },
+            });
+
+            setTimeout(() => navigate("/listings"), 2000);
+          }
+
+        } catch (error) {
+          toastError("Failed to create a listing")
+        }
     }
 
     return (
