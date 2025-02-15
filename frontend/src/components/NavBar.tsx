@@ -14,6 +14,9 @@ export default function NavBar() {
           <Button variant={location.pathname === "/listings" ? "default" : "ghost"} asChild>
             <Link to="/listings">Listings</Link>
           </Button>
+          <Button variant={location.pathname === "/login" ? "default" : "ghost"} asChild>
+            <Link to="/login">Login</Link>
+          </Button>
         </div>
       </div>
     </nav>

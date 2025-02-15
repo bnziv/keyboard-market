@@ -18,11 +18,11 @@ export default function Home() {
                     </p>
                 </div>
                 <div className="space-x-4 py-4">
-                <Link to="/listings">
-                    <Button>Browse Listings</Button>
-                </Link>
-                <Button variant="outline">
-                    Create a Listing
+                <Button asChild>
+                    <Link to="/listings">Browse Listings</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                    <Link to="/create-listing">Create a Listing</Link>
                 </Button>
                 </div>
             </div>
