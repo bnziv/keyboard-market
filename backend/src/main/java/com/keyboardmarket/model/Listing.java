@@ -1,5 +1,7 @@
 package com.keyboardmarket.model;
 
+import java.time.Instant;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -26,4 +28,7 @@ public class Listing {
     private String imageUrl;
 
     private String userId;
+
+    @CreatedDate
+    private Instant createdOn;
 }

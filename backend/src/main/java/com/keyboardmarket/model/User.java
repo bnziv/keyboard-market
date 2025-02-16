@@ -1,6 +1,10 @@
 package com.keyboardmarket.model;
 
 import lombok.Data;
+
+import java.time.Instant;
+
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -31,4 +35,7 @@ public class User {
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
+
+    @CreatedDate
+    private Instant dateJoined;
 }
