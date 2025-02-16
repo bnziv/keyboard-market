@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toastError, toastSuccess } from "@/lib/Toast"
+import { toastError, toastSuccess } from "@/utils/Toast"
 import { Toaster } from "@/components/ui/sonner"
 import axios from "axios"
 
@@ -121,7 +121,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col">
       <Toaster duration={3000} position="top-center"/>
       <NavBar />
-      <main className="flex-1 py-12">
+      <main className="flex-1 py-24">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>

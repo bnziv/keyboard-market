@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import Listings from './pages/Listings';
 import CreateListing from './pages/CreateListing';
 import Login from './pages/Login';
+import ProtectedRoute from './routes/ProtectedRoute';
 
 export default function App() {
   return (
@@ -10,7 +11,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
-        <Route path="/create-listing" element={<CreateListing />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/create-listing" element={<CreateListing />} />
+        </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>

@@ -9,7 +9,7 @@ import { useState } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
-import { toastError, toastSuccess } from "@/lib/Toast"
+import { toastError, toastSuccess } from "@/utils/Toast"
 
 export default function CreateListing() {
     const [priceType, setPriceType] = useState("price")

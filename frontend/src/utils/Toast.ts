@@ -11,3 +11,9 @@ export const toastError = (message: string) => {
       { style: { background: "red", color: "white", border: "1px solid red", fontSize: "16px" } }
     )
 }
+
+export const toastInfo = (message: string) => {
+    toast.info(message,
+      { style: { background: "skyblue", color: "black", border: "1px solid skyblue", fontSize: "16px" } }
+    )
+}
