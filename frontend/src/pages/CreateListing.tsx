@@ -6,12 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
-import { Toaster } from "@/components/ui/sonner"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
-import { toastError, toastSuccess } from "@/utils/Toast"
+import { useToast } from "@/utils/ToastProvider"
 
 export default function CreateListing() {
+    const { showError, showSuccess } = useToast()
     const [priceType, setPriceType] = useState("price")
     const navigate = useNavigate()
 
@@ -29,32 +29,32 @@ export default function CreateListing() {
 
     const validateForm = () => {
       if (!formData.title.trim()) {
-        toastError("Title cannot be empty")
+        showError("Title cannot be empty")
         return false
       }
 
       if (!formData.description.trim()) {
-        toastError("Description cannot be empty")
+        showError("Description cannot be empty")
         return false
       }
       if (formData.description.length > 1000) {
-        toastError("Description cannot be longer than 1000 characters")
+        showError("Description cannot be longer than 1000 characters")
         return false
       }
 
       if (priceType === "price" && !formData.price) {
-        toastError("Price cannot be empty")
+        showError("Price cannot be empty")
         return false
       }
 
       if (!formData.condition) {
-        toastError("Condition cannot be empty")
+        showError("Condition cannot be empty")
         return false
       }
 
       const imgurRegex = /^https?:\/\/(i\.)?imgur\.com\/[a-zA-Z0-9]+(\.jpg|\.jpeg|\.png|\.gif|\.webp)?$/;
       if (formData.imageUrl && !imgurRegex.test(formData.imageUrl)) {
-        toastError("Invalid image URL")
+        showError("Invalid image URL")
         return false
       }
 
@@ -72,19 +72,18 @@ export default function CreateListing() {
           const response = await axios.post("http://localhost:8080/api/listings/create", body)
 
           if (response.status === 200) {
-            toastSuccess("Successfully created a listing, redirecting...");
+            showSuccess("Successfully created a listing, redirecting...");
 
             setTimeout(() => navigate("/listings"), 2000);
           }
 
         } catch (error) {
-          toastError("Failed to create a listing")
+          showError("Failed to create a listing")
         }
     }
 
     return (
       <div className="flex flex-col min-h-screen">
-        <Toaster duration={3000} position="top-center"/>
         <NavBar />
         <main className="flex flex-col items-center py-12">
           <h1 className="text-3xl font-bold pb-8">Create a New Listing</h1>

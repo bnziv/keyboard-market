@@ -5,11 +5,15 @@ import CreateListing from './pages/CreateListing';
 import Login from './pages/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { AuthProvider } from './utils/AuthProvider';
+import { ToastProvider } from './utils/ToastProvider';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function App() {
   return (
     <BrowserRouter>
     <AuthProvider>
+      <ToastProvider>
+      <Toaster duration={3000} position="top-center"/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
@@ -18,6 +22,7 @@ export default function App() {
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
+      </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

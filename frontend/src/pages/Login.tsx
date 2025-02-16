@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toastError, toastSuccess } from "@/utils/Toast"
-import { Toaster } from "@/components/ui/sonner"
+import { useToast } from "@/utils/ToastProvider"
 import axios from "axios"
 
 export default function Login() {
+  const { showError, showSuccess } = useToast()
   const [activeTab, setActiveTab] = useState("login")
   const [formData, setFormData] = useState({
     identifier: "",
@@ -25,37 +25,37 @@ export default function Login() {
   const validateForm = () => {
     if (activeTab === "login") {
       if (!formData.identifier.trim()) {
-        toastError("Email/Username cannot be empty")
+        showError("Email/Username cannot be empty")
         return false
       }
 
       if (!formData.password.trim()) {
-        toastError("Password cannot be empty")
+        showError("Password cannot be empty")
         return false
       }
     } else {
       if (!formData.email.trim()) {
-        toastError("Email cannot be empty")
+        showError("Email cannot be empty")
         return false
       }
 
       if (!formData.username.trim()) {
-        toastError("Username cannot be empty")
+        showError("Username cannot be empty")
         return false
       }
 
       if (!formData.password.trim()) {
-        toastError("Password cannot be empty")
+        showError("Password cannot be empty")
         return false
       }
 
       if (!formData.confirmPassword.trim()) {
-        toastError("Confirm password cannot be empty")
+        showError("Confirm password cannot be empty")
         return false
       }
 
       if (formData.password !== formData.confirmPassword) {
-        toastError("Passwords do not match")
+        showError("Passwords do not match")
         return false
       }
     }
@@ -79,14 +79,14 @@ export default function Login() {
         if (response.status === 200) {
           const token = response.data.token
           localStorage.setItem("token", token)
-          toastSuccess("Login successful")
+          showSuccess("Login successful")
           setTimeout(() => window.location.href = "/listings", 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {
-          toastError(error.response.data.error)
+          showError(error.response.data.error)
         } else {
-          toastError("Failed to login")
+          showError("Failed to login")
         }
       }
     } else { // Register
@@ -102,14 +102,14 @@ export default function Login() {
         if (response.status === 200) {
           const token = response.data.token
           localStorage.setItem("token", token)
-          toastSuccess("Registration successful")
+          showSuccess("Registration successful")
           setTimeout(() => window.location.href = "/listings", 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {
-          toastError(error.response.data.error)
+          showError(error.response.data.error)
         } else {
-          toastError("Failed to register")
+          showError("Failed to register")
         }
       }
     }
@@ -117,7 +117,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Toaster duration={3000} position="top-center"/>
       <NavBar />
       <main className="flex-1 py-24">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
