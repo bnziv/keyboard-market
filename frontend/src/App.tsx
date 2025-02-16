@@ -4,10 +4,12 @@ import Listings from './pages/Listings';
 import CreateListing from './pages/CreateListing';
 import Login from './pages/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
+import { AuthProvider } from './utils/AuthProvider';
 
 export default function App() {
   return (
     <BrowserRouter>
+    <AuthProvider>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
@@ -16,6 +18,7 @@ export default function App() {
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
