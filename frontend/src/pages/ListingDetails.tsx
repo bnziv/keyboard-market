@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
-// import { format } from "date-fns"
-// import Image from "next/image"
-// import Link from "next/link"
 import { Link } from "react-router-dom"
 import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
@@ -11,69 +8,41 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MessageCircle, Heart, Share2, AlertCircle } from "lucide-react"
-import { toast } from "sonner"
 import { useAuth } from "@/utils/AuthProvider"
+import { useToast } from "@/utils/ToastProvider"
 
-// Mock data for demonstration purposes
-const mockListing = {
-    id: "1",
-    title: "Custom Mechanical Keyboard with Cherry MX Brown Switches",
-    price: 250,
-    priceType: "fixed", // 'fixed' or 'offer'
-    condition: "Like New",
-    offers: true,
-    description: `A beautifully crafted custom mechanical keyboard with Cherry MX Brown switches, PBT keycaps, and a solid aluminum case. Perfect for both typing and gaming.
-    
-    Features:
-    - Cherry MX Brown switches (tactile, not clicky)
-    - PBT double-shot keycaps with a clean minimal design
-    - Solid aluminum case with a brushed finish
-    - Hot-swappable PCB for easy switch replacement
-    - RGB backlighting with multiple effects
-    - USB-C detachable cable
-    - Fully programmable with QMK firmware
-    
-    The keyboard has been lightly used for about 2 months. No scratches or damage. Comes in the original packaging with all accessories.
-  `,
-    images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-    ],
+interface Listing {
+    id: string,
+    title: string,
+    price: number,
+    offers: boolean,
+    description: string,
+    condition: string,
+    imageUrl: string,
     seller: {
-        id: "101",
-        username: "KeyboardEnthusiast",
-        avatarUrl: "/placeholder.svg?height=50&width=50",
-        dateJoined: new Date("2022-01-15"),
-        rating: 4.8,
-        totalSales: 27,
+        id: string,
+        username: string,
+        dateJoined: Date,
+        totalListings: number
     },
-    createdAt: new Date("2023-11-20"),
-    location: "San Francisco, CA",
-    shipping: "Free shipping",
-    views: 142,
+    createdOn: Date,
 }
 
 export default function ListingDetailsPage() {
     const params = useParams()
     const id = params.id as string
     const { isAuthenticated } = useAuth()
-    const [listing, setListing] = useState(mockListing)
+    const { showInfo } = useToast()
+    const [listing, setListing] = useState<Listing>()
     const [loading, setLoading] = useState(true)
     const [isFavorite, setIsFavorite] = useState(false)
 
-    // In a real application, you would fetch the listing data based on the id
     useEffect(() => {
-        // Simulate API call
         const fetchListing = async () => {
             try {
-                // In a real app, you would fetch data from your API
-                // const response = await fetch(`/api/listings/${id}`)
-                // const data = await response.json()
-                // setListing(data)
-
-                // For now, we'll use our mock data
-                setListing(mockListing)
+                const response = await fetch(`http://localhost:8080/api/listings/details/${id}`)
+                const data = await response.json()
+                setListing(data)
                 setLoading(false)
             } catch (error) {
                 console.error("Error fetching listing:", error)
@@ -83,51 +52,16 @@ export default function ListingDetailsPage() {
 
         fetchListing()
     }, [id])
-
+    
     const handleContactSeller = () => {
-        if (!isAuthenticated) {
-            toast.error("Please log in to contact the seller", {
-                description: "You need to be logged in to send messages",
-                action: {
-                    label: "Login",
-                    onClick: () => (window.location.href = "/login"),
-                },
-            })
-            return
-        }
-
-        // In a real app, you would implement messaging functionality
-        toast.success("Message sent to seller!", {
-            description: "The seller will respond to your inquiry soon.",
-        })
     }
 
     const toggleFavorite = () => {
-        if (!isAuthenticated) {
-            toast.error("Please log in to save listings", {
-                description: "You need to be logged in to save listings to your favorites",
-                action: {
-                    label: "Login",
-                    onClick: () => (window.location.href = "/login"),
-                },
-            })
-            return
-        }
-
-        setIsFavorite(!isFavorite)
-        toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
     }
 
     const handleShare = () => {
-        // Copy the current URL to clipboard
         navigator.clipboard.writeText(window.location.href)
-        toast.success("Link copied to clipboard")
-    }
-
-    const handleReport = () => {
-        toast.info("Report submitted", {
-            description: "Thank you for helping keep our marketplace safe.",
-        })
+        showInfo("Link copied to clipboard")
     }
 
     if (loading) {
@@ -140,6 +74,26 @@ export default function ListingDetailsPage() {
             </div>
         )
     }
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return "";
+        const date = new Date(dateString)
+        const showYear = date.getFullYear() !== new Date().getFullYear()
+
+        return date.toLocaleDateString("en-US", {
+            year: showYear ? "numeric" : undefined,
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    const titleCase = (str: string) => {
+        return str
+          .toLowerCase()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
 
     return (
         <div className="min-h-screen flex flex-col scrollbar-gutter">
@@ -173,27 +127,27 @@ export default function ListingDetailsPage() {
                         </div>
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="flex items-center space-x-4">
-                                    <Avatar className="h-12 w-12">
-                                        <AvatarImage src={listing.seller.avatarUrl} alt={listing.seller.username} />
-                                        <AvatarFallback>{listing.seller.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${listing.seller.username}&backgroundType=gradientLinear`} />
+                                        <AvatarFallback>{listing.seller.username[0]}</AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <p className="font-medium text-lg">{listing.seller.username}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            Joined {/*format(listing.seller.dateJoined, "MMMM yyyy")*/}
+                                            {listing.seller.dateJoined && `Joined ${formatDate(listing.seller.dateJoined)}`}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="mt-4 grid grid-cols-2 gap-4">
-                                    <div>
+                                    {/* <div>
                                         <p className="text-sm text-muted-foreground">Rating</p>
                                         <p className="font-medium">{listing.seller.rating} / 5</p>
-                                    </div>
+                                    </div> */}
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Total Sales</p>
-                                        <p className="font-medium">{listing.seller.totalSales}</p>
+                                        <p className="text-sm text-muted-foreground">Total Listings</p>
+                                        <p className="font-medium">{listing.seller.totalListings}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -205,11 +159,11 @@ export default function ListingDetailsPage() {
                                 Contact Seller
                             </Button>
 
-                            {listing.priceType === "fixed" ? (
+                            {listing.offers ? (
                                 <Button variant="outline" className="flex-1" size="lg">
                                     Make Offer
                                 </Button>
-                            ) : (
+                              ) : (
                                 <Button variant="outline" className="flex-1" size="lg">
                                     Submit Offer
                                 </Button>
@@ -222,21 +176,21 @@ export default function ListingDetailsPage() {
                         <div>
                             <h1 className="text-3xl font-bold">{listing.title}</h1>
                             <div className="flex items-center flex-wrap gap-2 mt-2">
-                                <Badge variant="secondary">{listing.condition}</Badge>
+                                <Badge variant="secondary">{titleCase(listing.condition)}</Badge>
                                 <span className="text-muted-foreground text-sm">
-                                    Listed on {/*format(listing.createdAt, "MMMM d, yyyy")*/}
+                                    {listing.createdOn && `Listed on ${formatDate(listing.createdOn)}`}
                                 </span>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between">
                             <div>
-                                {listing.priceType === "fixed" ? (
-                                    <p className="text-3xl font-bold">${listing.price.toFixed(2)}</p>
+                                {listing.price ? (
+                                    <p className="text-3xl font-bold">${parseFloat(listing.price.toFixed(2))}</p>
                                 ) : (
                                     <p className="text-3xl font-bold">Open to Offers</p>
                                 )}
-                                {listing.offers && <p className="text-muted-foreground">Or Best Offer</p>}
+                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">{listing.offers ? "Offers" : "Or Best Offer"}</p>}
                             </div>
 
                             <div className="flex space-x-2">
@@ -250,9 +204,6 @@ export default function ListingDetailsPage() {
                                 </Button>
                                 <Button variant="outline" size="icon" onClick={handleShare}>
                                     <Share2 />
-                                </Button>
-                                <Button variant="outline" size="icon" onClick={handleReport}>
-                                    <AlertCircle />
                                 </Button>
                             </div>
                         </div>
@@ -274,13 +225,7 @@ export default function ListingDetailsPage() {
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="text-muted-foreground">Condition</div>
-                                    <div>{listing.condition}</div>
-
-                                    <div className="text-muted-foreground">Location</div>
-                                    <div>{listing.location}</div>
-
-                                    <div className="text-muted-foreground">Shipping</div>
-                                    <div>{listing.shipping}</div>
+                                    <div>{titleCase(listing.condition)}</div>
                                 </div>
                             </CardContent>
                         </Card>
