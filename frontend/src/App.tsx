@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Listings from './pages/Listings';
+import ListingDetails from './pages/ListingDetails';
 import CreateListing from './pages/CreateListing';
 import Login from './pages/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -17,6 +18,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
+        <Route path="/listings/:id" element={<ListingDetails />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/create-listing" element={<CreateListing />} />
         </Route>
