@@ -29,10 +29,18 @@ public class ListingService {
     }
 
     public List<Listing> searchListingsByTitle(String title) {
-        return listingRepository.findByTitleRegex(title);
+        return listingRepository.findByTitleContainingIgnoreCase(title);
     }
 
     public List<Listing> getAllListings() {
         return listingRepository.findAll();
+    }
+
+    public Listing getListingById(String id) {
+        return listingRepository.findById(id).orElse(null);
+    }
+
+    public long countListingsByUserId(String userId) {
+        return listingRepository.countByUserId(userId);
     }
 }
