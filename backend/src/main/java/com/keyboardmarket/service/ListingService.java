@@ -18,7 +18,10 @@ public class ListingService {
         listing.setTitle(listingRequest.getTitle());
         listing.setDescription(listingRequest.getDescription());
         listing.setPrice(listingRequest.getPrice());
-        listing.setImageUrl(listingRequest.getImageUrl());
+        listing.setCondition(listingRequest.getCondition());
+        if (listingRequest.getImageUrl() != null && !listingRequest.getImageUrl().isBlank()) {
+            listing.setImageUrl(listingRequest.getImageUrl());
+        }
         listing.setUserId(userId);
 
         return listingRepository.save(listing);

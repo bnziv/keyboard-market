@@ -25,6 +25,9 @@ public class Listing {
     @NotBlank(message = "Price cannot be empty")
     private String price;
 
+    @NotBlank(message = "Condition cannot be empty")
+    private String condition;
+
     private String imageUrl;
 
     private String userId;
