@@ -43,14 +43,14 @@ export default function CreateListing() {
       }
 
       if (priceType === "price" && !formData.price) {
-        showError("Price cannot be empty")
-        return false
-      }
+      showError("Price cannot be empty")
+      return false
+    }
 
       if (!formData.condition) {
-        showError("Condition cannot be empty")
-        return false
-      }
+      showError("Condition cannot be empty")
+      return false
+    }
 
       const imgurRegex = /^https?:\/\/(i\.)?imgur\.com\/[a-zA-Z0-9]+(\.jpg|\.jpeg|\.png|\.gif|\.webp)?$/;
       if (formData.imageUrl && !imgurRegex.test(formData.imageUrl)) {
@@ -58,44 +58,48 @@ export default function CreateListing() {
         return false
       }
 
-      return true
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    if (!validateForm()) return false
+
+    try {
+      //TODO: Add user ID
+      const body = {...formData}
+      const response = await axios.post("http://localhost:8080/api/listings", body, {
+        withCredentials: true
+      })
+
+      if (response.status === 200) {
+        showSuccess("Successfully created a listing, redirecting...")
+        setTimeout(() => navigate("/listings"), 2000)
+      }
+    } catch (error: any) {
+      if (error.response?.data) {
+        showError(error.response.data.error)
+      } else {
+        showError("Failed to create listing")
+      }
     }
+  }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        if (!validateForm()) return false
-
-        try {
-          //TODO: Add user ID
-          const body = {...formData, userId: "123"}
-          const response = await axios.post("http://localhost:8080/api/listings/create", body)
-
-          if (response.status === 200) {
-            showSuccess("Successfully created a listing, redirecting...");
-
-            setTimeout(() => navigate("/listings"), 2000);
-          }
-
-        } catch (error) {
-          showError("Failed to create a listing")
-        }
-    }
-
-    return (
+  return (
       <div className="flex flex-col min-h-screen">
-        <NavBar />
+      <NavBar />
         <main className="flex flex-col items-center py-12">
           <h1 className="text-3xl font-bold pb-8">Create a New Listing</h1>
           <form className="w-2/5 space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <Label>Title</Label>
+          <div>
+            <Label>Title</Label>
               <Input id="title" placeholder="Enter listing title" value={formData.title} onChange={handleFormChange} />
-            </div>
-            <div>
-              <Label>Description</Label>
+          </div>
+          <div>
+            <Label>Description</Label>
               <Textarea id="description" placeholder="Describe your item" value={formData.description} onChange={handleFormChange} />
-            </div>
+          </div>
             <div className="space-y-3">
               <RadioGroup
                 value={priceType}
@@ -107,7 +111,7 @@ export default function CreateListing() {
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="price" id="price" />
-                  <Label>Price</Label>
+            <Label>Price</Label>
                   <div className="w-40">
                     <Input
                       id="price"
@@ -125,9 +129,9 @@ export default function CreateListing() {
                   <Label>Open to Offers</Label>
                 </div>
               </RadioGroup>
-            </div>
-            <div>
-              <Label>Condition</Label>
+          </div>
+          <div>
+            <Label>Condition</Label>
               <Select onValueChange={(value) => { setFormData({...formData, condition: value}) }}>
                 <SelectTrigger id="condition">
                   <SelectValue placeholder="Select condition" />
@@ -138,19 +142,19 @@ export default function CreateListing() {
                   <SelectItem value="used">Used</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
+          </div>
+          <div>
               <Label>Images</Label>
               <Input id="imageUrl" type="link" placeholder="Enter imgur link" value={formData.imageUrl} onChange={handleFormChange} />
-            </div>
+          </div>
             <div className="flex justify-center">
               <Button type="submit" className="mx-auto">
-                Create Listing
-              </Button>
+            Create Listing
+          </Button>
             </div>
-          </form>
-        </main>
-      </div>
+        </form>
+      </main>
+    </div>
     );
 }
 

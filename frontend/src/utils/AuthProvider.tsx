@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { jwtDecode } from "jwt-decode"
+import { useLocation } from "react-router-dom"
+import axios from "axios"
 
 interface AuthContextType {
   isAuthenticated: boolean
-  login: (token: string) => void
+  login: () => void
   logout: () => void
 }
 
@@ -12,39 +12,31 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    
-    if (token && validateToken()) {
-      setIsAuthenticated(true)
-    } else {
-      logout()
-    }
+    validateAuth()
   }, [location.pathname])
   
-  const validateToken = (): boolean => {
-    console.log("Validate token")
-    const token = localStorage.getItem("token")
-    if (!token) return false
-
+  const validateAuth = async () => {
     try {
-      const decoded: any = jwtDecode(token)
-      return decoded?.exp * 1000 > Date.now()
+      await axios.get("http://localhost:8080/api/auth/me", { withCredentials: true })
+      setIsAuthenticated(true)
     } catch (error) {
-      return false
+      setIsAuthenticated(false)
     }
   }
   
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(validateToken)
-  const login = (token: string) => {
-    localStorage.setItem("token", token)
+  const login = () => {
     setIsAuthenticated(true)
   }
 
-  const logout = () => {
-    localStorage.removeItem("token")
-    setIsAuthenticated(false)
+  const logout = async () => {
+    try {
+      await axios.post("http://localhost:8080/api/auth/logout", {}, { withCredentials: true })
+    } finally {
+      setIsAuthenticated(false)
+    }
   }
 
   return (
