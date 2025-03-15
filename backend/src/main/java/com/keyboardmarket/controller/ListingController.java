@@ -4,7 +4,8 @@ import java.util.List;
 
 import com.keyboardmarket.dto.ListingRequest;
 import com.keyboardmarket.model.Listing;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +22,11 @@ public class ListingController {
     private final ListingService listingService;
 
     @PostMapping
-    public Listing createListing(@Valid @RequestBody ListingRequest listingRequest) {
+    public ResponseEntity<Listing> createListing(@Valid @RequestBody ListingRequest listingRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        return listingService.createListing(listingRequest, userId);
+        Listing result = listingService.createListing(listingRequest, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/all")

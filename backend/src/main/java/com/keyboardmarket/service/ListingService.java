@@ -19,6 +19,7 @@ public class ListingService {
         listing.setDescription(listingRequest.getDescription());
         listing.setPrice(listingRequest.getPrice());
         listing.setCondition(listingRequest.getCondition());
+        listing.setOffers(listingRequest.isOffers());
         if (listingRequest.getImageUrl() != null && !listingRequest.getImageUrl().isBlank()) {
             listing.setImageUrl(listingRequest.getImageUrl());
         }
