@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MessageCircle, Heart, Share2, AlertCircle } from "lucide-react"
+import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 
@@ -22,10 +21,10 @@ interface Listing {
     seller: {
         id: string,
         username: string,
-        dateJoined: Date,
+        dateJoined: string,
         totalListings: number
     },
-    createdOn: Date,
+    createdOn: string,
 }
 
 export default function ListingDetailsPage() {
@@ -33,7 +32,7 @@ export default function ListingDetailsPage() {
     const id = params.id as string
     const { isAuthenticated } = useAuth()
     const { showInfo } = useToast()
-    const [listing, setListing] = useState<Listing>()
+    const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
     const [isFavorite, setIsFavorite] = useState(false)
 
@@ -98,33 +97,35 @@ export default function ListingDetailsPage() {
     return (
         <div className="min-h-screen flex flex-col scrollbar-gutter">
             <NavBar />
-            <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 mx-auto max-w-[1600px]">
+            <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 w-3/4 mx-auto">
                 <div className="mb-6">
                     <Link to="/listings" className="text-primary hover:underline">
                         &larr; Listings
                     </Link>
                 </div>
 
-                <div className="grid gap-8 lg:grid-cols-2 mx-auto w-full">
+                <div className="grid gap-8 lg:grid-cols-2">
                     {/* Left column - Images */}
                     <div className="space-y-4">
+                    {listing.imageUrl && (
                         <div className="rounded-lg overflow-hidden border bg-background">
                             <div className="relative w-full">
                                 <div className="absolute inset-0 overflow-hidden items">
                                     <img
-                                        src={"https://i.imgur.com/J8qPVz1.jpeg"}
+                                        src={listing.imageUrl}
                                         className="object-cover blur-md scale-110 opacity-50 w-full h-full"
                                     />
                                 </div>
                                 <div className="relative w-full">
                                     <img
-                                        src={"https://i.imgur.com/J8qPVz1.jpeg" || "https://i.imgur.com/J8qPVz1.jpeg"}
+                                        src={listing.imageUrl}
                                         alt={listing.title}
-                                        className="object-contain w-full h-full max-h-[700px]"
+                                        className="object-contain w-full h-full max-h-[550px]"
                                     />
                                 </div>
                             </div>
                         </div>
+                    )}
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="flex items-center gap-4">
