@@ -9,6 +9,7 @@ import { useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/utils/ToastProvider"
+import API_URL from "@/utils/config"
 
 export default function CreateListing() {
     const { showError, showSuccess } = useToast()
@@ -73,7 +74,7 @@ export default function CreateListing() {
 
       try {
         const body = {...formData}
-        const response = await axios.post("http://localhost:8080/api/listings", body, {
+        const response = await axios.post(`${API_URL}/api/listings`, body, {
           withCredentials: true
         })
 

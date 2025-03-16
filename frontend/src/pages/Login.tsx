@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
+import API_URL from "@/utils/config"
 
 export default function Login() {
   const { showError, showSuccess } = useToast()
@@ -73,7 +74,7 @@ export default function Login() {
 
     if (activeTab === "login") { // Login
       try {
-        const response = await axios.post("http://localhost:8080/api/auth/login", 
+        const response = await axios.post(`${API_URL}/api/auth/login`, 
           {
             identifier: formData.identifier,
             password: formData.password
@@ -95,7 +96,7 @@ export default function Login() {
       }
     } else { // Register
       try {
-        const response = await axios.post("http://localhost:8080/api/auth/register", 
+        const response = await axios.post(`${API_URL}/localhost:8080/api/auth/register`, 
           {
             email: formData.email,
             username: formData.username,

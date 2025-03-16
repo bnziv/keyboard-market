@@ -10,6 +10,7 @@ import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
+import API_URL from "@/utils/config"
 
 interface Listing {
     id: string,
@@ -40,7 +41,7 @@ export default function ListingDetailsPage() {
     useEffect(() => {
         const fetchListing = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/listings/details/${id}`)
+                const response = await fetch(`${API_URL}/api/listings/details/${id}`)
                 const data = await response.json()
                 setListing(data)
                 setLoading(false)

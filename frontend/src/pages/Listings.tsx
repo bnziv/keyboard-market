@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ListingCard, { ListingCardProps } from "@/components/ListingCard";
 import NavBar from "@/components/NavBar";
+import API_URL from "@/utils/config"
 
 export default function Listings() {
     const [listings, setListings] = useState<ListingCardProps[]>([]);
 
     useEffect(() => {
-        axios.get("http://localhost:8080/api/listings/all").then((res) => {
+        axios.get(`${API_URL}/api/listings/all`).then((res) => {
             setListings(res.data);
             console.log(res.data);
         })

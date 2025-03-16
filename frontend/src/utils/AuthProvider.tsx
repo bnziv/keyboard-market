@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import axios from "axios"
+import API_URL from "@/utils/config"
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -20,7 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const validateAuth = async () => {
     try {
-      await axios.get("http://localhost:8080/api/auth/me", { withCredentials: true })
+      await axios.get(`${API_URL}/api/auth/me`, { withCredentials: true })
       setIsAuthenticated(true)
     } catch (error) {
       setIsAuthenticated(false)
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:8080/api/auth/logout", {}, { withCredentials: true })
+      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true })
     } finally {
       setIsAuthenticated(false)
     }
