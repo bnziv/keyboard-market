@@ -1,14 +1,18 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/utils/ToastProvider"
+import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
 
 export default function Login() {
   const { showError, showSuccess } = useToast()
+  const { login } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("login")
   const [formData, setFormData] = useState({
     identifier: "",
@@ -73,14 +77,14 @@ export default function Login() {
           {
             identifier: formData.identifier,
             password: formData.password
-          }
+          },
+          { withCredentials: true }
         )
 
         if (response.status === 200) {
-          const token = response.data.token
-          localStorage.setItem("token", token)
+          login()
           showSuccess("Login successful")
-          setTimeout(() => window.location.href = "/listings", 2000)
+          setTimeout(() => navigate("/listings"), 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {
@@ -96,14 +100,14 @@ export default function Login() {
             email: formData.email,
             username: formData.username,
             password: formData.password
-          }
+          },
+          { withCredentials: true }
         )
 
         if (response.status === 200) {
-          const token = response.data.token
-          localStorage.setItem("token", token)
+          login()
           showSuccess("Registration successful")
-          setTimeout(() => window.location.href = "/listings", 2000)
+          setTimeout(() => navigate("/listings"), 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {
@@ -150,7 +154,7 @@ export default function Login() {
               </div>
               <div>
                 <Label>Username</Label>
-                <Input name="username" placeholder="Enter your email"
+                <Input name="username" placeholder="Enter your username"
                 onChange={handleChange} value={formData.username} />
               </div>
               <div>
@@ -173,4 +177,3 @@ export default function Login() {
     </div>
   )
 }
-

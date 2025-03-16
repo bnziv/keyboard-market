@@ -17,7 +17,7 @@ export default function Listings() {
         <div className="min-h-screen flex flex-col">
         <NavBar />
         <main className="flex-1">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-12">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-12 px-48">
                 {listings.map((listing) => (
                 <ListingCard key={listing.id} {...listing} />
                 ))}

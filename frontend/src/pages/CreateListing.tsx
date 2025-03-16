@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
@@ -12,15 +12,15 @@ import { useToast } from "@/utils/ToastProvider"
 
 export default function CreateListing() {
     const { showError, showSuccess } = useToast()
-    const [priceType, setPriceType] = useState("price")
     const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        price: "",
+        price: 0,
         condition: "",
-        imageUrl: ""
+        imageUrl: "",
+        offers: false
     })
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -42,8 +42,13 @@ export default function CreateListing() {
         return false
       }
 
-      if (priceType === "price" && !formData.price) {
+      if (!formData.offers && !formData.price) {
         showError("Price cannot be empty")
+        return false
+      }
+
+      if (formData.price < 0) {
+        showError("Price cannot be negative")
         return false
       }
 
@@ -61,25 +66,25 @@ export default function CreateListing() {
       return true
     }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault()
 
-        if (!validateForm()) return false
+      if (!validateForm()) return false
 
-        try {
-          //TODO: Add user ID
-          const body = {...formData, userId: "123"}
-          const response = await axios.post("http://localhost:8080/api/listings/create", body)
+      try {
+        const body = {...formData}
+        const response = await axios.post("http://localhost:8080/api/listings", body, {
+          withCredentials: true
+        })
 
-          if (response.status === 200) {
-            showSuccess("Successfully created a listing, redirecting...");
-
-            setTimeout(() => navigate("/listings"), 2000);
-          }
-
-        } catch (error) {
-          showError("Failed to create a listing")
+        if (response.status === 201) {
+          showSuccess("Listing created successfully!")
+          navigate("/listings")
         }
+      } catch (error) {
+        showError("Failed to create listing")
+        console.error(error)
+      }
     }
 
     return (
@@ -97,34 +102,33 @@ export default function CreateListing() {
               <Textarea id="description" placeholder="Describe your item" value={formData.description} onChange={handleFormChange} />
             </div>
             <div className="space-y-3">
-              <RadioGroup
-                value={priceType}
-                onValueChange={function(value: string) {
-                  setPriceType(value)
-                  setFormData({...formData, price: value})
-                }}
-                className="flex items-center justify-between px-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="price" id="price" />
-                  <Label>Price</Label>
-                  <div className="w-40">
+              <div className="flex items-center gap-8">
+                <div className="flex items-center space-x-4">
+                  <div>
+                    <Label>Price</Label>
                     <Input
                       id="price"
                       type="number"
-                      placeholder={
-                        priceType === "price" ? "Enter price in USD" : ""
-                      }
-                      disabled={priceType !== "price"}
+                      placeholder="Enter price in USD"
                       onChange={handleFormChange}
+                      value={formData.price}
                     />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="offer" id="price" />
-                  <Label>Open to Offers</Label>
+                <div className="flex items-center space-x-2 mt-6">
+                  <Checkbox 
+                    id="offers" 
+                    checked={formData.offers}
+                    onCheckedChange={(checked) => {
+                      setFormData({
+                        ...formData, 
+                        offers: checked as boolean,
+                      })
+                    }}
+                  />
+                  <Label htmlFor="offers">Open to Offers</Label>
                 </div>
-              </RadioGroup>
+              </div>
             </div>
             <div>
               <Label>Condition</Label>
@@ -140,17 +144,16 @@ export default function CreateListing() {
               </Select>
             </div>
             <div>
-              <Label>Images</Label>
-              <Input id="imageUrl" type="link" placeholder="Enter imgur link" value={formData.imageUrl} onChange={handleFormChange} />
+                <Label>Images</Label>
+                <Input id="imageUrl" type="link" placeholder="Enter imgur link" value={formData.imageUrl} onChange={handleFormChange} />
             </div>
             <div className="flex justify-center">
               <Button type="submit" className="mx-auto">
-                Create Listing
-              </Button>
+            Create Listing
+          </Button>
             </div>
-          </form>
-        </main>
-      </div>
+        </form>
+      </main>
+    </div>
     );
 }
-

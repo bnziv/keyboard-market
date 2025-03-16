@@ -18,17 +18,29 @@ public class ListingService {
         listing.setTitle(listingRequest.getTitle());
         listing.setDescription(listingRequest.getDescription());
         listing.setPrice(listingRequest.getPrice());
-        listing.setImageUrl(listingRequest.getImageUrl());
+        listing.setCondition(listingRequest.getCondition());
+        listing.setOffers(listingRequest.isOffers());
+        if (listingRequest.getImageUrl() != null && !listingRequest.getImageUrl().isBlank()) {
+            listing.setImageUrl(listingRequest.getImageUrl());
+        }
         listing.setUserId(userId);
 
         return listingRepository.save(listing);
     }
 
     public List<Listing> searchListingsByTitle(String title) {
-        return listingRepository.findByTitleRegex(title);
+        return listingRepository.findByTitleContainingIgnoreCase(title);
     }
 
     public List<Listing> getAllListings() {
         return listingRepository.findAll();
+    }
+
+    public Listing getListingById(String id) {
+        return listingRepository.findById(id).orElse(null);
+    }
+
+    public long countListingsByUserId(String userId) {
+        return listingRepository.countByUserId(userId);
     }
 }

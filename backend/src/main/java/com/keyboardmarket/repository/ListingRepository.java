@@ -1,12 +1,10 @@
 package com.keyboardmarket.repository;
 
 import com.keyboardmarket.model.Listing;
-
+import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-
 public interface ListingRepository extends MongoRepository<Listing, String> {
-
-    List<Listing> findByTitleRegex(String title);
+    List<Listing> findByTitleContainingIgnoreCase(String title);
+    long countByUserId(String userId);
 }
