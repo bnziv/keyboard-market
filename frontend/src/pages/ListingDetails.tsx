@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageCircle, Heart, Share2 } from "lucide-react"
-import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
@@ -32,11 +31,9 @@ interface Listing {
 export default function ListingDetailsPage() {
     const params = useParams()
     const id = params.id as string
-    const { isAuthenticated } = useAuth()
     const { showInfo } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
-    const [isFavorite, setIsFavorite] = useState(false)
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -181,9 +178,9 @@ export default function ListingDetailsPage() {
                                     variant="outline"
                                     size="icon"
                                     onClick={toggleFavorite}
-                                    className={isFavorite ? "text-red-500" : ""}
+                                    className={true ? "text-red-500" : ""}
                                 >
-                                    <Heart className={isFavorite ? "fill-current" : ""} />
+                                    <Heart className={true ? "fill-current" : ""} />
                                 </Button>
                                 <Button variant="outline" size="icon" onClick={handleShare}>
                                     <Share2 />
