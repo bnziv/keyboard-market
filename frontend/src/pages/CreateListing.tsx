@@ -2,7 +2,6 @@ import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -18,7 +17,7 @@ export default function CreateListing() {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        price: "",
+        price: 0,
         condition: "",
         imageUrl: "",
         offers: false
@@ -73,7 +72,7 @@ export default function CreateListing() {
       if (!validateForm()) return false
 
       try {
-        const body = {...formData, price: formData.price ? parseFloat(formData.price) : 0}
+        const body = {...formData}
         const response = await axios.post("http://localhost:8080/api/listings", body, {
           withCredentials: true
         })

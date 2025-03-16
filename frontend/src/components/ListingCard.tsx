@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { KeyboardIcon } from "@/components/KeyboardIcon"
 import { Link } from "react-router-dom"
+import { titleCase } from "@/utils/helpers"
 
 export interface ListingCardProps {
   id: string
@@ -33,18 +34,18 @@ export default function ListingCard({ id, title, price, offers, condition, image
         </Link>
       </CardHeader>
       <CardContent className="p-4">
-        <Link to={`/listings/${id}`} className="hover:underline">
-        <h3 className="truncate">{title}</h3>
-        <div className="flex items-center justify-between mt-2">
+        <Link to={`/listings/${id}`} className="group">
+        <h3 className="truncate group-hover:underline">{title}</h3>
+        <div className="flex items-center justify-between mt-2 ">
           <div>
             {price ? (
-              <p className="font-medium">${price.toFixed(2)}</p>
+              <p className="font-medium group-hover:underline">${parseFloat(price.toFixed(2))}</p>
             ) : (
-              <p className="font-medium">Open to Offers</p>
+              <p className="font-medium group-hover:underline">Open to Offers</p>
             )}
-            {offers && price && <p className="text-sm text-muted-foreground">Or Best Offer</p>}
+            {offers && price && <p className="text-sm text-muted-foreground group-hover:underline">Or Best Offer</p>}
           </div>
-          <Badge variant="secondary">{condition}</Badge>
+          <Badge variant="secondary">{condition && titleCase(condition)}</Badge> 
         </div>
         </Link>
       </CardContent>

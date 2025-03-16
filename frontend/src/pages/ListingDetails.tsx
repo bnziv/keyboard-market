@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
+import { formatDate, titleCase } from "@/utils/helpers"
 
 interface Listing {
     id: string,
@@ -73,26 +74,6 @@ export default function ListingDetailsPage() {
             </div>
         )
     }
-
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "";
-        const date = new Date(dateString)
-        const showYear = date.getFullYear() !== new Date().getFullYear()
-
-        return date.toLocaleDateString("en-US", {
-            year: showYear ? "numeric" : undefined,
-            month: "short",
-            day: "numeric",
-        })
-    }
-
-    const titleCase = (str: string) => {
-        return str
-          .toLowerCase()
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
 
     return (
         <div className="min-h-screen flex flex-col scrollbar-gutter">
