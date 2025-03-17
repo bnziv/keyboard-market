@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Ensure gradlew is executable
-        run: chmod +x ./gradlew
+        run: chmod +x ./backend/gradlew
 
       - name: Build Docker Image
         run: |
