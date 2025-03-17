@@ -3,7 +3,7 @@ name: Deploy Spring Boot on AWS EC2
 on:
   push:
     branches:
-      - main  # Change to 'deploy' if using a separate deploy branch
+      - main
     paths:
       - backend/**
 
@@ -41,4 +41,5 @@ jobs:
             docker run -d --name kbm-backend -p 8080:8080 --restart always \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e CORS_ORIGINS=${{ secrets.CORS_ORIGINS }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/kbm-backend:latest
