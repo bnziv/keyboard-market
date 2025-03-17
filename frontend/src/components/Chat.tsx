@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Avatar } from './ui/avatar';
+import { X } from 'lucide-react';
 import axios from 'axios';
 
 interface Message {
@@ -19,13 +20,68 @@ interface ChatProps {
   currentUserId: string;
   otherUserId: string;
   otherUserName: string;
+  onClose: () => void;
+  position?: { x: number; y: number };
 }
 
-export function Chat({ currentUserId, otherUserId, otherUserName }: ChatProps) {
+const CHAT_WIDTH = 400;
+const CHAT_HEIGHT = 600;
+const SCREEN_MARGIN = 20;
+
+export function Chat({ currentUserId, otherUserId, otherUserName, onClose, position }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [windowPosition, setWindowPosition] = useState(position || { x: 20, y: 20 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target instanceof HTMLElement && e.target.closest('.chat-header')) {
+      setIsDragging(true);
+      document.body.classList.add('no-select');
+      const rect = e.currentTarget.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      const newX = Math.min(
+        Math.max(e.clientX - dragOffset.x, SCREEN_MARGIN),
+        window.innerWidth - CHAT_WIDTH - SCREEN_MARGIN
+      );
+      const newY = Math.min(
+        Math.max(e.clientY - dragOffset.y, SCREEN_MARGIN),
+        window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN
+      );
+      
+      setWindowPosition({
+        x: newX,
+        y: newY
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    document.body.classList.remove('no-select');
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
 
   useEffect(() => {
     // Load chat history
@@ -108,64 +164,102 @@ export function Chat({ currentUserId, otherUserId, otherUserName }: ChatProps) {
     scrollToBottom();
   }, [messages, newMessage]);
 
-  return (
-    <Card className="flex flex-col h-[600px] w-full max-w-2xl mx-auto">
-      <div className="flex items-center p-4 border-b">
-        <Avatar className="h-10 w-10">
-          <div className="rounded-full bg-muted h-full w-full flex items-center justify-center">
-            {otherUserName[0].toUpperCase()}
-          </div>
-        </Avatar>
-        <span className="ml-3 font-medium">{otherUserName}</span>
-      </div>
+  // Add window resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowPosition(prev => ({
+        x: Math.min(prev.x, window.innerWidth - CHAT_WIDTH - SCREEN_MARGIN),
+        y: Math.min(prev.y, window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN)
+      }));
+    };
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <span>Loading messages...</span>
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <>
+      <style>
+        {`
+        .no-select {
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+        }
+        `}
+      </style>
+      <Card 
+        className="fixed flex flex-col h-[600px] w-[400px] shadow-lg z-50"
+        style={{
+          left: `${windowPosition.x}px`,
+          top: `${windowPosition.y}px`,
+          cursor: isDragging ? 'grabbing' : 'default'
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <div className="chat-header flex items-center justify-between p-4 border-b cursor-grab">
+          <div className="flex items-center">
+            <Avatar className="h-10 w-10">
+              <div className="rounded-full bg-muted h-full w-full flex items-center justify-center">
+                {otherUserName[0].toUpperCase()}
+              </div>
+            </Avatar>
+            <span className="ml-3 font-medium">{otherUserName}</span>
           </div>
-        ) : messages.length === 0 ? (
-          <div className="flex justify-center items-center h-full text-muted-foreground">
-            <span>No messages yet. Start the conversation!</span>
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <div
-              key={message.id || `${message.senderId}-${message.timestamp}-${index}`}
-              className={`flex ${
-                message.senderId === currentUserId ? 'justify-end' : 'justify-start'
-              }`}
-            >
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <span>Loading messages...</span>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex justify-center items-center h-full text-muted-foreground">
+              <span>No messages yet. Start the conversation!</span>
+            </div>
+          ) : (
+            messages.map((message, index) => (
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  message.senderId === currentUserId
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                key={message.id || `${message.senderId}-${message.timestamp}-${index}`}
+                className={`flex ${
+                  message.senderId === currentUserId ? 'justify-end' : 'justify-start'
                 }`}
               >
-                <p className="break-words">{message.content}</p>
-                {message.timestamp && (
-                  <span className="text-xs opacity-70">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </span>
-                )}
+                <div
+                  className={`max-w-[70%] rounded-lg p-3 ${
+                    message.senderId === currentUserId
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  }`}
+                >
+                  <p className="break-words">{message.content}</p>
+                  {message.timestamp && (
+                    <span className="text-xs opacity-70">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-      <div className="p-4 border-t flex gap-2">
-        <Input
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type a message..."
-          className="flex-1"
-        />
-        <Button onClick={handleSend}>Send</Button>
-      </div>
-    </Card>
+        <div className="p-4 border-t flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type a message..."
+            className="flex-1"
+          />
+          <Button onClick={handleSend}>Send</Button>
+        </div>
+      </Card>
+    </>
   );
 }

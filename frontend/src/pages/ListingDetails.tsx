@@ -10,6 +10,7 @@ import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
+import { Chat } from "@/components/Chat"
 
 interface Listing {
     id: string,
@@ -34,6 +35,8 @@ export default function ListingDetailsPage() {
     const { showInfo } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
+    const [showChat, setShowChat] = useState(false)
+    const [chatPosition, setChatPosition] = useState({ x: 20, y: 20 })
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -52,6 +55,12 @@ export default function ListingDetailsPage() {
     }, [id])
     
     const handleContactSeller = () => {
+        setShowChat(true)
+        // Position the chat window at the bottom right of the screen
+        setChatPosition({
+            x: window.innerWidth - 420, // 400px width + 20px margin
+            y: window.innerHeight - 620 // 600px height + 20px margin
+        })
     }
 
     const toggleFavorite = () => {
@@ -134,7 +143,11 @@ export default function ListingDetailsPage() {
                         </Card>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Button className="flex-1" size="lg" onClick={handleContactSeller}>
+                            <Button 
+                                className="flex-1 contact-seller-button" 
+                                size="lg" 
+                                onClick={handleContactSeller}
+                            >
                                 <MessageCircle className="mr-2 h-5 w-5" />
                                 Contact Seller
                             </Button>
@@ -212,6 +225,16 @@ export default function ListingDetailsPage() {
                     </div>
                 </div>
             </main>
+
+            {showChat && (
+                <Chat
+                    currentUserId={"67b0f08ddcd44305a20c9966"}
+                    otherUserId={"67ab8c2d5659cf51dbe10c8d"}
+                    otherUserName={"John Doe"}
+                    onClose={() => setShowChat(false)}
+                    position={chatPosition}
+                />
+            )}
         </div>
     )
 }
