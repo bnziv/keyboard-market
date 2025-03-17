@@ -36,14 +36,16 @@ export default function ListingCard({ id, title, price, offers, condition, image
       <CardContent className="p-4">
         <Link to={`/listings/${id}`} className="group">
         <h3 className="truncate group-hover:underline">{title}</h3>
-        <div className="flex items-center justify-between mt-2 ">
-          <div>
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-2">
             {price ? (
-              <p className="font-medium group-hover:underline">${parseFloat(price.toFixed(2))}</p>
+              <>
+                <p className="text-lg font-medium group-hover:underline">${parseFloat(price.toFixed(2))}</p>
+                {offers && <span className="text-sm text-muted-foreground group-hover:underline mt-1">or best offer</span>}
+              </>
             ) : (
-              <p className="font-medium group-hover:underline">Open to Offers</p>
+              <p className="text-lg font-medium group-hover:underline">Open to Offers</p>
             )}
-            {offers && price && <p className="text-sm text-muted-foreground group-hover:underline">Or Best Offer</p>}
           </div>
           <Badge variant="secondary">{condition && titleCase(condition)}</Badge> 
         </div>

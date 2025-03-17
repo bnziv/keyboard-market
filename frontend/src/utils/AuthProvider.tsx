@@ -3,10 +3,16 @@ import { useLocation } from "react-router-dom"
 import axios from "axios"
 import API_URL from "@/utils/config"
 
+interface User {
+  id: string;
+  username: string;
+}
+
 interface AuthContextType {
-  isAuthenticated: boolean
-  login: () => void
-  logout: () => void
+  isAuthenticated: boolean;
+  user: User | null;
+  login: (userData: User) => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -14,6 +20,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [user, setUser] = useState<User | null>(null)
   
   useEffect(() => {
     validateAuth()
@@ -21,15 +28,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const validateAuth = async () => {
     try {
-      await axios.get(`${API_URL}/api/auth/me`, { withCredentials: true })
+      const response = await axios.get(`${API_URL}/api/auth/me`, { withCredentials: true })
       setIsAuthenticated(true)
+      setUser(response.data)
     } catch (error) {
       setIsAuthenticated(false)
+      setUser(null)
     }
   }
   
-  const login = () => {
+  const login = (userData: User) => {
     setIsAuthenticated(true)
+    setUser(userData)
   }
 
   const logout = async () => {
@@ -37,11 +47,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true })
     } finally {
       setIsAuthenticated(false)
+      setUser(null)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

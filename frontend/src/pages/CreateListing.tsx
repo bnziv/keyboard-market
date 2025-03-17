@@ -18,7 +18,7 @@ export default function CreateListing() {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        price: 0,
+        price: "",
         condition: "",
         imageUrl: "",
         offers: false
@@ -48,7 +48,7 @@ export default function CreateListing() {
         return false
       }
 
-      if (formData.price < 0) {
+      if (parseFloat(formData.price) <= 0) {
         showError("Price cannot be negative")
         return false
       }

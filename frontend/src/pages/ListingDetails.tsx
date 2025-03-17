@@ -10,6 +10,8 @@ import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
+import { Chat } from "@/components/Chat"
+import { useAuth } from "@/utils/AuthProvider"
 
 interface Listing {
     id: string,
@@ -31,9 +33,12 @@ interface Listing {
 export default function ListingDetailsPage() {
     const params = useParams()
     const id = params.id as string
-    const { showInfo } = useToast()
+    const { showInfo, showError } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
+    const [showChat, setShowChat] = useState(false)
+    const [chatPosition, setChatPosition] = useState({ x: 20, y: 20 })
+    const { user, isAuthenticated } = useAuth()
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -52,6 +57,20 @@ export default function ListingDetailsPage() {
     }, [id])
     
     const handleContactSeller = () => {
+        if (!isAuthenticated) {
+            showError("Please login to contact the seller")
+            return
+        }
+        if (user?.id == listing.seller.id) {
+            showInfo("This is your own listing")
+            return
+        }
+        setShowChat(true)
+        // Position the chat window at the bottom right of the screen
+        setChatPosition({
+            x: window.innerWidth - 420, // 400px width + 20px margin
+            y: window.innerHeight - 620 // 600px height + 20px margin
+        })
     }
 
     const toggleFavorite = () => {
@@ -134,7 +153,11 @@ export default function ListingDetailsPage() {
                         </Card>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Button className="flex-1" size="lg" onClick={handleContactSeller}>
+                            <Button 
+                                className="flex-1 contact-seller-button" 
+                                size="lg" 
+                                onClick={handleContactSeller}
+                            >
                                 <MessageCircle className="mr-2 h-5 w-5" />
                                 Contact Seller
                             </Button>
@@ -170,7 +193,7 @@ export default function ListingDetailsPage() {
                                 ) : (
                                     <p className="text-3xl font-bold">Open to Offers</p>
                                 )}
-                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">{listing.offers ? "Offers" : "Or Best Offer"}</p>}
+                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">or Best Offer</p>}
                             </div>
 
                             <div className="flex space-x-2">
@@ -212,6 +235,16 @@ export default function ListingDetailsPage() {
                     </div>
                 </div>
             </main>
+
+            {showChat && user && (
+                <Chat
+                    currentUserId={user.id}
+                    otherUserId={listing.seller.id}
+                    otherUserName={listing.seller.username}
+                    onClose={() => setShowChat(false)}
+                    position={chatPosition}
+                />
+            )}
         </div>
     )
 }
