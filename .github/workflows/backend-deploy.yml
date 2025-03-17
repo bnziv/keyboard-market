@@ -3,7 +3,7 @@ name: Deploy Spring Boot on AWS EC2
 on:
   push:
     branches:
-      - main  # Change to 'deploy' if using a separate deploy branch
+      - main
     paths:
       - backend/**
 
