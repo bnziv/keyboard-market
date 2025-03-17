@@ -15,26 +15,37 @@ export interface ListingCardProps {
 
 export default function ListingCard({ id, title, price, offers, condition, imageUrl }: ListingCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden group">
       <CardHeader className="p-0">
         <Link to={`/listings/${id}`}>
           <div className="h-48 relative">
             {imageUrl ? (
-              <img 
-                src={imageUrl} 
-                alt={title} 
-                className="object-cover w-full h-full"
-              />
+              <>
+                <div className="absolute inset-0 overflow-hidden">
+                  <img 
+                    src={imageUrl} 
+                    alt={title} 
+                    className="object-cover blur-md scale-110 opacity-50 w-full h-full"
+                  />
+                </div>
+                <div className="relative w-full h-full">
+                  <img 
+                    src={imageUrl} 
+                    alt={title} 
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center w-full h-full">
-                <KeyboardIcon className="p-16" />
+                <KeyboardIcon className="p-8" />
               </div>
             )}
           </div>
         </Link>
       </CardHeader>
       <CardContent className="p-4">
-        <Link to={`/listings/${id}`} className="group">
+        <Link to={`/listings/${id}`} >
         <h3 className="truncate group-hover:underline">{title}</h3>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
