@@ -17,7 +17,9 @@ public class ListingService {
         Listing listing = new Listing();
         listing.setTitle(listingRequest.getTitle());
         listing.setDescription(listingRequest.getDescription());
-        listing.setPrice(listingRequest.getPrice());
+        if (listingRequest.getPrice() != null) {
+            listing.setPrice(listingRequest.getPrice());
+        }
         listing.setCondition(listingRequest.getCondition());
         listing.setOffers(listingRequest.isOffers());
         if (listingRequest.getImageUrl() != null && !listingRequest.getImageUrl().isBlank()) {

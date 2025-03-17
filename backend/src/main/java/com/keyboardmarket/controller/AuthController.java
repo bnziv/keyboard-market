@@ -40,8 +40,12 @@ public class AuthController {
         String token = userService.loginUser(loginRequest);
         addJwtCookie(response, token);
         
+        String userId = jwtUtil.getUserIdFromToken(token);
+        User user = userService.getUserById(userId);
         Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", "Login successful");
+        responseBody.put("id", user.getId());
+        responseBody.put("username", user.getUsername());
+        
         return ResponseEntity.ok(responseBody);
     }
 
@@ -62,7 +66,13 @@ public class AuthController {
         if (token == null || !jwtUtil.validateToken(token)) {
             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok().build();
+        String userId = jwtUtil.getUserIdFromToken(token);
+        User user = userService.getUserById(userId);
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("id", user.getId());
+        responseBody.put("username", user.getUsername());
+        
+        return ResponseEntity.ok(responseBody);
     }
 
     private void addJwtCookie(HttpServletResponse response, String token) {

@@ -83,7 +83,7 @@ export default function Login() {
         )
 
         if (response.status === 200) {
-          login()
+          login(response.data)
           showSuccess("Login successful")
           setTimeout(() => navigate("/listings"), 2000)
         }

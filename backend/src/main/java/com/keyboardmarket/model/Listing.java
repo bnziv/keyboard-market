@@ -22,7 +22,7 @@ public class Listing {
     @Size(max = 1000, message = "Description cannot be longer than 1000 characters")
     private String description;
 
-    private double price;
+    private Double price;
     private boolean offers;
 
     @NotBlank(message = "Condition cannot be empty")

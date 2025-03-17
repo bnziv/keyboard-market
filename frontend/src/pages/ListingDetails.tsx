@@ -11,6 +11,7 @@ import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
 import { Chat } from "@/components/Chat"
+import { useAuth } from "@/utils/AuthProvider"
 
 interface Listing {
     id: string,
@@ -32,11 +33,12 @@ interface Listing {
 export default function ListingDetailsPage() {
     const params = useParams()
     const id = params.id as string
-    const { showInfo } = useToast()
+    const { showInfo, showError } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
     const [showChat, setShowChat] = useState(false)
     const [chatPosition, setChatPosition] = useState({ x: 20, y: 20 })
+    const { user, isAuthenticated } = useAuth()
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -55,6 +57,14 @@ export default function ListingDetailsPage() {
     }, [id])
     
     const handleContactSeller = () => {
+        if (!isAuthenticated) {
+            showError("Please login to contact the seller")
+            return
+        }
+        if (user?.id == listing.seller.id) {
+            showInfo("This is your own listing")
+            return
+        }
         setShowChat(true)
         // Position the chat window at the bottom right of the screen
         setChatPosition({
@@ -183,7 +193,7 @@ export default function ListingDetailsPage() {
                                 ) : (
                                     <p className="text-3xl font-bold">Open to Offers</p>
                                 )}
-                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">{listing.offers ? "Offers" : "Or Best Offer"}</p>}
+                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">or Best Offer</p>}
                             </div>
 
                             <div className="flex space-x-2">
@@ -226,11 +236,11 @@ export default function ListingDetailsPage() {
                 </div>
             </main>
 
-            {showChat && (
+            {showChat && user && (
                 <Chat
-                    currentUserId={"67b0f08ddcd44305a20c9966"}
-                    otherUserId={"67ab8c2d5659cf51dbe10c8d"}
-                    otherUserName={"John Doe"}
+                    currentUserId={user.id}
+                    otherUserId={listing.seller.id}
+                    otherUserName={listing.seller.username}
                     onClose={() => setShowChat(false)}
                     position={chatPosition}
                 />

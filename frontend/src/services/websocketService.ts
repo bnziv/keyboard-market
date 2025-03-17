@@ -23,7 +23,7 @@ class WebSocketService {
     this.client = new Client({
       webSocketFactory: () => socket,
       debug: (str: string) => {
-        console.log(str);
+        // console.log(str);
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
@@ -31,7 +31,7 @@ class WebSocketService {
     });
 
     this.client.onConnect = () => {
-      console.log('Connected to WebSocket');
+      // console.log('Connected to WebSocket');
       this.subscribeToPersonalMessages(userId);
     };
 
@@ -47,7 +47,7 @@ class WebSocketService {
 
     this.client.subscribe(`/user/${userId}/topic/messages`, (message: Message) => {
       const chatMessage: ChatMessage = JSON.parse(message.body);
-      console.log('Received message:', chatMessage);
+      // console.log('Received message:', chatMessage);
       this.notifyHandlers(chatMessage);
     });
   }

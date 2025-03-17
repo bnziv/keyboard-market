@@ -65,7 +65,9 @@ public class ListingController {
         ListingDetailsResponse response = new ListingDetailsResponse();
         response.setId(listing.getId());
         response.setTitle(listing.getTitle());
-        response.setPrice(listing.getPrice());
+        if (listing.getPrice() != null) {
+            response.setPrice(listing.getPrice());
+        }
         response.setOffers(listing.isOffers());
         response.setDescription(listing.getDescription());
         response.setCondition(listing.getCondition());

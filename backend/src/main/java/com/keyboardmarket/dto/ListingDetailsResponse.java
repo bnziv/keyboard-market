@@ -7,7 +7,7 @@ import java.time.Instant;
 public class ListingDetailsResponse {
     private String id;
     private String title;
-    private double price;
+    private Double price;
     private boolean offers;
     private String description;
     private String condition;

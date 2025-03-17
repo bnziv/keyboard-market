@@ -10,7 +10,6 @@ export default function Listings() {
     useEffect(() => {
         axios.get(`${API_URL}/api/listings/all`).then((res) => {
             setListings(res.data);
-            console.log(res.data);
         })
     }, []);
     
