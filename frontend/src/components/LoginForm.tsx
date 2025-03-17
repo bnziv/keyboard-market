@@ -94,7 +94,7 @@ export default function LoginForm() {
       }
     } else {
       try {
-        const response = await axios.post(`${API_URL}/localhost:8080/api/auth/register`, 
+        const response = await axios.post(`${API_URL}/api/auth/register`, 
             {
               email: formData.email,
               username: formData.username,

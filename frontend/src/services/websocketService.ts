@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client, Message, Frame } from '@stomp/stompjs';
+import API_URL from '@/utils/config';
 
 interface ChatMessage {
   id?: string;
@@ -19,12 +20,12 @@ class WebSocketService {
       return;
     }
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(`${API_URL}/ws`);
     this.client = new Client({
       webSocketFactory: () => socket,
-      debug: (str: string) => {
-        // console.log(str);
-      },
+      // debug: (str: string) => {
+      //   console.log(str);
+      // },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

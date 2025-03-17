@@ -6,6 +6,7 @@ import { Card } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { X } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '@/utils/config';
 
 interface Message {
   id?: string;
@@ -87,7 +88,7 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
     // Load chat history
     const loadChatHistory = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/chat/history`, {
+        const response = await axios.get(`${API_URL}/api/chat/history`, {
           params: {
             userId1: currentUserId,
             userId2: otherUserId
