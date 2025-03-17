@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "./ui/button"
 import { useAuth } from '@/utils/AuthProvider';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import LoginForm from '@/components/LoginForm';
 
 export default function NavBar() {
   const location = useLocation();
@@ -18,7 +20,7 @@ export default function NavBar() {
           </Button>
           {isAuthenticated ? (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant={location.pathname === "/create-listing" ? "default" : "ghost"} asChild>
                 <Link to="/create-listing">Create Listing</Link>
               </Button>
               <span className="text-sm text-muted-foreground">
@@ -29,9 +31,14 @@ export default function NavBar() {
               </Button>
             </>
           ) : (
-            <Button variant={location.pathname === "/login" ? "default" : "ghost"} asChild>
-              <Link to="/login">Login</Link>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="default">Login</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
+                <LoginForm />
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import axios from "axios"
 import API_URL from "@/utils/config"
+import { useToast } from "./ToastProvider";
 
 interface User {
   id: string;
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { showSuccess } = useToast()
   
   useEffect(() => {
     validateAuth()
@@ -52,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsAuthenticated(false)
       setUser(null)
+      showSuccess("Logged out successfully")
     }
   }
 
