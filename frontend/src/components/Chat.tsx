@@ -3,7 +3,7 @@ import { websocketService } from '../services/websocketService';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Avatar } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { X } from 'lucide-react';
 import axios from 'axios';
 
@@ -200,10 +200,9 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
       >
         <div className="chat-header flex items-center justify-between p-4 border-b cursor-grab">
           <div className="flex items-center">
-            <Avatar className="h-10 w-10">
-              <div className="rounded-full bg-muted h-full w-full flex items-center justify-center">
-                {otherUserName[0].toUpperCase()}
-              </div>
+            <Avatar className="h-8 w-8">
+                <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${otherUserName}&backgroundType=gradientLinear`} />
+                <AvatarFallback>{otherUserName[0]}</AvatarFallback>
             </Avatar>
             <span className="ml-3 font-medium">{otherUserName}</span>
           </div>

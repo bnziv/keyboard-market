@@ -4,7 +4,6 @@ import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetails';
 import CreateListing from './pages/CreateListing';
 import Login from './pages/Login';
-import { ChatTest } from './pages/ChatTest';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { AuthProvider } from './utils/AuthProvider';
 import { ToastProvider } from './utils/ToastProvider';
@@ -24,7 +23,6 @@ export default function App() {
           <Route path="/create-listing" element={<CreateListing />} />
         </Route>
         <Route path="/login" element={<Login />} />
-        <Route path="/chat-test" element={<ChatTest />} />
       </Routes>
       </ToastProvider>
       </AuthProvider>
