@@ -1,8 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "./ui/button"
+import { useAuth } from '@/utils/AuthProvider';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import LoginForm from '@/components/LoginForm';
 
 export default function NavBar() {
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <nav className="border-b">
@@ -14,9 +18,28 @@ export default function NavBar() {
           <Button variant={location.pathname === "/listings" ? "default" : "ghost"} asChild>
             <Link to="/listings">Listings</Link>
           </Button>
-          <Button variant={location.pathname === "/login" ? "default" : "ghost"} asChild>
-            <Link to="/login">Login</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button variant={location.pathname === "/create-listing" ? "default" : "ghost"} asChild>
+                <Link to="/create-listing">Create Listing</Link>
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {user?.username}
+              </span>
+              <Button variant="ghost" onClick={logout}>
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="default">Login</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
+                <LoginForm />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </nav>

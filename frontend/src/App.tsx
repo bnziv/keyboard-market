@@ -12,8 +12,8 @@ import { Toaster } from '@/components/ui/sonner';
 export default function App() {
   return (
     <BrowserRouter>
-    <AuthProvider>
       <ToastProvider>
+      <AuthProvider>
       <Toaster duration={3000} position="top-center"/>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -24,8 +24,8 @@ export default function App() {
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
-      </ToastProvider>
       </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

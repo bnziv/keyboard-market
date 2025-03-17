@@ -103,46 +103,48 @@ export default function CreateListing() {
               <Textarea id="description" placeholder="Describe your item" value={formData.description} onChange={handleFormChange} />
             </div>
             <div className="space-y-3">
-              <div className="flex items-center gap-8">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <Label>Price</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      placeholder="Enter price in USD"
-                      onChange={handleFormChange}
-                      value={formData.price}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Price</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Enter price in USD"
+                    onChange={handleFormChange}
+                    value={formData.price}
+                  />
+                </div>
+
+                <div className="-ml-12">
+                  <Label className="text-center block">Open to Offers</Label>
+                  <div className="flex justify-center pt-2">
+                    <Checkbox 
+                      id="offers" 
+                      checked={formData.offers}
+                      onCheckedChange={(checked) => {
+                        setFormData({
+                          ...formData, 
+                          offers: checked as boolean,
+                        })
+                      }}
                     />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 mt-6">
-                  <Checkbox 
-                    id="offers" 
-                    checked={formData.offers}
-                    onCheckedChange={(checked) => {
-                      setFormData({
-                        ...formData, 
-                        offers: checked as boolean,
-                      })
-                    }}
-                  />
-                  <Label htmlFor="offers">Open to Offers</Label>
+
+                <div>
+                  <Label>Condition</Label>
+                  <Select onValueChange={(value) => { setFormData({...formData, condition: value}) }}>
+                    <SelectTrigger id="condition">
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="like new">Like New</SelectItem>
+                      <SelectItem value="used">Used</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </div>
-            <div>
-              <Label>Condition</Label>
-              <Select onValueChange={(value) => { setFormData({...formData, condition: value}) }}>
-                <SelectTrigger id="condition">
-                  <SelectValue placeholder="Select condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="like new">Like New</SelectItem>
-                  <SelectItem value="used">Used</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
                 <Label>Images</Label>

@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,7 +9,7 @@ import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
 import API_URL from "@/utils/config"
 
-export default function Login() {
+export default function LoginForm() {
   const { showError, showSuccess } = useToast()
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -72,7 +71,7 @@ export default function Login() {
     e.preventDefault()
     if (!validateForm()) return false
 
-    if (activeTab === "login") { // Login
+    if (activeTab === "login") {
       try {
         const response = await axios.post(`${API_URL}/api/auth/login`, 
           {
@@ -85,7 +84,6 @@ export default function Login() {
         if (response.status === 200) {
           login(response.data)
           showSuccess("Login successful")
-          setTimeout(() => navigate("/listings"), 2000)
         }
       } catch (error: any) {
         if (error.response?.data) {
@@ -94,60 +92,58 @@ export default function Login() {
           showError("Failed to login")
         }
       }
-    } else { // Register
+    } else {
       try {
-        const response = await axios.post(`${API_URL}/api/auth/register`, 
-          {
-            email: formData.email,
-            username: formData.username,
-            password: formData.password
-          },
-          { withCredentials: true }
-        )
-
-        if (response.status === 200) {
-          login(response.data)
-          showSuccess("Registration successful")
-          setTimeout(() => navigate("/listings"), 2000)
+        const response = await axios.post(`${API_URL}/localhost:8080/api/auth/register`, 
+            {
+              email: formData.email,
+              username: formData.username,
+              password: formData.password
+            },
+            { withCredentials: true }
+          )
+  
+          if (response.status === 200) {
+            login(response.data)
+            showSuccess("Registration successful")
+            setTimeout(() => navigate("/listings"), 2000)
+          }
+        } catch (error: any) {
+          if (error.response?.data) {
+            showError(error.response.data.error)
+          } else {
+            showError("Failed to register")
+          }
         }
-      } catch (error: any) {
-        if (error.response?.data) {
-          showError(error.response.data.error)
-        } else {
-          showError("Failed to register")
-        }
-      }
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <NavBar />
-      <main className="flex-1 py-24">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
-          </TabsList>
-          <TabsContent value="login">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div>
-                <Label>Email/Username</Label>
-                <Input name="identifier" placeholder="Enter your email or username" 
-                onChange={handleChange} value={formData.identifier} />
-              </div>
-              <div>
-                <Label>Password</Label>
-                <Input name="password" type="password" placeholder="Enter your password"
-                onChange={handleChange} value={formData.password} />
-              </div>
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </form>
-          </TabsContent>
-          <TabsContent value="register">
-            <form className="space-y-4" onSubmit={handleSubmit}>
+    <>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="login">Login</TabsTrigger>
+          <TabsTrigger value="register">Register</TabsTrigger>
+        </TabsList>
+        <TabsContent value="login">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <Label>Email/Username</Label>
+              <Input name="identifier" placeholder="Enter your email or username" 
+              onChange={handleChange} value={formData.identifier} />
+            </div>
+            <div>
+              <Label>Password</Label>
+              <Input name="password" type="password" placeholder="Enter your password"
+              onChange={handleChange} value={formData.password} />
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </form>
+        </TabsContent>
+        <TabsContent value="register">
+        <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <Label>Email</Label>
                 <Input name="email" type="email" placeholder="Enter your email" 
@@ -172,9 +168,8 @@ export default function Login() {
                 Register
               </Button>
             </form>
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+        </TabsContent>
+      </Tabs>
+    </>
   )
-}
+} 
