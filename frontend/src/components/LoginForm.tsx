@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
-import API_URL from "@/utils/config"
+import { DialogTitle, DialogDescription } from "./ui/dialog"
 
 export default function LoginForm() {
   const { showError, showSuccess } = useToast()
@@ -73,7 +73,7 @@ export default function LoginForm() {
 
     if (activeTab === "login") {
       try {
-        const response = await axios.post(`${API_URL}/api/auth/login`, 
+        const response = await axios.post(`/api/auth/login`, 
           {
             identifier: formData.identifier,
             password: formData.password
@@ -94,7 +94,7 @@ export default function LoginForm() {
       }
     } else {
       try {
-        const response = await axios.post(`${API_URL}/api/auth/register`, 
+        const response = await axios.post(`/api/auth/register`, 
             {
               email: formData.email,
               username: formData.username,
@@ -120,6 +120,8 @@ export default function LoginForm() {
 
   return (
     <>
+    <DialogTitle/>
+    <DialogDescription/> {/* To avoid errors */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
