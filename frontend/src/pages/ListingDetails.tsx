@@ -13,6 +13,7 @@ import API_URL from "@/utils/config"
 import { ChatManager } from '@/components/ChatManager'
 import { useAuth } from "@/utils/AuthProvider"
 import { Chat } from "@/components/Chat"
+import { useChat } from '@/utils/ChatProvider'
 
 interface Listing {
     id: string,
@@ -37,9 +38,8 @@ export default function ListingDetailsPage() {
     const { showInfo, showError } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
-    const [showChat, setShowChat] = useState(false)
-    const [chatPosition, setChatPosition] = useState({ x: 20, y: 20 })
     const { user, isAuthenticated } = useAuth()
+    const { startChat } = useChat()
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -62,16 +62,11 @@ export default function ListingDetailsPage() {
             showError("Please login to contact the seller")
             return
         }
-        if (user?.id == listing.seller.id) {
+        if (user?.id === listing.seller.id) {
             showInfo("This is your own listing")
             return
         }
-        setShowChat(true)
-        // Position the chat window at the bottom right of the screen
-        setChatPosition({
-            x: window.innerWidth - 420, // 400px width + 20px margin
-            y: window.innerHeight - 620 // 600px height + 20px margin
-        })
+        startChat(listing.seller.id, listing.seller.username)
     }
 
     const toggleFavorite = () => {

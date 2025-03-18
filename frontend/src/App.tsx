@@ -9,23 +9,27 @@ import { AuthProvider } from './utils/AuthProvider';
 import { ToastProvider } from './utils/ToastProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { ChatManager } from '@/components/ChatManager';
+import { ChatProvider } from '@/utils/ChatProvider';
+
 export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-      <AuthProvider>
-      <Toaster duration={3000} position="top-center"/>
-      <ChatManager />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/listings" element={<Listings />} />
-        <Route path="/listings/:id" element={<ListingDetails />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/create-listing" element={<CreateListing />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-      </Routes>
-      </AuthProvider>
+        <AuthProvider>
+          <ChatProvider>
+            <Toaster duration={3000} position="top-center"/>
+            <ChatManager />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/listings" element={<Listings />} />
+              <Route path="/listings/:id" element={<ListingDetails />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/create-listing" element={<CreateListing />} />
+              </Route>
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </ChatProvider>
+        </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
   );

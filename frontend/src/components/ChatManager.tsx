@@ -1,29 +1,19 @@
-import { useState } from 'react';
 import { Chat } from './Chat';
 import { ConversationsList } from './ConversationsList';
 import { useAuth } from '@/utils/AuthProvider';
 import { Button } from './ui/button';
 import { MessageCircle } from 'lucide-react';
+import { useChat } from '@/utils/ChatProvider';
 
 export function ChatManager() {
-  const [activeChat, setActiveChat] = useState<{
-    userId: string;
-    username: string;
-  } | null>(null);
   const { user } = useAuth();
-  const [showConversations, setShowConversations] = useState(true);
-
-  const handleSelectConversation = (userId: string, username: string) => {
-    setActiveChat({ userId, username });
-  };
-
-  const handleCloseChat = () => {
-    setActiveChat(null);
-  };
-
-  const onToggleConversations = () => {
-    setShowConversations(!showConversations);
-  };
+  const { 
+    activeChat, 
+    showConversations, 
+    startChat, 
+    closeChat, 
+    toggleConversations 
+  } = useChat();
 
   if (!user) {
     return null;
@@ -31,27 +21,27 @@ export function ChatManager() {
 
   return (
     <>
-    <Button
+      <Button
         variant="default"
         size="icon"
         className="fixed bottom-10 right-10 rounded-full h-12 w-12 shadow-lg"
-        onClick={onToggleConversations}
+        onClick={toggleConversations}
       >
         <MessageCircle className="h-8 w-8" />
       </Button>
-      {showConversations && user && (
+      {showConversations && (
         <ConversationsList
-          currentUserId={user?.id}
-          onSelectConversation={handleSelectConversation}
-          onClose={onToggleConversations}
+          currentUserId={user.id}
+          onSelectConversation={startChat}
+          onClose={toggleConversations}
         />
       )}
-      {activeChat && user && (
+      {activeChat && (
         <Chat
-          currentUserId={user?.id}
+          currentUserId={user.id}
           otherUserId={activeChat.userId}
           otherUserName={activeChat.username}
-          onClose={handleCloseChat}
+          onClose={closeChat}
           position={{ x: window.innerWidth - 420 - (showConversations ? 330 : 0), y: window.innerHeight - 620 }}
         />
       )}
