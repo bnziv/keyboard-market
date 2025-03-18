@@ -10,8 +10,9 @@ import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
-import { Chat } from "@/components/Chat"
+import { ChatManager } from '@/components/ChatManager'
 import { useAuth } from "@/utils/AuthProvider"
+import { Chat } from "@/components/Chat"
 
 interface Listing {
     id: string,
@@ -235,16 +236,6 @@ export default function ListingDetailsPage() {
                     </div>
                 </div>
             </main>
-
-            {showChat && user && (
-                <Chat
-                    currentUserId={user.id}
-                    otherUserId={listing.seller.id}
-                    otherUserName={listing.seller.username}
-                    onClose={() => setShowChat(false)}
-                    position={chatPosition}
-                />
-            )}
         </div>
     )
 }
