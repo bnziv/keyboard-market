@@ -1,6 +1,7 @@
 package com.keyboardmarket.controller;
 
 import com.keyboardmarket.model.ChatMessage;
+import com.keyboardmarket.dto.ConversationDTO;
 import com.keyboardmarket.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -45,5 +46,11 @@ public class ChatController {
         @RequestParam String userId2
     ) {
         return chatService.getChatHistory(userId1, userId2);
+    }
+
+    @GetMapping("/conversations/{userId}")
+    @ResponseBody
+    public List<ConversationDTO> getUserConversations(@PathVariable String userId) {
+        return chatService.getUserConversations(userId);
     }
 }
