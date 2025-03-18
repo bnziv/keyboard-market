@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import axios from "axios"
-import API_URL from "@/utils/config"
 import { useToast } from "./ToastProvider";
 
 interface User {
@@ -32,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const validateAuth = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/me`, { withCredentials: true })
+      const response = await axios.get(`/api/auth/me`, { withCredentials: true })
       setIsAuthenticated(true)
       setUser(response.data)
     } catch (error) {
@@ -50,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true })
+      await axios.post(`/api/auth/logout`, {}, { withCredentials: true })
     } finally {
       setIsAuthenticated(false)
       setUser(null)
