@@ -10,9 +10,7 @@ import { MessageCircle, Heart, Share2 } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
-import { ChatManager } from '@/components/ChatManager'
 import { useAuth } from "@/utils/AuthProvider"
-import { Chat } from "@/components/Chat"
 import { useChat } from '@/utils/ChatProvider'
 
 interface Listing {

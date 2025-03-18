@@ -1,7 +1,7 @@
-import { Chat } from './Chat';
-import { ConversationsList } from './ConversationsList';
+import { Chat } from '@/components/Chat';
+import { ConversationsList } from '@/components/ConversationsList';
 import { useAuth } from '@/utils/AuthProvider';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 import { useChat } from '@/utils/ChatProvider';
 

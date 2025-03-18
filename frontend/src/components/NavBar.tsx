@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import { useAuth } from '@/utils/AuthProvider';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import LoginForm from '@/components/LoginForm';

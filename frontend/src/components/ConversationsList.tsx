@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { ScrollArea } from './ui/scroll-area';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import axios from 'axios';
 import API_URL from '@/utils/config';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 
 interface Conversation {

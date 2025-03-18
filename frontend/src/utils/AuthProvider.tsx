@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import axios from "axios"
-import { useToast } from "./ToastProvider";
+import { useToast } from "@/utils/ToastProvider";
 
 interface User {
   id: string;

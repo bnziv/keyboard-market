@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
-import { DialogTitle, DialogDescription } from "./ui/dialog"
+import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 export default function LoginForm() {
   const { showError, showSuccess } = useToast()

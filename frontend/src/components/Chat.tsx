@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { websocketService } from '../services/websocketService';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card } from './ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { websocketService } from '@/services/websocketService';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { X } from 'lucide-react';
 import axios from 'axios';
 import API_URL from '@/utils/config';
