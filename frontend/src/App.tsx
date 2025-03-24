@@ -10,6 +10,7 @@ import { ToastProvider } from '@/utils/ToastProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { ChatManager } from '@/components/ChatManager';
 import { ChatProvider } from '@/utils/ChatProvider';
+import Profile from '@/pages/Profile'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
                 <Route path="/create-listing" element={<CreateListing />} />
               </Route>
               <Route path="/login" element={<Login />} />
+              <Route path="/profile/:username" element={<Profile />} />
             </Routes>
           </ChatProvider>
         </AuthProvider>

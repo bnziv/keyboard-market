@@ -15,14 +15,22 @@ export default function Listings() {
     
     return (
         <div className="min-h-screen flex flex-col">
-        <NavBar />
-        <main className="flex-1">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-12 px-48">
-                {listings.map((listing) => (
-                <ListingCard key={listing.id} {...listing} />
-                ))}
-            </div>
-        </main>
-    </div>
+            <NavBar />
+            <main className="flex-1 flex">
+                <div className="w-64 p-6 border-r shadow-md">
+                    <div className="space-y-6">
+                        
+                    </div>
+                </div>
+
+                <div className="flex-1">
+                    <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 p-12">
+                        {listings.map((listing) => (
+                            <ListingCard key={listing.id} {...listing} />
+                        ))}
+                    </div>
+                </div>
+            </main>
+        </div>
     );
 }

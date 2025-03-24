@@ -120,18 +120,20 @@ export default function ListingDetailsPage() {
                     )}
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-10 w-10">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-10 w-10">
                                         <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${listing.seller.username}&backgroundType=gradientLinear`} />
                                         <AvatarFallback>{listing.seller.username[0]}</AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <p className="font-medium text-lg">{listing.seller.username}</p>
+                                        <Link to={`/profile/${listing.seller.username}`} className="hover:underline">
+                                            <p className="font-medium text-lg">{listing.seller.username}</p>
                                         <p className="text-sm text-muted-foreground">
                                             {listing.seller.dateJoined && `Joined ${formatDate(listing.seller.dateJoined)}`}
                                         </p>
+                                        </Link>
                                     </div>
-                                </div>
+                                    </div>
 
                                 <div className="mt-4 grid grid-cols-2 gap-4">
                                     {/* <div>

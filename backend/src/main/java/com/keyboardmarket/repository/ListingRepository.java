@@ -7,4 +7,5 @@ import java.util.List;
 public interface ListingRepository extends MongoRepository<Listing, String> {
     List<Listing> findByTitleContainingIgnoreCase(String title);
     long countByUserId(String userId);
+    List<Listing> findByUserId(String userId);
 }

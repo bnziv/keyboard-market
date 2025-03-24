@@ -50,6 +50,17 @@ public class ListingController {
         return ResponseEntity.ok(listing);
     }
 
+    @GetMapping("/username/{username}")
+    public ResponseEntity<List<Listing>> getListingsByUsername(@PathVariable String username) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Listing> listings = listingService.getListingsByUserId(user.getId());
+        return ResponseEntity.ok(listings);
+    }
+    
+
     @GetMapping("/details/{id}")
     public ResponseEntity<ListingDetailsResponse> getListingDetailsById(@PathVariable String id) {
         Listing listing = listingService.getListingById(id);
