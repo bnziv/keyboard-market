@@ -6,13 +6,12 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
-import { Heart, Star, Package, MessageCircle } from "lucide-react"
+import { Star, Package, MessageCircle } from "lucide-react"
 import { useParams } from "react-router-dom"
 import axios from "axios"
 import API_URL from "@/utils/config"
 import { useChat } from "@/utils/ChatProvider"
 import { useAuth } from "@/utils/AuthProvider"
-import { useNavigate } from "react-router-dom"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate } from "@/utils/helpers"
 
@@ -36,7 +35,6 @@ export default function Profile() {
   const { user, isAuthenticated } = useAuth();
   const { startChat } = useChat();
   const { showError, showInfo } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`${API_URL}/api/users/profile/${username}`).then((res) => {
