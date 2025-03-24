@@ -20,22 +20,32 @@ export default function ListingCard({ id, title, price, offers, condition, image
         <Link to={`/listings/${id}`}>
           <div className="h-48 relative">
             {imageUrl ? (
-              <>
-                <div className="absolute inset-0 overflow-hidden">
-                  <img 
-                    src={imageUrl} 
-                    alt={title} 
-                    className="object-cover blur-md scale-110 opacity-50 w-full h-full"
-                  />
-                </div>
-                <div className="relative w-full h-full">
-                  <img 
-                    src={imageUrl} 
-                    alt={title} 
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </>
+              // Blur background image
+              // <>
+              //   <div className="absolute inset-0 overflow-hidden">
+              //     <img 
+              //       src={imageUrl} 
+              //       alt={title} 
+              //       className="object-cover blur-md scale-110 opacity-50 w-full h-full"
+              //     />
+              //   </div>
+              //   <div className="relative w-full h-full">
+              //     <img 
+              //       src={imageUrl} 
+              //       alt={title} 
+              //       className="object-contain w-full h-full"
+              //     />
+              //   </div>
+              // </>
+              
+              // Cover image
+              <div className="relative w-full h-full">
+                <img 
+                  src={imageUrl} 
+                  alt={title} 
+                  className="object-cover w-full h-full"
+                />
+              </div>
             ) : (
               <div className="flex items-center justify-center w-full h-full">
                 <KeyboardIcon className="p-8" />
