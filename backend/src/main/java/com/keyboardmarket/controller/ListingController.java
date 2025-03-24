@@ -2,6 +2,7 @@ package com.keyboardmarket.controller;
 
 import com.keyboardmarket.dto.ListingRequest;
 import com.keyboardmarket.dto.ListingDetailsResponse;
+import com.keyboardmarket.dto.ListingFilter;
 import com.keyboardmarket.model.Listing;
 import com.keyboardmarket.model.User;
 import com.keyboardmarket.service.ListingService;
@@ -14,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequiredArgsConstructor
@@ -91,6 +95,40 @@ public class ListingController {
         sellerInfo.setDateJoined(seller.getDateJoined());
         sellerInfo.setTotalListings(listingService.countListingsByUserId(seller.getId()));
         response.setSeller(sellerInfo);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/filtered")
+    public ResponseEntity<Map<String, Object>> getFilteredListings(
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Boolean offers,
+            @RequestParam(required = false) String condition,
+            @RequestParam(required = false) String title,
+            @RequestParam(defaultValue = "createdOn") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        ListingFilter filter = new ListingFilter();
+        filter.setMinPrice(minPrice);
+        filter.setMaxPrice(maxPrice);
+        filter.setOffers(offers);
+        filter.setCondition(condition);
+        filter.setTitle(title);
+        filter.setSortBy(sortBy);
+        filter.setSortDirection(sortDirection);
+        filter.setPage(page);
+        filter.setSize(size);
+
+        Page<Listing> pageResult = listingService.getFilteredListings(filter);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("listings", pageResult.getContent());
+        response.put("currentPage", pageResult.getNumber());
+        response.put("totalItems", pageResult.getTotalElements());
+        response.put("totalPages", pageResult.getTotalPages());
 
         return ResponseEntity.ok(response);
     }
