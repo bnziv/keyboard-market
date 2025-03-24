@@ -133,6 +133,14 @@ export default function ListingDetailsPage() {
                                         </p>
                                         </Link>
                                     </div>
+                                    <Button 
+                                className="ml-auto bg-blue-500 hover:bg-blue-600" 
+                                size="lg"
+                                onClick={handleContactSeller}
+                                    >
+                                <MessageCircle className="h-5 w-5" />
+                                Message
+                            </Button>
                                     </div>
 
                                 <div className="mt-4 grid grid-cols-2 gap-4">
@@ -147,27 +155,6 @@ export default function ListingDetailsPage() {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button 
-                                className="flex-1 contact-seller-button" 
-                                size="lg" 
-                                onClick={handleContactSeller}
-                            >
-                                <MessageCircle className="mr-2 h-5 w-5" />
-                                Contact Seller
-                            </Button>
-
-                            {listing.offers ? (
-                                <Button variant="outline" className="flex-1" size="lg">
-                                    Make Offer
-                                </Button>
-                              ) : (
-                                <Button variant="outline" className="flex-1" size="lg">
-                                    Submit Offer
-                                </Button>
-                            )}
-                        </div>
                     </div>
 
                     {/* Right column - Details */}
