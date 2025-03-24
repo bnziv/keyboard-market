@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useToast } from "@/utils/ToastProvider";
 
@@ -19,6 +19,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate()
   const location = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(null)
@@ -50,10 +51,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     try {
       await axios.post(`/api/auth/logout`, {}, { withCredentials: true })
-    } finally {
       setIsAuthenticated(false)
       setUser(null)
       showSuccess("Logged out successfully")
+      navigate("/")
+    } catch (error) {
+      // Handle error if needed
     }
   }
 

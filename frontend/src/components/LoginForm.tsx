@@ -110,7 +110,7 @@ export default function LoginForm() {
           }
         } catch (error: any) {
           if (error.response?.data) {
-            showError(error.response.data.error)
+            showError(error.response.data.error || "Failed to register")
           } else {
             showError("Failed to register")
           }
