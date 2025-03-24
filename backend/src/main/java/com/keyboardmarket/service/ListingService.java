@@ -90,10 +90,12 @@ public class ListingService {
         );
 
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), sort);
-        Query query = new Query(criteria).with(pageable);
+        
+        Query countQuery = new Query(criteria);
+        long total = mongoTemplate.count(countQuery, Listing.class);
 
-        long total = mongoTemplate.count(query, Listing.class);
-        List<Listing> listings = mongoTemplate.find(query, Listing.class);
+        Query fetchQuery = new Query(criteria).with(pageable);
+        List<Listing> listings = mongoTemplate.find(fetchQuery, Listing.class);
 
         return new PageImpl<>(listings, pageable, total);
     }
