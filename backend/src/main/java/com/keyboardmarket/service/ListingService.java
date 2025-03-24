@@ -45,4 +45,8 @@ public class ListingService {
     public long countListingsByUserId(String userId) {
         return listingRepository.countByUserId(userId);
     }
+
+    public List<Listing> getListingsByUserId(String userId) {
+        return listingRepository.findByUserId(userId);
+    }
 }
