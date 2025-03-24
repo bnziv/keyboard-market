@@ -126,14 +126,14 @@ export default function Profile() {
                     <Package className="mr-2 h-4 w-4" />
                     Listings
                   </Button>
-                  <Button
+                  {/* <Button
                     variant={activeTab === "favorites" ? "default" : "ghost"}
                     className="w-full justify-start"
                     onClick={() => setActiveTab("favorites")}
                   >
                     <Heart className="mr-2 h-4 w-4" />
                     Favorites
-                  </Button>
+                  </Button> */}
                   <Button
                     variant={activeTab === "reviews" ? "default" : "ghost"}
                     className="w-full justify-start"
@@ -147,7 +147,7 @@ export default function Profile() {
               <CardFooter>
                 <Button className="w-full bg-blue-500 hover:bg-blue-600" size="lg" onClick={handleMessage}>
                   <MessageCircle className="h-5 w-5" />
-                  Messsage
+                  Message
                 </Button>
               </CardFooter>
             </Card>
@@ -162,16 +162,25 @@ export default function Profile() {
                     <CardTitle>{userData.username}'s Listings</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {userListings.map((listing) => (
-                        <ListingCard key={listing.id} {...listing} />
-                      ))}
+                    {userListings.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-medium">
+                          No listings yet
+                        </h3>
                     </div>
+                    ) : (
+                      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {userListings.map((listing) => (
+                          <ListingCard key={listing.id} {...listing} />
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="favorites" className="mt-0">
+              {/* <TabsContent value="favorites" className="mt-0">
                 <Card>
                   <CardHeader>
                     <CardTitle>{userData.username}'s Favorites</CardTitle>
@@ -191,7 +200,7 @@ export default function Profile() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="reviews" className="mt-0">
                 <Card>
