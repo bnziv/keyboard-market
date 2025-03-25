@@ -1,9 +1,23 @@
 import { Button } from "@/components/ui/button"
 import NavBar from "@/components/NavBar"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { KeyboardIcon } from "@/components/KeyboardIcon"
+import { useAuth } from "@/utils/AuthProvider"
+import { useToast } from "@/utils/ToastProvider"
 
 export default function Home() {
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const { showInfo } = useToast()
+
+  const handleCreateListing = () => {
+    if (isAuthenticated) {
+      navigate('/create-listing')
+    } else {
+      showInfo("You must be logged in to create a listing")
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -21,8 +35,8 @@ export default function Home() {
                 <Button asChild>
                     <Link to="/listings">Browse Listings</Link>
                 </Button>
-                <Button variant="outline" asChild>
-                    <Link to="/create-listing">Create a Listing</Link>
+                <Button variant="outline" onClick={handleCreateListing}>
+                    Create a Listing
                 </Button>
                 </div>
             </div>
