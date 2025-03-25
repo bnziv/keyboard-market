@@ -1,11 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button"
 import { useAuth } from '@/utils/AuthProvider';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import LoginForm from '@/components/LoginForm';
+import { ChevronDown, LogOut, User, Package, Plus } from 'lucide-react';
 
 export default function NavBar() {
-  const location = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
 
   return (
@@ -14,22 +15,52 @@ export default function NavBar() {
         <Link to="/" className="text-2xl font-bold">
           Keyboard Market
         </Link>
+
         <div className="flex items-center space-x-4">
-          <Button variant={location.pathname === "/listings" ? "default" : "ghost"} asChild>
-            <Link to="/listings">Listings</Link>
-          </Button>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-1 text-lg">
+                Listings <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem asChild className="text-md">
+                <Link to="/listings" className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  View Listings
+                </Link>
+              </DropdownMenuItem>
+              {isAuthenticated && (
+                <DropdownMenuItem asChild className="text-md">
+                  <Link to="/create-listing" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Listing
+                  </Link>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {isAuthenticated ? (
-            <>
-              <Button variant={location.pathname === "/create-listing" ? "default" : "ghost"} asChild>
-                <Link to="/create-listing">Create Listing</Link>
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {user?.username}
-              </span>
-              <Button variant="ghost" onClick={logout}>
-                Logout
-              </Button>
-            </>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-1 text-lg">
+                  {user?.username} <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild className="text-md">
+                  <Link to={`/profile/${user?.username}`} className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="flex items-center gap-2 text-red-600 text-md">
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Dialog>
               <DialogTrigger asChild>
