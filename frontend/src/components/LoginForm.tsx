@@ -106,7 +106,6 @@ export default function LoginForm() {
           if (response.status === 200) {
             login(response.data)
             showSuccess("Registration successful")
-            setTimeout(() => navigate("/listings"), 2000)
           }
         } catch (error: any) {
           if (error.response?.data) {

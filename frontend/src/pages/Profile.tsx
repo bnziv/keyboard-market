@@ -37,13 +37,21 @@ export default function Profile() {
   const { showError, showInfo } = useToast();
 
   useEffect(() => {
-    axios.get(`${API_URL}/api/users/profile/${username}`).then((res) => {
-      setUserData(res.data);
+    setLoading(true);
+    Promise.all([
+        axios.get(`${API_URL}/api/users/profile/${username}`),
+        axios.get(`${API_URL}/api/listings/username/${username}`)
+    ])
+    .then(([userRes, listingsRes]) => {
+        setUserData(userRes.data);
+        setUserListings(listingsRes.data);
     })
-    axios.get(`${API_URL}/api/listings/username/${username}`).then((res) => {
-        setUserListings(res.data);
+    .catch(error => {
+        console.error("Error fetching profile data:", error);
     })
-    setLoading(false);
+    .finally(() => {
+        setLoading(false);
+    });
   }, [username]);
 
   const handleMessage = () => {
@@ -62,9 +70,6 @@ export default function Profile() {
     return (
       <div className="min-h-screen flex flex-col">
         <NavBar />
-        <main className="flex-1 container py-12 flex items-center justify-center">
-          <p>Loading profile...</p>
-        </main>
       </div>
     )
   }

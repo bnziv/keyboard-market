@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useToast } from "@/utils/ToastProvider";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface User {
   id: string;
@@ -28,6 +29,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     validateAuth()
+  }, [])
+  
+  useEffect(() => {
+    if (user) {
+      validateAuth()
+    }
   }, [location.pathname])
   
   const validateAuth = async () => {
@@ -51,13 +58,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     try {
       await axios.post(`/api/auth/logout`, {}, { withCredentials: true })
+    } finally {
       setIsAuthenticated(false)
       setUser(null)
       showSuccess("Logged out successfully")
       navigate("/")
-    } catch (error) {
-      // Handle error if needed
     }
+  }
+
+  if (isLoading && !user && !isAuthenticated) {
+    return <LoadingScreen />
   }
 
   return (
