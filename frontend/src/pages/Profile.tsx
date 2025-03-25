@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
 import { Star, Package, MessageCircle } from "lucide-react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import axios from "axios"
 import API_URL from "@/utils/config"
 import { useChat } from "@/utils/ChatProvider"
@@ -35,7 +35,9 @@ export default function Profile() {
   const { user, isAuthenticated } = useAuth();
   const { startChat } = useChat();
   const { showError, showInfo } = useToast();
-
+  const isMounted = useRef(false)
+  const navigate = useNavigate()
+  
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -48,6 +50,10 @@ export default function Profile() {
     })
     .catch(error => {
         console.error("Error fetching profile data:", error);
+        if (!isMounted.current) showError("Profile not found")
+        isMounted.current = true
+        setLoading(false);
+        navigate("/listings")
     })
     .finally(() => {
         setLoading(false);

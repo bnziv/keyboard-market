@@ -12,7 +12,6 @@ import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
 export default function LoginForm() {
   const { showError, showSuccess } = useToast()
   const { login } = useAuth()
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("login")
   const [formData, setFormData] = useState({
     identifier: "",

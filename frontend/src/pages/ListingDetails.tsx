@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
+import { useState, useEffect, useRef } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 import { Link } from "react-router-dom"
 import NavBar from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { formatDate, titleCase } from "@/utils/helpers"
 import API_URL from "@/utils/config"
 import { useAuth } from "@/utils/AuthProvider"
 import { useChat } from '@/utils/ChatProvider'
+import axios from "axios"
 
 interface Listing {
     id: string,
@@ -38,17 +39,22 @@ export default function ListingDetailsPage() {
     const [loading, setLoading] = useState(true)
     const { user, isAuthenticated } = useAuth()
     const { startChat } = useChat()
+    const navigate = useNavigate()
+    const isMounted = useRef(false)
 
     useEffect(() => {
         const fetchListing = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/listings/details/${id}`)
-                const data = await response.json()
+                const response = await axios.get(`${API_URL}/api/listings/details/${id}`)
+                const data = response.data
                 setListing(data)
                 setLoading(false)
             } catch (error) {
                 console.error("Error fetching listing:", error)
+                if (!isMounted.current) showError("Listing not found")
+                isMounted.current = true
                 setLoading(false)
+                navigate("/listings")
             }
         }
 
