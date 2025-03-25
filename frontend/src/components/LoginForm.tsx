@@ -7,6 +7,7 @@ import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import axios from "axios"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { VisuallyHidden } from "radix-ui"
 
 export default function LoginForm() {
   const { showError, showSuccess } = useToast()
@@ -117,8 +118,10 @@ export default function LoginForm() {
 
   return (
     <>
+    <VisuallyHidden.Root>
     <DialogTitle/>
-    <DialogDescription/> {/* To avoid errors */}
+    <DialogDescription/>
+    </VisuallyHidden.Root>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>

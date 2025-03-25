@@ -98,7 +98,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-body {
-  overflow-y: scroll;
-}
