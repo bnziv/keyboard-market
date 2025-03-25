@@ -8,7 +8,7 @@ export const KeyboardIcon: React.FC<KeyboardIconProps> = ({ className }) => {
   return (
     <svg
       className={className}
-      viewBox="10 10 220 97"
+      viewBox="0 0 240 110"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

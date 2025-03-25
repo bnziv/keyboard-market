@@ -5,12 +5,13 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import LoginForm from '@/components/LoginForm';
 import { ChevronDown, LogOut, User, Package, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export default function NavBar() {
+export default function NavBar({ className }: { className?: string }) {
   const { isAuthenticated, user, logout } = useAuth();
 
   return (
-    <nav className="border-b">
+    <nav className={cn("border-b bg-white", className)}>
       <div className="flex items-center justify-between py-4 px-6">
         <Link to="/" className="text-2xl font-bold">
           Keyboard Market
