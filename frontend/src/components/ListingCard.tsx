@@ -15,7 +15,7 @@ export interface ListingCardProps {
 
 export default function ListingCard({ id, title, price, offers, condition, imageUrl }: ListingCardProps) {
   return (
-    <Card className="overflow-hidden group">
+    <Card className="overflow-hidden group h-full">
       <CardHeader className="p-0">
         <Link to={`/listings/${id}`}>
           <div className="h-48 relative">
@@ -55,21 +55,31 @@ export default function ListingCard({ id, title, price, offers, condition, image
         </Link>
       </CardHeader>
       <CardContent className="p-4">
-        <Link to={`/listings/${id}`} >
-        <h3 className="truncate group-hover:underline">{title}</h3>
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-2">
-            {price ? (
-              <>
-                <p className="text-lg font-medium group-hover:underline">${parseFloat(price.toFixed(2))}</p>
-                {offers && <span className="text-sm text-muted-foreground group-hover:underline mt-1">or best offer</span>}
-              </>
-            ) : (
-              <p className="text-lg font-medium group-hover:underline">Open to Offers</p>
-            )}
+        <Link to={`/listings/${id}`} className="block h-full">
+          <h3 className="truncate group-hover:underline">{title}</h3>
+          <div className="flex items-start justify-between mt-2 gap-2">
+            <div className="min-w-0 flex-1">
+              {price ? (
+                <div className="flex items-baseline space-x-1 truncate">
+                  <p className="text-lg font-medium group-hover:underline">
+                    ${parseFloat(price.toFixed(2))}
+                  </p>
+                  {offers && (
+                    <span className="text-xs text-muted-foreground group-hover:underline whitespace-nowrap truncate">
+                      or best offer
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-lg font-medium group-hover:underline truncate">
+                  Open to Offers
+                </p>
+              )}
+            </div>
+            <Badge variant="secondary" className="flex-shrink-0">
+              {condition && titleCase(condition)}
+            </Badge>
           </div>
-          <Badge variant="secondary">{condition && titleCase(condition)}</Badge> 
-        </div>
         </Link>
       </CardContent>
     </Card>

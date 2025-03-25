@@ -64,7 +64,14 @@ public class ListingService {
         Criteria criteria = new Criteria();
         
         if (filter.getMinPrice() != null && filter.getMaxPrice() != null) {
-            criteria.and("price").gte(filter.getMinPrice()).lte(filter.getMaxPrice());
+            if (filter.getMinPrice() == 0) {
+                criteria.orOperator(
+                    Criteria.where("price").is(null),
+                    Criteria.where("price").gte(filter.getMinPrice()).lte(filter.getMaxPrice())
+                );
+            } else {
+                criteria.and("price").gte(filter.getMinPrice()).lte(filter.getMaxPrice());
+            }
         } else if (filter.getMinPrice() != null) {
             criteria.and("price").gte(filter.getMinPrice());
         } else if (filter.getMaxPrice() != null) {

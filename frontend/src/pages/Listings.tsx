@@ -132,7 +132,7 @@ export default function Listings() {
                                     }
                                 />
                                 <div className="flex justify-between mt-2">
-                                    <span>${filters.minPrice}</span>
+                                    <span>{filters.minPrice === 0 ? 'Offers' : `$${filters.minPrice}`}</span>
                                     <span>${filters.maxPrice}</span>
                                 </div>
                             </div>
@@ -223,7 +223,7 @@ export default function Listings() {
                                     condition: null,
                                     title: "",
                                     sortBy: "createdOn",
-                                    sortDirection: "desc"
+                                    sortDirection: "desc",
                                 });
                             }}
                         >
@@ -234,7 +234,7 @@ export default function Listings() {
 
                 {/* Listings Grid */}
                 <div className="flex-1">
-                    <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 p-12">
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-12">
                         {listings.map((listing, index) => (
                             <div
                                 key={listing.id}
