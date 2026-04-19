@@ -7,6 +7,7 @@ import Login from '@/pages/Login';
 import ProtectedRoute from '@/routes/ProtectedRoute';
 import { AuthProvider } from '@/utils/AuthProvider';
 import { ToastProvider } from '@/utils/ToastProvider';
+import { ThemeProvider } from '@/utils/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { ChatManager } from '@/components/ChatManager';
 import { ChatProvider } from '@/utils/ChatProvider';
@@ -15,6 +16,7 @@ import Profile from '@/pages/Profile'
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           <ChatProvider>
@@ -35,6 +37,7 @@ export default function App() {
           </ChatProvider>
         </AuthProvider>
       </ToastProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
