@@ -1,0 +1,23 @@
+{
+  "name": "keyboard-market",
+  "version": "1.0.0",
+  "description": "A modern marketplace platform for keyboard enthusiasts to buy, sell, and discover unique keyboards and parts. Built with React, TypeScript, and Spring Boot.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && gradlew.bat bootRun\" \"cd frontend && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bnziv/keyboard-market.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bnziv/keyboard-market/issues"
+  },
+  "homepage": "https://github.com/bnziv/keyboard-market#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
