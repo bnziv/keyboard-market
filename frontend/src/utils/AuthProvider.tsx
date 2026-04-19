@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useToast } from "@/utils/ToastProvider";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -21,7 +21,6 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const location = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -30,12 +29,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     validateAuth()
   }, [])
-  
+
   useEffect(() => {
-    if (user) {
-      validateAuth()
-    }
-  }, [location.pathname])
+    const interceptor = axios.interceptors.response.use(
+      res => res,
+      err => {
+        if (err.response?.status === 401 && !err.config?.url?.includes("/auth/login")) {
+          setIsAuthenticated(false)
+          setUser(null)
+          navigate("/login")
+        }
+        return Promise.reject(err)
+      }
+    )
+    return () => axios.interceptors.response.eject(interceptor)
+  }, [navigate])
   
   const validateAuth = async () => {
     try {

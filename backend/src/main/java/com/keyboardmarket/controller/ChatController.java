@@ -10,6 +10,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+
 import java.util.List;
 
 @Controller
@@ -41,16 +44,34 @@ public class ChatController {
 
     @GetMapping("/history")
     @ResponseBody
-    public List<ChatMessage> getChatHistory(
+    public ResponseEntity<List<ChatMessage>> getChatHistory(
         @RequestParam String userId1,
-        @RequestParam String userId2
+        @RequestParam String userId2,
+        Authentication authentication
     ) {
-        return chatService.getChatHistory(userId1, userId2);
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String requestingUserId = (String) authentication.getPrincipal();
+        if (!requestingUserId.equals(userId1) && !requestingUserId.equals(userId2)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(chatService.getChatHistory(userId1, userId2));
     }
 
     @GetMapping("/conversations/{userId}")
     @ResponseBody
-    public List<ConversationDTO> getUserConversations(@PathVariable String userId) {
-        return chatService.getUserConversations(userId);
+    public ResponseEntity<List<ConversationDTO>> getUserConversations(
+        @PathVariable String userId,
+        Authentication authentication
+    ) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String requestingUserId = (String) authentication.getPrincipal();
+        if (!requestingUserId.equals(userId)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(chatService.getUserConversations(userId));
     }
 }
