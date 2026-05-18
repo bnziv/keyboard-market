@@ -1,7 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import LoginForm from '@/components/LoginForm';
 import { Search, MessageSquare, User, LogOut, Plus, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -172,28 +170,19 @@ export default function NavBar({ className, activePage }: NavBarProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Dialog>
-            <DialogTrigger asChild>
-              <button
-                className="ml-2 px-3 py-1.5 text-xs font-semibold rounded border"
-                style={{
-                  background: 'var(--km-gold)',
-                  borderColor: 'var(--km-gold)',
-                  color: theme === 'dark' ? 'var(--km-bg)' : '#fff',
-                  fontFamily: 'var(--km-font-body)',
-                  cursor: 'pointer',
-                }}
-              >
-                Login
-              </button>
-            </DialogTrigger>
-            <DialogContent
-              className="sm:max-w-md [&>button:last-child]:hidden"
-              style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-            >
-              <LoginForm />
-            </DialogContent>
-          </Dialog>
+          <button
+            onClick={() => navigate('/login')}
+            className="ml-2 px-3 py-1.5 text-xs font-semibold rounded border"
+            style={{
+              background: 'var(--km-gold)',
+              borderColor: 'var(--km-gold)',
+              color: theme === 'dark' ? 'var(--km-bg)' : '#fff',
+              fontFamily: 'var(--km-font-body)',
+              cursor: 'pointer',
+            }}
+          >
+            Login
+          </button>
         )}
       </nav>
     </header>
