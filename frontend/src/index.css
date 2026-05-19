@@ -69,6 +69,7 @@
   --km-font-mono: 'JetBrains Mono', monospace;
   --km-font-body: 'Inter', sans-serif;
   --km-font-serif: 'IBM Plex Serif', Georgia, serif;
+  --km-ok: #3a7a2e;
 }
 
 /* Dark mode — deep indigo/violet, gold accent */
@@ -84,6 +85,7 @@
   --km-line-strong: #3d3f7a;
   --km-gold: #d4b24c;
   --km-gold-soft: #3b2f5c;
+  --km-ok: #5cad6e;
 }
 
 @layer base {

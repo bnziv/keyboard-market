@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { ChatManager } from '@/components/ChatManager';
 import { ChatProvider } from '@/utils/ChatProvider';
 import Profile from '@/pages/Profile'
+import GroupBuys from '@/pages/GroupBuys'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
               </Route>
               <Route path="/login" element={<Login />} />
               <Route path="/profile/:username" element={<Profile />} />
+              <Route path="/group-buys" element={<GroupBuys />} />
 
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

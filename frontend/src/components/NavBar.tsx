@@ -9,7 +9,7 @@ import { useTheme } from '@/utils/ThemeProvider';
 
 interface NavBarProps {
   className?: string;
-  activePage?: 'home' | 'listings' | 'create' | 'messages' | 'profile';
+  activePage?: 'home' | 'listings' | 'create' | 'messages' | 'profile' | 'groupbuys';
 }
 
 export default function NavBar({ className, activePage }: NavBarProps) {
@@ -79,6 +79,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
       <nav className="ml-auto flex items-center gap-1">
         {[
           { id: 'listings' as const, label: 'Browse', href: '/listings' as const },
+          { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' as const },
           { id: 'create' as const, label: 'Sell', href: null as null },
         ].map(link =>
           link.href ? (
