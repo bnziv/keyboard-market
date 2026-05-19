@@ -25,6 +25,19 @@
 ### OAuth (Google/GitHub login)
 **Recommendation: Worth doing.** It removes the burden of password storage and reset flows entirely, and Spring Security has first-class OAuth2 support — mostly configuration rather than new code. The main tradeoff is that users without a Google/GitHub account need a fallback, so password auth would stay alongside OAuth rather than be replaced. Spring Security handles this cleanly with a provider chain.
 
+### Chat data model — introduce a `Conversation` entity
+**Current design:** `ChatMessage` is a flat collection filtered by `senderId`/`receiverId`. Listing conversations requires the aggregation pipeline in [`ChatMessageRepository.java`](backend/src/main/java/com/keyboardmarket/repository/ChatMessageRepository.java). This works but becomes painful as features grow.
+
+**Recommended design:**
+```java
+// Conversation: { id, participant1Id, participant2Id, listingId, lastMessageAt, lastMessagePreview, unreadCounts: Map<userId, count> }
+// ChatMessage:  { id, conversationId, senderId, content, timestamp, read }
+```
+With a `Conversation` document the inbox query becomes a single indexed lookup instead of an aggregation. It also enables unread badges, typing indicators, muting, and "this chat is about [listing]" context — all of which require a conversation-level record.
+
+### MongoDB vs relational
+The data model is straightforwardly relational (users own listings, messages reference two users). PostgreSQL would express the conversation queries as a simple `GROUP BY` with `JOIN`. MongoDB is not wrong here and isn't worth swapping out now, but keep this in mind if the query complexity grows — the aggregation pipeline needed for conversations is the clearest sign of the mismatch.
+
 ---
 
 ## Best Practices & Code Issues
@@ -49,6 +62,14 @@
 - **No loading state on form submit** — [`Login.tsx`](frontend/src/pages/Login.tsx), [`CreateListing.tsx`](frontend/src/pages/CreateListing.tsx) — the submit button stays enabled during the request, allowing double-submission.
 - **`Promise.all` without error isolation** — [`Profile.tsx`](frontend/src/pages/Profile.tsx) — if either the user or listings request fails, both fail silently, leaving the page in a broken partial state.
 
+### Database & Data Model
+
+- **N+1 query in `getUserConversations`** — [`ChatService.java:33`](backend/src/main/java/com/keyboardmarket/service/ChatService.java#L33) — calls `userService.getUserById()` inside a loop, one DB round-trip per conversation. Fix: collect all IDs first, call `userRepository.findAllById(ids)` once, build a lookup map.
+- **`price` stored as `Double`** — [`Listing.java:26`](backend/src/main/java/com/keyboardmarket/model/Listing.java#L26) — floating-point arithmetic is wrong for money (`0.1 + 0.2 != 0.3`). Store as `Long` (cents, e.g. `$49.99` → `4999`) or use `BigDecimal` with MongoDB's `Decimal128`.
+- **`condition` is a free `String`** — [`Listing.java:30`](backend/src/main/java/com/keyboardmarket/model/Listing.java#L30) — no enforcement of valid values; bad data can be stored silently. Replace with an enum (`NEW`, `LIKE_NEW`, `USED`, `FOR_PARTS`) and validate at the controller boundary.
+- **`ChatMessage` missing `listingId`** — for a marketplace, conversations almost always refer to a specific listing. Without this field, the chat UI can't show which listing is being discussed and you can't scope message history to a listing.
+- **Title search uses a regex scan** — [`ListingRepository.java:8`](backend/src/main/java/com/keyboardmarket/repository/ListingRepository.java#L8) — `findByTitleContainingIgnoreCase` compiles to a full-collection regex scan with no index. Add `@TextIndexed` to `Listing.title` and switch to MongoDB text search.
+
 ### API Design
 
 - **No input validation on chat messages** — [`ChatController.java`](backend/src/main/java/com/keyboardmarket/controller/ChatController.java) accepts `ChatMessage` with no `@Valid` annotation or length constraints.
@@ -68,9 +89,14 @@
 |----------|------|
 | 1 | Auth checks on chat endpoints — actual security hole |
 | 2 | DTOs instead of raw entities — stop leaking internals |
-| 3 | Typed error handling — fragile `any` catches hide real bugs |
-| 4 | `useEffect` cleanup in Chat — memory leak on a heavily-used component |
-| 5 | Axios timeout — one slow request can lock the UI indefinitely |
-| 6 | OAuth login — most worthwhile architectural addition |
-| 7 | Edit/delete listings + mark as sold — missing core marketplace functionality |
-| 8 | Ratings & reviews — scaffolding already exists, just needs wiring |
+| 3 | Fix `price` to `Long`/`BigDecimal` — silent money math bugs |
+| 4 | Fix N+1 in `getUserConversations` — live performance issue |
+| 5 | Typed error handling — fragile `any` catches hide real bugs |
+| 6 | `useEffect` cleanup in Chat — memory leak on a heavily-used component |
+| 7 | Axios timeout — one slow request can lock the UI indefinitely |
+| 8 | Add `listingId` to `ChatMessage` — product gap, easy now, painful later |
+| 9 | `condition` enum + text index on title — data integrity and search performance |
+| 10 | Introduce `Conversation` entity — bigger refactor, unlocks unread counts, typing indicators, listing context |
+| 11 | OAuth login — most worthwhile architectural addition |
+| 12 | Edit/delete listings + mark as sold — missing core marketplace functionality |
+| 13 | Ratings & reviews — scaffolding already exists, just needs wiring |
