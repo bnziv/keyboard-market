@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import NavBar from '@/components/NavBar';
-import { ArrowRight, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import API_URL from '@/utils/config';
 
 // Shape returned by the Spring Boot API (mirrors the MongoDB document)
@@ -11,6 +12,7 @@ interface ApiGroupBuy {
   name: string;
   type: string;         // keyboard | keycaps | switches | accessories
   status: string;       // IC | GB | closed | shipping | fulfilled
+  gbStart: string | null;
   gbEnd: string | null;
   estimatedFulfillment: string | null;
   basePrice: { amount: number; currency: string } | null;
@@ -31,6 +33,8 @@ interface CardGroupBuy {
   stage: 'interest' | 'live' | 'closed' | 'shipping';
   price: number;
   closes: string;
+  gbStartMs: number | null;
+  gbEndMs: number | null;
   eta: string;
   closingSoon: boolean;
   desc: string;
@@ -79,6 +83,8 @@ function toCardData(gb: ApiGroupBuy): CardGroupBuy {
     stage,
     price: gb.basePrice?.amount ?? 0,
     closes,
+    gbStartMs: gb.gbStart ? new Date(gb.gbStart).getTime() : null,
+    gbEndMs: gb.gbEnd ? new Date(gb.gbEnd).getTime() : null,
     closingSoon,
     eta: gb.estimatedFulfillment ?? '—',
     desc: gb.overview ?? '',
@@ -88,6 +94,44 @@ function toCardData(gb: ApiGroupBuy): CardGroupBuy {
 }
 
 type StageFilter = 'all' | 'interest' | 'live' | 'closed';
+type SortOption = 'closing-soon' | 'price-asc' | 'price-desc' | 'newest';
+
+const SORT_LABELS: Record<SortOption, string> = {
+  'newest':       'Newest',
+  'closing-soon': 'Closing soon',
+  'price-asc':    'Price: low → high',
+  'price-desc':   'Price: high → low',
+};
+
+function sortCards(cards: CardGroupBuy[], sortBy: SortOption): CardGroupBuy[] {
+  return [...cards].sort((a, b) => {
+    if (sortBy === 'newest') {
+      if (a.gbStartMs === null && b.gbStartMs === null) return 0;
+      if (a.gbStartMs === null) return 1;
+      if (b.gbStartMs === null) return -1;
+      return b.gbStartMs - a.gbStartMs;
+    }
+    if (sortBy === 'closing-soon') {
+      if (a.gbEndMs === null && b.gbEndMs === null) return 0;
+      if (a.gbEndMs === null) return 1;
+      if (b.gbEndMs === null) return -1;
+      return a.gbEndMs - b.gbEndMs;
+    }
+    if (sortBy === 'price-asc') {
+      if (a.price === 0 && b.price === 0) return 0;
+      if (a.price === 0) return 1;
+      if (b.price === 0) return -1;
+      return a.price - b.price;
+    }
+    if (sortBy === 'price-desc') {
+      if (a.price === 0 && b.price === 0) return 0;
+      if (a.price === 0) return 1;
+      if (b.price === 0) return -1;
+      return b.price - a.price;
+    }
+    return 0;
+  });
+}
 
 const STAGE_TABS: { value: StageFilter; label: string }[] = [
   { value: 'all',      label: 'All stages' },
@@ -305,6 +349,7 @@ function GroupBuyCard({ gb }: { gb: CardGroupBuy }) {
 
 export default function GroupBuys() {
   const [stage, setStage] = useState<StageFilter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('closing-soon');
   const [apiData, setApiData] = useState<ApiGroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -329,9 +374,12 @@ export default function GroupBuys() {
     if (v === 'closed') return (stageCounts['closed'] ?? 0) + (stageCounts['shipping'] ?? 0);
     return stageCounts[v] ?? 0;
   };
-  const visible = cards.filter(g =>
-    stage === 'all' ||
-    (stage === 'closed' ? g.stage === 'closed' || g.stage === 'shipping' : g.stage === stage)
+  const visible = sortCards(
+    cards.filter(g =>
+      stage === 'all' ||
+      (stage === 'closed' ? g.stage === 'closed' || g.stage === 'shipping' : g.stage === stage)
+    ),
+    sortBy,
   );
   const closingSoonCount = cards.filter(g => g.closingSoon).length;
 
@@ -452,21 +500,40 @@ export default function GroupBuys() {
 
             <div style={{ flex: 1 }} />
 
-            <button style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 13px',
-              border: '1px solid var(--km-line)',
-              borderRadius: 4,
-              fontSize: 12, color: 'var(--km-ink-dim)',
-              background: 'var(--km-surface)', cursor: 'pointer',
-              fontFamily: 'var(--km-font-body)',
-              marginBottom: 4,
-              outline: 'none',
-            }}>
-              Sort:{' '}
-              <span style={{ color: 'var(--km-ink)', fontWeight: 500 }}>Closing soon</span>
-              <ChevronDown size={12} />
-            </button>
+            <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
+              <SelectTrigger style={{
+                alignSelf: 'center',
+                marginBottom: 10,
+                height: 'auto',
+                width: 'auto',
+                padding: '7px 10px 7px 13px',
+                gap: 12,
+                border: 'none',
+                fontSize: 12,
+                color: 'var(--km-ink)',
+                background: 'var(--km-surface)',
+                fontFamily: 'var(--km-font-body)',
+                boxShadow: 'none',
+              }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent style={{
+                background: 'var(--km-surface)',
+                border: '1px solid var(--km-line)',
+                borderRadius: 4,
+                color: 'var(--km-ink)',
+              }}>
+                {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([val, label]) => (
+                  <SelectItem key={val} value={val} style={{
+                    fontFamily: 'var(--km-font-body)',
+                    fontSize: 12,
+                    cursor: 'pointer',
+                  }}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -530,7 +597,7 @@ export default function GroupBuys() {
         ) : visible.length > 0 ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 20,
           }}>
             {visible.map(g => <GroupBuyCard key={g.id} gb={g} />)}

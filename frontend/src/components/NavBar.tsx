@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useState } from 'react';
 import { useToast } from '@/utils/ToastProvider';
 import { useTheme } from '@/utils/ThemeProvider';
+import { useChat } from '@/utils/ChatProvider';
 
 interface NavBarProps {
   className?: string;
@@ -16,6 +17,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
   const { isAuthenticated, user, logout } = useAuth();
   const { showInfo } = useToast();
   const { theme, toggle } = useTheme();
+  const { toggleConversations } = useChat();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
 
@@ -78,41 +80,27 @@ export default function NavBar({ className, activePage }: NavBarProps) {
       {/* Nav links */}
       <nav className="ml-auto flex items-center gap-1">
         {[
-          { id: 'listings' as const, label: 'Browse', href: '/listings' as const },
-          { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' as const },
-          { id: 'create' as const, label: 'Sell', href: null as null },
-        ].map(link =>
-          link.href ? (
-            <Link
-              key={link.id}
-              to={link.href}
-              className="relative px-3 py-2 text-sm font-medium transition-colors"
-              style={{ color: activePage === link.id ? 'var(--km-ink)' : 'var(--km-ink-dim)' }}
-            >
-              {link.label}
-              {activePage === link.id && (
-                <span className="absolute bottom-0 left-3 right-3 h-0.5" style={{ background: 'var(--km-gold)' }} />
-              )}
-            </Link>
-          ) : (
-            <button
-              key={link.id}
-              onClick={handleCreateListing}
-              className="relative px-3 py-2 text-sm font-medium transition-colors"
-              style={{
-                color: activePage === link.id ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              {link.label}
-            </button>
-          )
-        )}
+          { id: 'listings' as const, label: 'Browse', href: '/listings' },
+          { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' },
+          { id: 'create' as const, label: 'Sell', href: '/create-listing' },
+        ].map(link => (
+          <Link
+            key={link.id}
+            to={link.href}
+            onClick={link.id === 'create' ? (e) => { e.preventDefault(); handleCreateListing(); } : undefined}
+            className="relative px-3 py-2 text-sm font-medium transition-colors"
+            style={{ color: activePage === link.id ? 'var(--km-ink)' : 'var(--km-ink-dim)' }}
+          >
+            {link.label}
+            {activePage === link.id && (
+              <span className="absolute bottom-0 left-3 right-3 h-0.5" style={{ background: 'var(--km-gold)' }} />
+            )}
+          </Link>
+        ))}
 
         {/* Message icon */}
         <button
+          onClick={toggleConversations}
           className="relative ml-1 w-8 h-8 flex items-center justify-center rounded-full border transition-colors"
           style={{ borderColor: 'var(--km-line)', color: 'var(--km-ink-dim)', background: 'transparent', cursor: 'pointer' }}
         >
