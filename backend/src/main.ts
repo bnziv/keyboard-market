@@ -18,6 +18,9 @@ async function bootstrap() {
 
   app.enableCors({ origin: origins, credentials: true });
 
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/health', (_req, res) => res.send('ok'));
+
   await app.listen(8080);
 }
 bootstrap();
