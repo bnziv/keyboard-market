@@ -4,7 +4,7 @@
   "description": "A modern marketplace platform for keyboard enthusiasts to buy, sell, and discover unique keyboards and parts. Built with React, TypeScript, and Spring Boot.",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && gradlew.bat bootRun\" \"cd frontend && npm run dev\""
+    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && npm run start:dev\" \"cd frontend && npm run dev\""
   },
   "repository": {
     "type": "git",

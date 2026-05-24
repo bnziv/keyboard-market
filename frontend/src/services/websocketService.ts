@@ -1,5 +1,4 @@
-import SockJS from 'sockjs-client';
-import { Client, Message, Frame } from '@stomp/stompjs';
+import { io, Socket } from 'socket.io-client';
 import API_URL from '@/utils/config';
 
 interface ChatMessage {
@@ -12,67 +11,30 @@ interface ChatMessage {
 }
 
 class WebSocketService {
-  private client: Client | null = null;
+  private socket: Socket | null = null;
   private messageHandlers: Set<(message: ChatMessage) => void> = new Set();
 
   connect(userId: string) {
-    if (this.client?.active) {
-      return;
-    }
+    if (this.socket?.connected) return;
 
-    const socket = new SockJS(`${API_URL}/ws`);
-    this.client = new Client({
-      webSocketFactory: () => socket,
-      // debug: (str: string) => {
-      //   console.log(str);
-      // },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+    this.socket = io(API_URL || '', {
+      query: { userId },
+      withCredentials: true,
+      reconnectionDelay: 5000,
     });
 
-    this.client.onConnect = () => {
-      // console.log('Connected to WebSocket');
-      this.subscribeToPersonalMessages(userId);
-    };
-
-    this.client.onStompError = (frame: Frame) => {
-      console.error('STOMP error', frame);
-    };
-
-    this.client.activate();
-  }
-
-  private subscribeToPersonalMessages(userId: string) {
-    if (!this.client) return;
-
-    this.client.subscribe(`/user/${userId}/topic/messages`, (message: Message) => {
-      const chatMessage: ChatMessage = JSON.parse(message.body);
-      // console.log('Received message:', chatMessage);
-      this.notifyHandlers(chatMessage);
+    this.socket.on('chat.message', (message: ChatMessage) => {
+      this.notifyHandlers(message);
     });
   }
 
   private notifyHandlers(message: ChatMessage) {
-    this.messageHandlers.forEach(handler => handler(message));
+    this.messageHandlers.forEach((handler) => handler(message));
   }
 
   sendMessage(message: ChatMessage) {
-    if (!this.client) return;
-
-    // Add timestamp to the message
-    const messageWithTimestamp = {
-      ...message,
-      timestamp: new Date().toISOString()
-    };
-
-    this.client.publish({
-      destination: '/app/chat.send',
-      body: JSON.stringify(messageWithTimestamp),
-    });
-
-    // We'll let the server send the message back to us
-    // This ensures consistency and proper ID assignment
+    if (!this.socket) return;
+    this.socket.emit('chat.send', message);
   }
 
   onMessage(handler: (message: ChatMessage) => void) {
@@ -81,9 +43,9 @@ class WebSocketService {
   }
 
   disconnect() {
-    if (this.client) {
-      this.client.deactivate();
-      this.client = null;
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
       this.messageHandlers.clear();
     }
   }
