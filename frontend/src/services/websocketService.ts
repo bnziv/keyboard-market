@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import API_URL from '@/utils/config';
 
 interface ChatMessage {
   id?: string;
@@ -17,7 +16,7 @@ class WebSocketService {
   connect(userId: string) {
     if (this.socket?.connected) return;
 
-    this.socket = io(API_URL || '', {
+    this.socket = io(import.meta.env.VITE_API_URL || '', {
       query: { userId },
       withCredentials: true,
       reconnectionDelay: 5000,

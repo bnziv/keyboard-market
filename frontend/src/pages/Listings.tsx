@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import axios from "axios";
+import api from "@/utils/api";
 import ListingCard, { ListingCardProps } from "@/components/ListingCard";
 import NavBar from "@/components/NavBar";
-import API_URL from "@/utils/config";
 import { Slider } from "@/components/ui/slider";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2, LayoutGrid, List } from "lucide-react";
@@ -107,7 +106,7 @@ export default function Listings() {
         try {
             setLoading(true);
             const currentPage = reset ? 0 : page;
-            const response = await axios.get(`${API_URL}/api/listings/filtered`, {
+            const response = await api.get(`/api/listings/filtered`, {
                 params: { ...debouncedFilters, page: currentPage, size: 12 },
             });
             const { listings: newListings, totalPages } = response.data;

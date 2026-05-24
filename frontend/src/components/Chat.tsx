@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { websocketService } from '@/services/websocketService';
 import { X, Send } from 'lucide-react';
-import axios from 'axios';
-import API_URL from '@/utils/config';
+import api from '@/utils/api';
 
 interface Message {
   id?: string;
@@ -71,9 +70,8 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/chat/history`, {
+        const response = await api.get(`/api/chat/history`, {
           params: { userId1: currentUserId, userId2: otherUserId },
-          withCredentials: true,
         });
         setMessages(response.data);
         scrollToBottom();

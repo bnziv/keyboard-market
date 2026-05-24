@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import axios from 'axios';
+import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
 import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import API_URL from '@/utils/config';
 
 interface ApiGroupBuy {
   id: string;
@@ -927,7 +926,7 @@ export default function GroupBuys() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get<ApiGroupBuy[]>(`${API_URL}/api/groupbuys`)
+    api.get<ApiGroupBuy[]>('/api/groupbuys')
       .then(res => setApiData(res.data))
       .catch(() => setError('Failed to load group buys.'))
       .finally(() => setLoading(false));

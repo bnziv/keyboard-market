@@ -3,8 +3,7 @@ import NavBar from "@/components/NavBar"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
 import { MessageCircle, Plus } from "lucide-react"
 import { useNavigate, useParams, Link } from "react-router-dom"
-import axios from "axios"
-import API_URL from "@/utils/config"
+import api from "@/utils/api"
 import { useChat } from "@/utils/ChatProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
@@ -42,8 +41,8 @@ export default function Profile() {
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      axios.get(`${API_URL}/api/users/profile/${username}`),
-      axios.get(`${API_URL}/api/listings/username/${username}`),
+      api.get(`/api/users/profile/${username}`),
+      api.get(`/api/listings/username/${username}`),
     ])
       .then(([userRes, listingsRes]) => {
         setUserData(userRes.data)
