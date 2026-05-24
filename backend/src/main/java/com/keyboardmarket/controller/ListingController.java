@@ -10,7 +10,6 @@ import com.keyboardmarket.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -28,8 +27,7 @@ public class ListingController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Listing> createListing(@Valid @RequestBody ListingRequest listingRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<Listing> createListing(@Valid @RequestBody ListingRequest listingRequest, Authentication authentication) {
         String userId = authentication.getName();
         Listing result = listingService.createListing(listingRequest, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);

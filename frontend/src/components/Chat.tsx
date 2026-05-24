@@ -1,10 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { websocketService } from '@/services/websocketService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { X } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import axios from 'axios';
 import API_URL from '@/utils/config';
 
@@ -25,8 +21,8 @@ interface ChatProps {
   position?: { x: number; y: number };
 }
 
-const CHAT_WIDTH = 400;
-const CHAT_HEIGHT = 600;
+const CHAT_WIDTH = 380;
+const CHAT_HEIGHT = 560;
 const SCREEN_MARGIN = 20;
 
 export function Chat({ currentUserId, otherUserId, otherUserName, onClose, position }: ChatProps) {
@@ -43,27 +39,15 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
       setIsDragging(true);
       document.body.classList.add('no-select');
       const rect = e.currentTarget.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
+      setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
-      const newX = Math.min(
-        Math.max(e.clientX - dragOffset.x, SCREEN_MARGIN),
-        window.innerWidth - CHAT_WIDTH - SCREEN_MARGIN
-      );
-      const newY = Math.min(
-        Math.max(e.clientY - dragOffset.y, SCREEN_MARGIN),
-        window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN
-      );
-      
       setWindowPosition({
-        x: newX,
-        y: newY
+        x: Math.min(Math.max(e.clientX - dragOffset.x, SCREEN_MARGIN), window.innerWidth - CHAT_WIDTH - SCREEN_MARGIN),
+        y: Math.min(Math.max(e.clientY - dragOffset.y, SCREEN_MARGIN), window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN),
       });
     }
   };
@@ -85,14 +69,11 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
   }, [isDragging, dragOffset]);
 
   useEffect(() => {
-    // Load chat history
     const loadChatHistory = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/chat/history`, {
-          params: {
-            userId1: currentUserId,
-            userId2: otherUserId
-          }
+          params: { userId1: currentUserId, userId2: otherUserId },
+          withCredentials: true,
         });
         setMessages(response.data);
         scrollToBottom();
@@ -104,143 +85,140 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
     };
 
     loadChatHistory();
-
-    // Connect to WebSocket
     websocketService.connect(currentUserId);
 
-    // Subscribe to new messages
     const unsubscribe = websocketService.onMessage((message) => {
-      // Only add messages that are part of this conversation
-      if ((message.senderId === currentUserId && message.receiverId === otherUserId) ||
-          (message.senderId === otherUserId && message.receiverId === currentUserId)) {
-        setMessages((prevMessages) => {
-          // Check if message already exists to prevent duplicates
-          const messageExists = prevMessages.some(
-            m => m.id === message.id || 
-            (m.content === message.content && 
-             m.senderId === message.senderId && 
-             m.timestamp === message.timestamp)
+      if (
+        (message.senderId === currentUserId && message.receiverId === otherUserId) ||
+        (message.senderId === otherUserId && message.receiverId === currentUserId)
+      ) {
+        setMessages((prev) => {
+          const exists = prev.some(
+            m => m.id === message.id ||
+              (m.content === message.content && m.senderId === message.senderId && m.timestamp === message.timestamp)
           );
-          if (messageExists) {
-            return prevMessages;
-          }
-          return [...prevMessages, message];
+          return exists ? prev : [...prev, message];
         });
         scrollToBottom();
       }
     });
 
-    // Cleanup on unmount
     return () => {
       unsubscribe();
       websocketService.disconnect();
     };
   }, [currentUserId, otherUserId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
+  useEffect(() => { scrollToBottom(); }, [messages]);
 
-    const message: Message = {
-      senderId: currentUserId,
-      receiverId: otherUserId,
-      content: newMessage.trim(),
-    };
-
-    websocketService.sendMessage(message);
-    setNewMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, newMessage]);
-
-  // Add window resize handler
   useEffect(() => {
     const handleResize = () => {
       setWindowPosition(prev => ({
         x: Math.min(prev.x, window.innerWidth - CHAT_WIDTH - SCREEN_MARGIN),
-        y: Math.min(prev.y, window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN)
+        y: Math.min(prev.y, window.innerHeight - CHAT_HEIGHT - SCREEN_MARGIN),
       }));
     };
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+    websocketService.sendMessage({ senderId: currentUserId, receiverId: otherUserId, content: newMessage.trim() });
+    setNewMessage('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
   return (
     <>
-      <style>
-        {`
-        .no-select {
-          user-select: none;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-        }
-        `}
-      </style>
-      <Card 
-        className="fixed flex flex-col h-[600px] w-[400px] shadow-lg z-50"
+      <style>{`.no-select { user-select: none; -webkit-user-select: none; }`}</style>
+      <div
+        className="fixed flex flex-col rounded border z-50"
         style={{
           left: `${windowPosition.x}px`,
           top: `${windowPosition.y}px`,
-          cursor: isDragging ? 'grabbing' : 'default'
+          width: `${CHAT_WIDTH}px`,
+          height: `${CHAT_HEIGHT}px`,
+          background: 'var(--km-surface)',
+          borderColor: 'var(--km-line)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+          cursor: isDragging ? 'grabbing' : 'default',
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="chat-header flex items-center justify-between p-4 border-b cursor-grab">
-          <div className="flex items-center">
-            <Avatar className="h-8 w-8">
-                <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${otherUserName}&backgroundType=gradientLinear`} />
-                <AvatarFallback>{otherUserName[0]}</AvatarFallback>
-            </Avatar>
-            <span className="ml-3 font-medium">{otherUserName}</span>
+        {/* Header */}
+        <div
+          className="chat-header flex items-center justify-between px-4 py-3 border-b flex-shrink-0 cursor-grab"
+          style={{ borderColor: 'var(--km-line)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 text-xs font-semibold border"
+              style={{
+                background: 'var(--km-gold-soft)',
+                borderColor: 'rgba(212,178,76,0.33)',
+                color: 'var(--km-gold)',
+                fontFamily: 'var(--km-font-mono)',
+              }}
+            >
+              {otherUserName[0]?.toUpperCase() ?? '?'}
+            </div>
+            <span className="text-sm font-medium" style={{ color: 'var(--km-ink)' }}>
+              {otherUserName}
+            </span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center rounded"
+            style={{ color: 'var(--km-ink-mute)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--km-ink)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--km-ink-mute)')}
+          >
+            <X size={15} />
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-3" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <span>Loading messages...</span>
+              <span className="text-xs" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
+                Loading messages…
+              </span>
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex justify-center items-center h-full text-muted-foreground">
-              <span>No messages yet. Start the conversation!</span>
+            <div className="flex justify-center items-center h-full">
+              <span className="text-xs" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
+                No messages yet. Start the conversation!
+              </span>
             </div>
           ) : (
             messages.map((message, index) => (
               <div
                 key={message.id || `${message.senderId}-${message.timestamp}-${index}`}
-                className={`flex ${
-                  message.senderId === currentUserId ? 'justify-end' : 'justify-start'
-                }`}
+                className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
+                  className="max-w-[72%] rounded px-3 py-2"
+                  style={
                     message.senderId === currentUserId
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
+                      ? { background: 'var(--km-bg-sub)', color: 'var(--km-ink)' }
+                      : { background: 'var(--km-surface-2)', color: 'var(--km-ink)', borderColor: 'var(--km-line)' }
+                  }
                 >
-                  <p className="break-words">{message.content}</p>
+                  <p className="text-sm break-words" style={{ lineHeight: 1.5 }}>{message.content}</p>
                   {message.timestamp && (
-                    <span className="text-xs opacity-70">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </span>
+                    <div
+                      className="mt-1 text-right"
+                      style={{ fontSize: '10px', fontFamily: 'var(--km-font-mono)', opacity: 0.5 }}
+                    >
+                      {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   )}
                 </div>
               </div>
@@ -249,17 +227,33 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 border-t flex gap-2">
-          <Input
+        {/* Input */}
+        <div
+          className="flex items-center gap-2 px-4 py-3 border-t flex-shrink-0"
+          style={{ borderColor: 'var(--km-line)' }}
+        >
+          <input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            className="flex-1"
+            onChange={e => setNewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message…"
+            className="flex-1 rounded px-3 py-2 text-sm outline-none border"
+            style={{
+              background: 'var(--km-bg-sub)',
+              borderColor: 'var(--km-line)',
+              color: 'var(--km-ink)',
+              fontFamily: 'var(--km-font-body)',
+            }}
           />
-          <Button onClick={handleSend}>Send</Button>
+          <button
+            onClick={handleSend}
+            className="w-9 h-9 flex items-center justify-center rounded transition-opacity hover:opacity-80 flex-shrink-0 border"
+            style={{ background: 'var(--km-bg-sub)', color: 'var(--km-ink)', borderColor: 'var(--km-line)', cursor: 'pointer' }}
+          >
+            <Send size={14} />
+          </button>
         </div>
-      </Card>
+      </div>
     </>
   );
 }

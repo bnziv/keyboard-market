@@ -17,6 +17,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,16 +64,15 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> validateToken(@CookieValue(name = "jwt", required = false) String token) {
-        if (token == null || !jwtUtil.validateToken(token)) {
+    public ResponseEntity<?> validateToken(Authentication authentication) {
+        if (authentication == null) {
             return ResponseEntity.status(401).build();
         }
-        String userId = jwtUtil.getUserIdFromToken(token);
+        String userId = (String) authentication.getPrincipal();
         User user = userService.getUserById(userId);
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("id", user.getId());
         responseBody.put("username", user.getUsername());
-        
         return ResponseEntity.ok(responseBody);
     }
 
