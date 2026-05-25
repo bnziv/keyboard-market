@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams, Link } from "react-router-dom"
 import NavBar from "@/components/NavBar"
+import { TabBar } from "@/components/TabBar"
 import { MessageCircle, Heart, Share2, Shield } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
@@ -133,29 +134,11 @@ export default function ListingDetailsPage() {
                             className="mt-5 rounded border overflow-hidden"
                             style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
                         >
-                            <div className="flex gap-5 px-5 pt-1 border-b" style={{ borderColor: 'var(--km-line)' }}>
-                                {TABS.map(t => (
-                                    <button
-                                        key={t}
-                                        onClick={() => setTab(t)}
-                                        className="py-3 text-xs font-medium transition-colors"
-                                        style={{
-                                            fontFamily: 'var(--km-font-mono)',
-                                            letterSpacing: '0.1em',
-                                            textTransform: 'uppercase',
-                                            background: 'none',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            color: tab === t ? 'var(--km-ink)' : 'var(--km-ink-mute)',
-                                            borderBottom: tab === t ? '2px solid var(--km-gold)' : '2px solid transparent',
-                                            fontSize: '10px',
-                                            fontWeight: tab === t ? 600 : 400,
-                                        }}
-                                    >
-                                        {t}
-                                    </button>
-                                ))}
-                            </div>
+                            <TabBar
+                                tabs={TABS.map(t => ({ key: t, label: t }))}
+                                active={tab}
+                                onChange={setTab}
+                            />
                             <div className="p-5">
                                 {tab === 'description' && (
                                     <div

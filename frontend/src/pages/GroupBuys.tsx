@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
+import { StatusBadge } from '@/components/StatusBadge';
+import { TabBar } from '@/components/TabBar';
+import { BadgeTone } from '@/utils/badgeTones';
 import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -162,14 +165,6 @@ const CATEGORY_PALETTES: Record<string, [string, string]> = {
   Accessories: ['#3a2a1a', '#f59e0b'],
 };
 
-type BadgeTone = 'neutral' | 'ok' | 'accent';
-
-const BADGE_TONES: Record<BadgeTone, { bg: string; fg: string; border: string }> = {
-  neutral: { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-dim)', border: 'var(--km-line)' },
-  accent:  { bg: 'var(--km-gold-soft)',  fg: 'var(--km-gold)',    border: 'var(--km-gold)' },
-  ok:      { bg: 'color-mix(in srgb, var(--km-ok) 20%, var(--km-surface))', fg: 'var(--km-ok)', border: 'var(--km-ok)' },
-};
-
 function GroupBuyImage({ category, imageUrl }: { category: string; imageUrl: string | null }) {
   const [bg, fg] = CATEGORY_PALETTES[category] ?? ['#1c1c2e', '#6366f1'];
   if (imageUrl) {
@@ -201,24 +196,6 @@ function GroupBuyImage({ category, imageUrl }: { category: string; imageUrl: str
         {category.slice(0, 3)}
       </div>
     </div>
-  );
-}
-
-function StagePill({ children, tone }: { children: React.ReactNode; tone: BadgeTone }) {
-  const t = BADGE_TONES[tone];
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '2px 8px',
-      fontFamily: 'var(--km-font-mono)', fontSize: 10,
-      letterSpacing: '0.05em', textTransform: 'uppercase',
-      whiteSpace: 'nowrap',
-      background: t.bg, color: t.fg,
-      border: `1px solid ${t.border}`,
-      borderRadius: 4,
-    }}>
-      {children}
-    </span>
   );
 }
 
@@ -491,9 +468,9 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
           }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                <StagePill tone={meta.tone}>{meta.label}</StagePill>
-                <StagePill tone="neutral">{gb.category}</StagePill>
-                {gb.closingSoon && <StagePill tone="accent">⏱ {gb.closes} left</StagePill>}
+                <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+                <StatusBadge tone="neutral">{gb.category}</StatusBadge>
+                {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
               </div>
               <h2 style={{
                 margin: 0,
@@ -805,8 +782,8 @@ function GroupBuyCard({ gb, onOpen }: { gb: CardGroupBuy; onOpen: () => void }) 
       <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
         <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
         <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <StagePill tone={meta.tone}>{meta.label}</StagePill>
-          {gb.closingSoon && <StagePill tone="accent">⏱ {gb.closes} left</StagePill>}
+          <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+          {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
         </div>
         <div style={{
           position: 'absolute', bottom: 12, right: 12,
@@ -1035,42 +1012,15 @@ export default function GroupBuys() {
 
           {/* Stage tabs */}
           <div style={{
-            display: 'flex', gap: 2, marginTop: 32,
+            display: 'flex', marginTop: 32,
             alignItems: 'center', marginBottom: -1,
           }}>
-            {STAGE_TABS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setStage(value)}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: 13,
-                  fontWeight: stage === value ? 600 : 400,
-                  color: stage === value ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  background: 'none',
-                  outline: 'none',
-                  borderWidth: '0 0 2px 0',
-                  borderStyle: 'solid',
-                  borderColor: stage === value ? 'var(--km-gold)' : 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  fontFamily: 'var(--km-font-body)',
-                  whiteSpace: 'nowrap',
-                  transition: 'color 150ms',
-                }}
-              >
-                {label}
-                <span style={{
-                  fontFamily: 'var(--km-font-mono)', fontSize: 10,
-                  color: 'var(--km-ink-mute)',
-                  background: stage === value ? 'var(--km-gold-soft)' : 'var(--km-surface-2)',
-                  padding: '1px 6px', borderRadius: 8,
-                  transition: 'background 150ms',
-                }}>
-                  {tabCount(value)}
-                </span>
-              </button>
-            ))}
+            <TabBar
+              tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
+              active={stage}
+              onChange={setStage}
+              variant="body"
+            />
 
             <div style={{ flex: 1 }} />
 

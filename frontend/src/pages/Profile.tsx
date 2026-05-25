@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import NavBar from "@/components/NavBar"
+import { TabBar } from "@/components/TabBar"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
 import { MessageCircle, Plus } from "lucide-react"
 import { useNavigate, useParams, Link } from "react-router-dom"
@@ -235,32 +236,13 @@ export default function Profile() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-5">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: tab === t.id ? 600 : 400,
-                  color: tab === t.id ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  borderBottom: tab === t.id ? '2px solid var(--km-gold)' : '2px solid transparent',
-                  marginBottom: '-1px',
-                  fontFamily: 'var(--km-font-body)',
-                }}
-              >
-                {t.label}
-                <span
-                  className="text-xs"
-                  style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px' }}
-                >
-                  {t.count}
-                </span>
-              </button>
-            ))}
+          <div className="mt-5">
+            <TabBar
+              tabs={TABS.map(t => ({ key: t.id, label: t.label, count: t.count }))}
+              active={tab}
+              onChange={setTab}
+              variant="body"
+            />
           </div>
         </div>
       </div>
