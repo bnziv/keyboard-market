@@ -21,6 +21,7 @@ export class GroupBuy {
   @Prop() discord_url?: string;
   @Prop() source_url?: string;
   @Prop({ type: [String] }) images?: string[];
+  @Prop({ type: [String], default: [] }) excludedImages?: string[];
   @Prop() scraped_at?: Date;
 }
 
