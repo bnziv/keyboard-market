@@ -1,4 +1,19 @@
 import { useState } from 'react'
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -41,6 +56,59 @@ function toDateInput(iso: string | null): string {
   return iso.split('T')[0]
 }
 
+function SortableImageItem({
+  url,
+  index,
+  isExcluded,
+  onToggle,
+}: {
+  url: string
+  index: number
+  isExcluded: boolean
+  onToggle: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: url })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
+      className={`relative group rounded-md overflow-hidden border bg-muted cursor-grab active:cursor-grabbing select-none ${isDragging ? 'opacity-50 shadow-xl z-10' : ''}`}
+    >
+      <img
+        src={url}
+        alt={`Image ${index + 1}`}
+        draggable={false}
+        className={`w-full aspect-video object-cover transition-opacity ${isExcluded ? 'opacity-25' : ''}`}
+      />
+      {isExcluded && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-xs font-semibold bg-background/90 px-2 py-0.5 rounded border">
+            EXCLUDED
+          </span>
+        </div>
+      )}
+      <span className="absolute bottom-1.5 left-1.5 text-xs bg-background/75 px-1.5 py-0.5 rounded pointer-events-none">
+        {index + 1}
+      </span>
+      <button
+        type="button"
+        onPointerDown={e => e.stopPropagation()}
+        onClick={onToggle}
+        className="absolute top-1.5 right-1.5 p-1 rounded bg-background/85 border opacity-0 group-hover:opacity-100 transition-opacity"
+        title={isExcluded ? 'Restore image' : 'Exclude image'}
+      >
+        {isExcluded
+          ? <Eye className="w-3.5 h-3.5 text-green-600" />
+          : <EyeOff className="w-3.5 h-3.5 text-destructive" />
+        }
+      </button>
+    </div>
+  )
+}
+
 export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
   const [name, setName] = useState(groupBuy.name ?? '')
   const [type, setType] = useState(groupBuy.type ?? '')
@@ -59,9 +127,25 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
   const [vendors, setVendors] = useState(groupBuy.vendors ?? [])
   const [discordUrl, setDiscordUrl] = useState(groupBuy.discordUrl ?? '')
   const [sourceUrl, setSourceUrl] = useState(groupBuy.sourceUrl ?? '')
+  const [images, setImages] = useState<string[]>(groupBuy.images ?? [])
   const [excludedImages, setExcludedImages] = useState<string[]>(groupBuy.excludedImages ?? [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      setImages(prev => {
+        const oldIndex = prev.indexOf(active.id as string)
+        const newIndex = prev.indexOf(over.id as string)
+        return arrayMove(prev, oldIndex, newIndex)
+      })
+    }
+  }
 
   const toggleImage = (url: string) =>
     setExcludedImages(prev =>
@@ -99,6 +183,7 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
         vendors,
         discord_url: discordUrl || undefined,
         source_url: sourceUrl || undefined,
+        images,
         excludedImages,
       }
       const res = await api.patch(`/api/groupbuys/${groupBuy.id}`, payload)
@@ -110,7 +195,7 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
     }
   }
 
-  const visibleCount = groupBuy.images.length - excludedImages.length
+  const visibleCount = images.length - excludedImages.filter(u => images.includes(u)).length
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -237,30 +322,13 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
                   <Plus className="w-3 h-3 mr-1" /> Add
                 </Button>
               </div>
-              {items.length === 0 && (
-                <p className="text-sm text-muted-foreground">No items</p>
-              )}
+              {items.length === 0 && <p className="text-sm text-muted-foreground">No items</p>}
               <div className="space-y-2">
                 {items.map((item, i) => (
                   <div key={i} className="flex gap-2 items-center">
-                    <Input
-                      value={item.name}
-                      onChange={e => updateItem(i, 'name', e.target.value)}
-                      placeholder="Name"
-                    />
-                    <Input
-                      type="number"
-                      value={item.price}
-                      onChange={e => updateItem(i, 'price', e.target.value)}
-                      placeholder="Price"
-                      className="w-24"
-                    />
-                    <Input
-                      value={item.currency}
-                      onChange={e => updateItem(i, 'currency', e.target.value)}
-                      placeholder="USD"
-                      className="w-16"
-                    />
+                    <Input value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} placeholder="Name" />
+                    <Input type="number" value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} placeholder="Price" className="w-24" />
+                    <Input value={item.currency} onChange={e => updateItem(i, 'currency', e.target.value)} placeholder="USD" className="w-16" />
                     <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(i)}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
@@ -279,28 +347,13 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
                   <Plus className="w-3 h-3 mr-1" /> Add
                 </Button>
               </div>
-              {vendors.length === 0 && (
-                <p className="text-sm text-muted-foreground">No vendors</p>
-              )}
+              {vendors.length === 0 && <p className="text-sm text-muted-foreground">No vendors</p>}
               <div className="space-y-2">
                 {vendors.map((v, i) => (
                   <div key={i} className="flex gap-2 items-center">
-                    <Input
-                      value={v.region}
-                      onChange={e => updateVendor(i, 'region', e.target.value)}
-                      placeholder="Region"
-                      className="w-28"
-                    />
-                    <Input
-                      value={v.name}
-                      onChange={e => updateVendor(i, 'name', e.target.value)}
-                      placeholder="Name"
-                    />
-                    <Input
-                      value={v.url}
-                      onChange={e => updateVendor(i, 'url', e.target.value)}
-                      placeholder="URL"
-                    />
+                    <Input value={v.region} onChange={e => updateVendor(i, 'region', e.target.value)} placeholder="Region" className="w-28" />
+                    <Input value={v.name} onChange={e => updateVendor(i, 'name', e.target.value)} placeholder="Name" />
+                    <Input value={v.url} onChange={e => updateVendor(i, 'url', e.target.value)} placeholder="URL" />
                     <Button type="button" variant="ghost" size="icon" onClick={() => removeVendor(i)}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
@@ -321,43 +374,27 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
           {/* Images */}
           <TabsContent value="images" className="mt-4">
             <p className="text-sm text-muted-foreground mb-4">
-              {groupBuy.images.length} total &middot; {visibleCount} visible &middot; {excludedImages.length} excluded
+              {images.length} total &middot; {visibleCount} visible &middot; {excludedImages.length} excluded
+              <span className="ml-2 opacity-60">· drag to reorder</span>
             </p>
-            {groupBuy.images.length === 0 ? (
+            {images.length === 0 ? (
               <p className="text-sm text-muted-foreground">No images</p>
             ) : (
-              <div className="grid grid-cols-3 gap-3">
-                {groupBuy.images.map((url, i) => {
-                  const isExcluded = excludedImages.includes(url)
-                  return (
-                    <div key={i} className="relative group rounded-md overflow-hidden border bg-muted">
-                      <img
-                        src={url}
-                        alt={`Image ${i + 1}`}
-                        className={`w-full aspect-video object-cover transition-opacity ${isExcluded ? 'opacity-25' : ''}`}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={images} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-3 gap-3">
+                    {images.map((url, i) => (
+                      <SortableImageItem
+                        key={url}
+                        url={url}
+                        index={i}
+                        isExcluded={excludedImages.includes(url)}
+                        onToggle={() => toggleImage(url)}
                       />
-                      {isExcluded && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <span className="text-xs font-semibold bg-background/90 px-2 py-0.5 rounded border">
-                            EXCLUDED
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => toggleImage(url)}
-                        className="absolute top-1.5 right-1.5 p-1 rounded bg-background/85 border opacity-0 group-hover:opacity-100 transition-opacity"
-                        title={isExcluded ? 'Restore image' : 'Exclude image'}
-                      >
-                        {isExcluded
-                          ? <Eye className="w-3.5 h-3.5 text-green-600" />
-                          : <EyeOff className="w-3.5 h-3.5 text-destructive" />
-                        }
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </TabsContent>
         </Tabs>

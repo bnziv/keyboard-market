@@ -112,5 +112,10 @@ export class UpdateGroupBuyDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  images?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   excludedImages?: string[];
 }
