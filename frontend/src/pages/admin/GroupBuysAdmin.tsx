@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Pencil } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Pencil } from 'lucide-react'
 import NavBar from '@/components/NavBar'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
 
@@ -17,9 +15,125 @@ const STATUS_LABELS: Record<string, string> = {
   closed: 'Closed',
 }
 
+const STATUS_COLORS: Record<string, { bg: string; fg: string; border: string }> = {
+  IC:        { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-dim)', border: 'var(--km-line)' },
+  GB:        { bg: 'color-mix(in srgb, var(--km-ok) 20%, var(--km-surface))', fg: 'var(--km-ok)', border: 'var(--km-ok)' },
+  shipping:  { bg: 'var(--km-gold-soft)',  fg: 'var(--km-gold)',    border: 'var(--km-gold)' },
+  closed:    { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-mute)', border: 'var(--km-line)' },
+  fulfilled: { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-mute)', border: 'var(--km-line)' },
+}
+
+function StatusPill({ status }: { status: string }) {
+  const c = STATUS_COLORS[status] ?? STATUS_COLORS.closed
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px',
+      fontFamily: 'var(--km-font-mono)', fontSize: 10,
+      letterSpacing: '0.05em', textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
+      background: c.bg, color: c.fg,
+      border: `1px solid ${c.border}`,
+      borderRadius: 4,
+    }}>
+      {status}
+    </span>
+  )
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function TableRow({ gb, isLast, onEdit, onToggleHidden }: { gb: AdminGroupBuy; isLast: boolean; onEdit: () => void; onToggleHidden: () => void }) {
+  const [hovered, setHovered] = useState(false)
+  const [btnHovered, setBtnHovered] = useState(false)
+  const [hideHovered, setHideHovered] = useState(false)
+
+  return (
+    <tr
+      style={{
+        borderBottom: isLast ? 'none' : '1px solid var(--km-line)',
+        background: gb.hidden
+          ? 'color-mix(in srgb, var(--km-surface-2) 60%, var(--km-bg))'
+          : hovered ? 'var(--km-bg-sub)' : 'var(--km-bg)',
+        transition: 'background 120ms',
+        opacity: gb.hidden ? 0.6 : 1,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <td style={{ padding: '12px 16px', fontWeight: 500, color: 'var(--km-ink)', maxWidth: 220 }}>
+        <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={gb.name}>
+          {gb.name ?? '—'}
+        </span>
+      </td>
+      <td style={{ padding: '12px 16px' }}>
+        <StatusPill status={gb.status} />
+      </td>
+      <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', textTransform: 'capitalize' }}>
+        {gb.type ?? '—'}
+      </td>
+      <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)' }}>
+        {gb.designer ?? '—'}
+      </td>
+      <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', fontFamily: 'var(--km-font-mono)', fontSize: 12 }}>
+        {formatDate(gb.gbStart)}
+      </td>
+      <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', fontFamily: 'var(--km-font-mono)', fontSize: 12 }}>
+        {formatDate(gb.gbEnd)}
+      </td>
+      <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', fontFamily: 'var(--km-font-mono)', fontSize: 12, whiteSpace: 'nowrap' }}>
+        {gb.images.length}/{gb.images.length + gb.excludedImages.length}
+        {gb.excludedImages.length > 0 && (
+          <span style={{ marginLeft: 6, color: 'var(--km-gold)', fontSize: 11 }}>
+            ({gb.excludedImages.length} hidden)
+          </span>
+        )}
+      </td>
+      <td style={{ padding: '12px 16px' }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={onToggleHidden}
+            onMouseEnter={() => setHideHovered(true)}
+            onMouseLeave={() => setHideHovered(false)}
+            title={gb.hidden ? 'Restore visibility' : 'Hide from public'}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 30, height: 30,
+              background: 'transparent',
+              border: `1px solid ${gb.hidden ? 'var(--km-gold)' : hideHovered ? 'var(--km-ink)' : 'var(--km-line-strong)'}`,
+              borderRadius: 4,
+              color: gb.hidden ? 'var(--km-gold)' : hideHovered ? 'var(--km-ink)' : 'var(--km-ink-dim)',
+              cursor: 'pointer',
+              transition: 'border-color 120ms, color 120ms',
+            }}
+          >
+            {gb.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+          </button>
+          <button
+            onClick={onEdit}
+            onMouseEnter={() => setBtnHovered(true)}
+            onMouseLeave={() => setBtnHovered(false)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px',
+              background: 'transparent',
+              border: `1px solid ${btnHovered ? 'var(--km-ink)' : 'var(--km-line-strong)'}`,
+              borderRadius: 4,
+              color: btnHovered ? 'var(--km-ink)' : 'var(--km-ink-dim)',
+              fontSize: 12, fontFamily: 'var(--km-font-body)',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'border-color 120ms, color 120ms',
+            }}
+          >
+            <Pencil size={12} /> Edit
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
 }
 
 export default function GroupBuysAdmin() {
@@ -41,100 +155,127 @@ export default function GroupBuysAdmin() {
   }, [statusFilter])
 
   const handleSaved = (updated: AdminGroupBuy) => {
-    setGroupBuys(prev => prev.map(gb => (gb.id === updated.id ? updated : gb)))
+    setGroupBuys(prev => prev.map(gb => gb.id === updated.id ? updated : gb))
     setEditing(null)
   }
 
+  const handleToggleHidden = (gb: AdminGroupBuy) => {
+    const next = !gb.hidden
+    api.patch(`/api/groupbuys/${gb.id}`, { hidden: next })
+      .then(res => setGroupBuys(prev => prev.map(g => g.id === gb.id ? res.data : g)))
+      .catch(() => {})
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: '100vh', background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
       <NavBar />
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Admin — Group Buys</h1>
+
+      {/* Page header */}
+      <div style={{
+        borderBottom: '1px solid var(--km-line)',
+        background: 'var(--km-surface)',
+        padding: '32px 32px 0',
+      }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{
+            fontFamily: 'var(--km-font-mono)', fontSize: 11,
+            color: 'var(--km-gold)', letterSpacing: '0.2em',
+            textTransform: 'uppercase', marginBottom: 10,
+          }}>
+            · Internal tool ·
+          </div>
+          <h1 style={{
+            margin: 0,
+            fontFamily: 'var(--km-font-body)', fontSize: 32, fontWeight: 700,
+            letterSpacing: '-0.025em', color: 'var(--km-ink)',
+          }}>
+            Group buys
+          </h1>
           {!loading && (
-            <p className="text-sm text-muted-foreground mt-1">{groupBuys.length} entries</p>
+            <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--km-ink-dim)' }}>
+              {groupBuys.length} entries
+            </p>
           )}
-        </div>
 
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {STATUS_FILTERS.map(s => (
-            <Button
-              key={s}
-              variant={statusFilter === s ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter(s)}
-            >
-              {STATUS_LABELS[s] ?? s}
-            </Button>
-          ))}
+          {/* Status filter tabs */}
+          <div style={{ display: 'flex', gap: 2, marginTop: 24, marginBottom: -1 }}>
+            {STATUS_FILTERS.map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                style={{
+                  padding: '10px 16px',
+                  fontSize: 13,
+                  fontWeight: statusFilter === s ? 600 : 400,
+                  color: statusFilter === s ? 'var(--km-ink)' : 'var(--km-ink-dim)',
+                  background: 'none', border: 'none', outline: 'none',
+                  borderBottom: `2px solid ${statusFilter === s ? 'var(--km-gold)' : 'transparent'}`,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--km-font-body)',
+                  whiteSpace: 'nowrap',
+                  transition: 'color 150ms',
+                }}
+              >
+                {STATUS_LABELS[s] ?? s}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
 
+      {/* Content */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: 32 }}>
         {loading && (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 0' }}>
+            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--km-ink-mute)' }} />
           </div>
         )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <div style={{
+            padding: '64px 32px', textAlign: 'center',
+            color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: 13,
+          }}>
+            {error}
+          </div>
+        )}
 
         {!loading && !error && (
-          <div className="rounded-md border overflow-x-auto">
-            <table className="w-full text-sm">
+          <div style={{ border: '1px solid var(--km-line)', borderRadius: 4, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left px-4 py-3 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 font-medium">Status</th>
-                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Type</th>
-                  <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Designer</th>
-                  <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">GB Start</th>
-                  <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">GB End</th>
-                  <th className="text-left px-4 py-3 font-medium">Images</th>
-                  <th className="px-4 py-3" />
+                <tr style={{ borderBottom: '1px solid var(--km-line)', background: 'var(--km-surface)' }}>
+                  {['Name', 'Status', 'Type', 'Designer', 'GB Start', 'GB End', 'Images', ''].map((h, i) => (
+                    <th key={i} style={{
+                      textAlign: 'left', padding: '10px 16px',
+                      fontFamily: 'var(--km-font-mono)', fontSize: 10,
+                      letterSpacing: '0.1em', textTransform: 'uppercase',
+                      color: 'var(--km-ink-mute)', fontWeight: 600, whiteSpace: 'nowrap',
+                    }}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {groupBuys.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center text-muted-foreground py-16">
+                    <td colSpan={8} style={{
+                      textAlign: 'center', padding: '64px 32px',
+                      color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: 13,
+                    }}>
                       No group buys found
                     </td>
                   </tr>
                 )}
-                {groupBuys.map(gb => (
-                  <tr key={gb.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium max-w-[220px] truncate" title={gb.name}>
-                      {gb.name ?? '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={gb.status} />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell capitalize">
-                      {gb.type ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                      {gb.designer ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                      {formatDate(gb.gbStart)}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                      {formatDate(gb.gbEnd)}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                      {gb.images.length - gb.excludedImages.length}/{gb.images.length}
-                      {gb.excludedImages.length > 0 && (
-                        <span className="ml-1.5 text-xs text-amber-600 dark:text-amber-400">
-                          ({gb.excludedImages.length} hidden)
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Button variant="ghost" size="sm" onClick={() => setEditing(gb)}>
-                        <Pencil className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
+                {groupBuys.map((gb, idx) => (
+                  <TableRow
+                    key={gb.id}
+                    gb={gb}
+                    isLast={idx === groupBuys.length - 1}
+                    onEdit={() => setEditing(gb)}
+                    onToggleHidden={() => handleToggleHidden(gb)}
+                  />
                 ))}
               </tbody>
             </table>
@@ -150,20 +291,5 @@ export default function GroupBuysAdmin() {
         />
       )}
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-    IC: 'secondary',
-    GB: 'default',
-    shipping: 'outline',
-    closed: 'secondary',
-    fulfilled: 'secondary',
-  }
-  return (
-    <Badge variant={variants[status] ?? 'secondary'}>
-      {status}
-    </Badge>
   )
 }

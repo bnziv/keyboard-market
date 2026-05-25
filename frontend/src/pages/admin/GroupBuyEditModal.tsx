@@ -1,28 +1,10 @@
 import { useState } from 'react'
 import {
-  DndContext,
-  DragEndEvent,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
+  DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors,
 } from '@dnd-kit/core'
-import {
-  SortableContext,
-  arrayMove,
-  rectSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable'
+import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Plus, Trash2, X } from 'lucide-react'
 import api from '@/utils/api'
 
 export interface AdminGroupBuy {
@@ -43,12 +25,65 @@ export interface AdminGroupBuy {
   sourceUrl: string | null
   images: string[]
   excludedImages: string[]
+  hidden: boolean
 }
 
-interface Props {
-  groupBuy: AdminGroupBuy
-  onClose: () => void
-  onSaved: (updated: AdminGroupBuy) => void
+type Tab = 'details' | 'dates' | 'pricing' | 'vendors' | 'images'
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '9px 12px',
+  border: '1px solid var(--km-line-strong)',
+  borderRadius: 4,
+  background: 'var(--km-bg)',
+  color: 'var(--km-ink)',
+  fontSize: 13,
+  fontFamily: 'var(--km-font-body)',
+  outline: 'none',
+  boxSizing: 'border-box',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: 'var(--km-font-mono)',
+  fontSize: 10,
+  color: 'var(--km-ink-dim)',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  fontWeight: 600,
+  marginBottom: 6,
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={labelStyle}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function AddBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '5px 10px',
+        background: 'transparent',
+        border: '1px solid var(--km-line-strong)',
+        borderRadius: 4,
+        color: 'var(--km-ink-dim)',
+        fontFamily: 'var(--km-font-mono)',
+        fontSize: 10,
+        letterSpacing: '0.05em',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  )
 }
 
 function toDateInput(iso: string | null): string {
@@ -57,59 +92,134 @@ function toDateInput(iso: string | null): string {
 }
 
 function SortableImageItem({
-  url,
-  index,
-  isExcluded,
-  onToggle,
+  url, index, onExclude,
 }: {
-  url: string
-  index: number
-  isExcluded: boolean
-  onToggle: () => void
+  url: string; index: number; onExclude: () => void
 }) {
+  const [hovered, setHovered] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: url })
 
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        position: 'relative',
+        borderRadius: 4,
+        overflow: 'hidden',
+        border: '1px solid var(--km-line)',
+        background: 'var(--km-bg-sub)',
+        cursor: isDragging ? 'grabbing' : 'grab',
+        opacity: isDragging ? 0.5 : 1,
+        boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.3)' : 'none',
+        userSelect: 'none',
+      }}
       {...attributes}
       {...listeners}
-      className={`relative group rounded-md overflow-hidden border bg-muted cursor-grab active:cursor-grabbing select-none ${isDragging ? 'opacity-50 shadow-xl z-10' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <img
         src={url}
         alt={`Image ${index + 1}`}
         draggable={false}
-        className={`w-full aspect-video object-cover transition-opacity ${isExcluded ? 'opacity-25' : ''}`}
+        style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }}
       />
-      {isExcluded && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="text-xs font-semibold bg-background/90 px-2 py-0.5 rounded border">
-            EXCLUDED
-          </span>
-        </div>
-      )}
-      <span className="absolute bottom-1.5 left-1.5 text-xs bg-background/75 px-1.5 py-0.5 rounded pointer-events-none">
+      <span style={{
+        position: 'absolute', bottom: 6, left: 6,
+        fontFamily: 'var(--km-font-mono)', fontSize: 9,
+        background: 'rgba(0,0,0,0.55)', color: 'rgba(255,255,255,0.7)',
+        padding: '2px 6px', borderRadius: 3, pointerEvents: 'none',
+      }}>
         {index + 1}
       </span>
       <button
         type="button"
         onPointerDown={e => e.stopPropagation()}
-        onClick={onToggle}
-        className="absolute top-1.5 right-1.5 p-1 rounded bg-background/85 border opacity-0 group-hover:opacity-100 transition-opacity"
-        title={isExcluded ? 'Restore image' : 'Exclude image'}
+        onClick={onExclude}
+        style={{
+          position: 'absolute', top: 6, right: 6,
+          width: 26, height: 26, borderRadius: 4,
+          background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)',
+          color: '#e07070',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 120ms',
+        }}
+        title="Exclude image"
       >
-        {isExcluded
-          ? <Eye className="w-3.5 h-3.5 text-green-600" />
-          : <EyeOff className="w-3.5 h-3.5 text-destructive" />
-        }
+        <EyeOff size={12} />
       </button>
     </div>
   )
 }
 
+function ExcludedImageItem({
+  url, onRestore,
+}: {
+  url: string; onRestore: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      style={{
+        position: 'relative', borderRadius: 4, overflow: 'hidden',
+        border: '1px solid var(--km-line)', background: 'var(--km-bg-sub)',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <img
+        src={url}
+        alt="Excluded image"
+        draggable={false}
+        style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block', opacity: 0.25 }}
+      />
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        pointerEvents: 'none',
+      }}>
+        <span style={{
+          fontFamily: 'var(--km-font-mono)', fontSize: 9,
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          background: 'var(--km-surface)', color: 'var(--km-ink-mute)',
+          border: '1px solid var(--km-line)', padding: '3px 8px', borderRadius: 3,
+        }}>
+          Excluded
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onRestore}
+        style={{
+          position: 'absolute', top: 6, right: 6,
+          width: 26, height: 26, borderRadius: 4,
+          background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)',
+          color: 'var(--km-ok)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 120ms',
+        }}
+        title="Restore image"
+      >
+        <Eye size={12} />
+      </button>
+    </div>
+  )
+}
+
+interface Props {
+  groupBuy: AdminGroupBuy
+  onClose: () => void
+  onSaved: (updated: AdminGroupBuy) => void
+}
+
 export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>('details')
   const [name, setName] = useState(groupBuy.name ?? '')
   const [type, setType] = useState(groupBuy.type ?? '')
   const [status, setStatus] = useState(groupBuy.status ?? '')
@@ -132,9 +242,7 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  )
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -147,20 +255,24 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
     }
   }
 
-  const toggleImage = (url: string) =>
-    setExcludedImages(prev =>
-      prev.includes(url) ? prev.filter(u => u !== url) : [...prev, url]
-    )
+  const excludeImage = (url: string) => {
+    setImages(prev => prev.filter(u => u !== url))
+    setExcludedImages(prev => [...prev, url])
+  }
+  const restoreImage = (url: string) => {
+    setExcludedImages(prev => prev.filter(u => u !== url))
+    setImages(prev => [...prev, url])
+  }
 
   const addItem = () => setItems(prev => [...prev, { name: '', price: '', currency: 'USD' }])
   const removeItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i))
   const updateItem = (i: number, field: string, value: string) =>
-    setItems(prev => prev.map((it, idx) => (idx === i ? { ...it, [field]: value } : it)))
+    setItems(prev => prev.map((it, idx) => idx === i ? { ...it, [field]: value } : it))
 
   const addVendor = () => setVendors(prev => [...prev, { region: '', name: '', url: '' }])
   const removeVendor = (i: number) => setVendors(prev => prev.filter((_, idx) => idx !== i))
   const updateVendor = (i: number, field: string, value: string) =>
-    setVendors(prev => prev.map((v, idx) => (idx === i ? { ...v, [field]: value } : v)))
+    setVendors(prev => prev.map((v, idx) => idx === i ? { ...v, [field]: value } : v))
 
   const handleSave = async () => {
     setSaving(true)
@@ -195,222 +307,345 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
     }
   }
 
-  const visibleCount = images.length - excludedImages.filter(u => images.includes(u)).length
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'details', label: 'Details' },
+    { id: 'dates', label: 'Dates' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'vendors', label: 'Vendors' },
+    { id: 'images', label: excludedImages.length ? `Images (${excludedImages.length} hidden)` : 'Images' },
+  ]
+
+  const totalCount = images.length + excludedImages.length
+
+  const emptyNote = (msg: string) => (
+    <div style={{ fontSize: 13, color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>{msg}</div>
+  )
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{groupBuy.name}</DialogTitle>
-        </DialogHeader>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 720,
+          maxHeight: 'calc(100vh - 48px)',
+          background: 'var(--km-surface)',
+          border: '1px solid var(--km-line)',
+          borderRadius: 8,
+          boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '18px 24px',
+          borderBottom: '1px solid var(--km-line)',
+          display: 'flex', alignItems: 'center', gap: 14,
+          flexShrink: 0,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: 'var(--km-font-mono)', fontSize: 9,
+              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
+              textTransform: 'uppercase', marginBottom: 4,
+            }}>
+              Editing group buy
+            </div>
+            <h2 style={{
+              margin: 0,
+              fontFamily: 'var(--km-font-body)', fontSize: 18, fontWeight: 600,
+              letterSpacing: '-0.02em', color: 'var(--km-ink)',
+            }}>
+              {groupBuy.name}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent', border: '1px solid var(--km-line)',
+              color: 'var(--km-ink-dim)', width: 32, height: 32,
+              borderRadius: 4, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <X size={14} />
+          </button>
+        </div>
 
-        <Tabs defaultValue="details" className="mt-2">
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="dates">Dates</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors</TabsTrigger>
-            <TabsTrigger value="images" className="relative">
-              Images
+        {/* Tab bar */}
+        <div style={{
+          display: 'flex', gap: 2, padding: '0 24px',
+          borderBottom: '1px solid var(--km-line)',
+          flexShrink: 0, overflowX: 'auto',
+        }}>
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              style={{
+                padding: '12px 14px',
+                fontFamily: 'var(--km-font-mono)', fontSize: 11,
+                color: activeTab === id ? 'var(--km-ink)' : 'var(--km-ink-mute)',
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                fontWeight: activeTab === id ? 600 : 400,
+                background: 'none', border: 'none',
+                borderBottom: `2px solid ${activeTab === id ? 'var(--km-gold)' : 'transparent'}`,
+                cursor: 'pointer', marginBottom: -1,
+                whiteSpace: 'nowrap', transition: 'color 120ms',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+
+          {activeTab === 'details' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="Name">
+                  <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} />
+                </Field>
+                <Field label="Designer">
+                  <input style={inputStyle} value={designer} onChange={e => setDesigner(e.target.value)} />
+                </Field>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="Status">
+                  <select style={inputStyle} value={status} onChange={e => setStatus(e.target.value)}>
+                    <option value="">— Select —</option>
+                    <option value="IC">IC</option>
+                    <option value="GB">GB</option>
+                    <option value="shipping">Shipping</option>
+                    <option value="closed">Closed</option>
+                    <option value="fulfilled">Fulfilled</option>
+                  </select>
+                </Field>
+                <Field label="Type">
+                  <select style={inputStyle} value={type} onChange={e => setType(e.target.value)}>
+                    <option value="">— Select —</option>
+                    <option value="keyboard">Keyboard</option>
+                    <option value="keycaps">Keycaps</option>
+                    <option value="switches">Switches</option>
+                    <option value="accessories">Accessories</option>
+                  </select>
+                </Field>
+              </div>
+              <Field label="Overview">
+                <textarea
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                  value={overview}
+                  onChange={e => setOverview(e.target.value)}
+                  rows={6}
+                />
+              </Field>
+              <Field label="Poster URL">
+                <input style={inputStyle} value={poster} onChange={e => setPoster(e.target.value)} placeholder="https://..." />
+              </Field>
+            </div>
+          )}
+
+          {activeTab === 'dates' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="GB Start">
+                  <input type="date" style={inputStyle} value={gbStart} onChange={e => setGbStart(e.target.value)} />
+                </Field>
+                <Field label="GB End">
+                  <input type="date" style={inputStyle} value={gbEnd} onChange={e => setGbEnd(e.target.value)} />
+                </Field>
+              </div>
+              <Field label="Estimated Fulfillment">
+                <input
+                  style={inputStyle}
+                  value={estimatedFulfillment}
+                  onChange={e => setEstimatedFulfillment(e.target.value)}
+                  placeholder="e.g. Q3 2025"
+                />
+              </Field>
+            </div>
+          )}
+
+          {activeTab === 'pricing' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <label style={labelStyle}>Base Price</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="number"
+                    style={{ ...inputStyle, width: 140 }}
+                    value={basePriceAmount}
+                    onChange={e => setBasePriceAmount(e.target.value)}
+                    placeholder="Amount"
+                  />
+                  <input
+                    style={{ ...inputStyle, width: 80 }}
+                    value={basePriceCurrency}
+                    onChange={e => setBasePriceCurrency(e.target.value)}
+                    placeholder="USD"
+                  />
+                </div>
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Items / Kits</label>
+                  <AddBtn onClick={addItem}><Plus size={11} /> Add</AddBtn>
+                </div>
+                {items.length === 0 && emptyNote('No items')}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {items.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input style={{ ...inputStyle, flex: 1 }} value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} placeholder="Name" />
+                      <input type="number" style={{ ...inputStyle, width: 90 }} value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} placeholder="Price" />
+                      <input style={{ ...inputStyle, width: 65 }} value={item.currency} onChange={e => updateItem(i, 'currency', e.target.value)} placeholder="USD" />
+                      <button type="button" onClick={() => removeItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--km-ink-mute)', padding: 4, display: 'flex' }}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'vendors' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Vendors</label>
+                  <AddBtn onClick={addVendor}><Plus size={11} /> Add</AddBtn>
+                </div>
+                {vendors.length === 0 && emptyNote('No vendors')}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {vendors.map((v, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input style={{ ...inputStyle, width: 100 }} value={v.region} onChange={e => updateVendor(i, 'region', e.target.value)} placeholder="Region" />
+                      <input style={{ ...inputStyle, flex: 1 }} value={v.name} onChange={e => updateVendor(i, 'name', e.target.value)} placeholder="Name" />
+                      <input style={{ ...inputStyle, flex: 1 }} value={v.url} onChange={e => updateVendor(i, 'url', e.target.value)} placeholder="URL" />
+                      <button type="button" onClick={() => removeVendor(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--km-ink-mute)', padding: 4, display: 'flex' }}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Field label="Discord URL">
+                <input style={inputStyle} value={discordUrl} onChange={e => setDiscordUrl(e.target.value)} placeholder="https://discord.gg/..." />
+              </Field>
+              <Field label="Source URL">
+                <input style={inputStyle} value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} placeholder="https://..." />
+              </Field>
+            </div>
+          )}
+
+          {activeTab === 'images' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div>
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: 12,
+                }}>
+                  <label style={labelStyle}>Active · drag to reorder</label>
+                  <span style={{ fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-ink-mute)' }}>
+                    {images.length} / {totalCount}
+                  </span>
+                </div>
+                {images.length === 0 ? emptyNote('No active images') : (
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={images} strategy={rectSortingStrategy}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                        {images.map((url, i) => (
+                          <SortableImageItem
+                            key={url}
+                            url={url}
+                            index={i}
+                            onExclude={() => excludeImage(url)}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                )}
+              </div>
               {excludedImages.length > 0 && (
-                <Badge variant="secondary" className="ml-1 text-xs px-1 py-0">
-                  {excludedImages.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Details */}
-          <TabsContent value="details" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Name</Label>
-                <Input value={name} onChange={e => setName(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Designer</Label>
-                <Input value={designer} onChange={e => setDesigner(e.target.value)} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IC">IC</SelectItem>
-                    <SelectItem value="GB">GB</SelectItem>
-                    <SelectItem value="shipping">Shipping</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                    <SelectItem value="fulfilled">Fulfilled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Type</Label>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="keyboard">Keyboard</SelectItem>
-                    <SelectItem value="keycaps">Keycaps</SelectItem>
-                    <SelectItem value="switches">Switches</SelectItem>
-                    <SelectItem value="accessories">Accessories</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Overview</Label>
-              <Textarea value={overview} onChange={e => setOverview(e.target.value)} rows={6} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Poster URL</Label>
-              <Input value={poster} onChange={e => setPoster(e.target.value)} placeholder="https://..." />
-            </div>
-          </TabsContent>
-
-          {/* Dates */}
-          <TabsContent value="dates" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>GB Start</Label>
-                <Input type="date" value={gbStart} onChange={e => setGbStart(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>GB End</Label>
-                <Input type="date" value={gbEnd} onChange={e => setGbEnd(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Estimated Fulfillment</Label>
-              <Input
-                value={estimatedFulfillment}
-                onChange={e => setEstimatedFulfillment(e.target.value)}
-                placeholder="e.g. Q3 2025"
-              />
-            </div>
-          </TabsContent>
-
-          {/* Pricing */}
-          <TabsContent value="pricing" className="space-y-6 mt-4">
-            <div className="space-y-2">
-              <Label>Base Price</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={basePriceAmount}
-                  onChange={e => setBasePriceAmount(e.target.value)}
-                  placeholder="Amount"
-                  className="w-36"
-                />
-                <Input
-                  value={basePriceCurrency}
-                  onChange={e => setBasePriceCurrency(e.target.value)}
-                  placeholder="USD"
-                  className="w-20"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Items / Kits</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <Plus className="w-3 h-3 mr-1" /> Add
-                </Button>
-              </div>
-              {items.length === 0 && <p className="text-sm text-muted-foreground">No items</p>}
-              <div className="space-y-2">
-                {items.map((item, i) => (
-                  <div key={i} className="flex gap-2 items-center">
-                    <Input value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} placeholder="Name" />
-                    <Input type="number" value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} placeholder="Price" className="w-24" />
-                    <Input value={item.currency} onChange={e => updateItem(i, 'currency', e.target.value)} placeholder="USD" className="w-16" />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(i)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Vendors & Links */}
-          <TabsContent value="vendors" className="space-y-6 mt-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Vendors</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addVendor}>
-                  <Plus className="w-3 h-3 mr-1" /> Add
-                </Button>
-              </div>
-              {vendors.length === 0 && <p className="text-sm text-muted-foreground">No vendors</p>}
-              <div className="space-y-2">
-                {vendors.map((v, i) => (
-                  <div key={i} className="flex gap-2 items-center">
-                    <Input value={v.region} onChange={e => updateVendor(i, 'region', e.target.value)} placeholder="Region" className="w-28" />
-                    <Input value={v.name} onChange={e => updateVendor(i, 'name', e.target.value)} placeholder="Name" />
-                    <Input value={v.url} onChange={e => updateVendor(i, 'url', e.target.value)} placeholder="URL" />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeVendor(i)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Discord URL</Label>
-              <Input value={discordUrl} onChange={e => setDiscordUrl(e.target.value)} placeholder="https://discord.gg/..." />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Source URL</Label>
-              <Input value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} placeholder="https://..." />
-            </div>
-          </TabsContent>
-
-          {/* Images */}
-          <TabsContent value="images" className="mt-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {images.length} total &middot; {visibleCount} visible &middot; {excludedImages.length} excluded
-              <span className="ml-2 opacity-60">· drag to reorder</span>
-            </p>
-            {images.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No images</p>
-            ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={images} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-3 gap-3">
-                    {images.map((url, i) => (
-                      <SortableImageItem
-                        key={url}
-                        url={url}
-                        index={i}
-                        isExcluded={excludedImages.includes(url)}
-                        onToggle={() => toggleImage(url)}
-                      />
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 12 }}>Excluded</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                    {excludedImages.map(url => (
+                      <ExcludedImageItem key={url} url={url} onRestore={() => restoreImage(url)} />
                     ))}
                   </div>
-                </SortableContext>
-              </DndContext>
-            )}
-          </TabsContent>
-        </Tabs>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
-        {error && <p className="text-sm text-destructive mt-3">{error}</p>}
-
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={onClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save changes
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Footer */}
+        <div style={{
+          padding: '14px 24px',
+          borderTop: '1px solid var(--km-line)',
+          background: 'var(--km-surface)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          {error
+            ? <span style={{ fontSize: 12, color: '#e07070', fontFamily: 'var(--km-font-mono)' }}>{error}</span>
+            : <span />
+          }
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              style={{
+                padding: '9px 18px',
+                border: '1px solid var(--km-line-strong)',
+                borderRadius: 4,
+                background: 'transparent',
+                color: 'var(--km-ink-dim)',
+                fontSize: 13, fontWeight: 500,
+                cursor: saving ? 'default' : 'pointer',
+                fontFamily: 'var(--km-font-body)',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '9px 18px',
+                border: '1px solid var(--km-ink)',
+                borderRadius: 4,
+                background: 'var(--km-ink)',
+                color: 'var(--km-bg)',
+                fontSize: 13, fontWeight: 600,
+                cursor: saving ? 'default' : 'pointer',
+                fontFamily: 'var(--km-font-body)',
+                opacity: saving ? 0.7 : 1,
+                transition: 'opacity 120ms',
+              }}
+            >
+              {saving && <Loader2 size={13} className="animate-spin" />}
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

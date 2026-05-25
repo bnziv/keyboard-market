@@ -22,6 +22,7 @@ export class GroupBuy {
   @Prop() source_url?: string;
   @Prop({ type: [String] }) images?: string[];
   @Prop({ type: [String], default: [] }) excludedImages?: string[];
+  @Prop({ default: false }) hidden?: boolean;
   @Prop() scraped_at?: Date;
 }
 

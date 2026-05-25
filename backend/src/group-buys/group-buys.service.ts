@@ -9,12 +9,11 @@ export class GroupBuysService {
   constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {}
 
   async findAll(status?: string) {
-    const query = status ? { status } : {};
+    const query: any = { hidden: { $ne: true } };
+    if (status) query.status = status;
     const docs = await this.groupBuyModel.find(query).lean().exec();
 
-    return docs.map((doc: any) => {
-      const excluded: string[] = doc.excludedImages ?? [];
-      return {
+    return docs.map((doc: any) => ({
         id: doc._id?.toString(),
         topicId: doc.topic_id,
         name: doc.name,
@@ -30,10 +29,9 @@ export class GroupBuysService {
         vendors: doc.vendors ?? [],
         discordUrl: doc.discord_url ?? null,
         sourceUrl: doc.source_url ?? null,
-        images: (doc.images ?? []).filter((img: string) => !excluded.includes(img)),
+        images: doc.images ?? [],
         scrapedAt: doc.scraped_at ?? null,
-      };
-    });
+      }));
   }
 
   async findAllAdmin(status?: string) {
@@ -59,6 +57,7 @@ export class GroupBuysService {
       sourceUrl: doc.source_url ?? null,
       images: doc.images ?? [],
       excludedImages: doc.excludedImages ?? [],
+      hidden: doc.hidden ?? false,
       scrapedAt: doc.scraped_at ?? null,
     }));
   }
@@ -86,6 +85,7 @@ export class GroupBuysService {
       sourceUrl: doc.source_url ?? null,
       images: doc.images ?? [],
       excludedImages: doc.excludedImages ?? [],
+      hidden: doc.hidden ?? false,
       scrapedAt: doc.scraped_at ?? null,
     };
   }
@@ -116,6 +116,7 @@ export class GroupBuysService {
       sourceUrl: doc.source_url ?? null,
       images: doc.images ?? [],
       excludedImages: doc.excludedImages ?? [],
+      hidden: doc.hidden ?? false,
       scrapedAt: doc.scraped_at ?? null,
     };
   }

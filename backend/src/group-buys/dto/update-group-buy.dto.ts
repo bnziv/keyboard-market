@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
@@ -118,4 +119,8 @@ export class UpdateGroupBuyDto {
   @IsArray()
   @IsString({ each: true })
   excludedImages?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  hidden?: boolean;
 }
