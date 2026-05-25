@@ -2,8 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
-import axios from "axios"
-import API_URL from "@/utils/config"
+import api from "@/utils/api"
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Check } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 
@@ -533,11 +532,11 @@ export default function Login() {
     if (!form.identifier.trim()) { showError("Email or username cannot be empty"); return }
     if (!form.password.trim()) { showError("Password cannot be empty"); return }
     try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, {
+      const res = await api.post('/api/auth/login', {
         identifier: form.identifier,
         password: form.password,
-      }, { withCredentials: true })
-      if (res.status === 200) {
+      })
+      if (res.status === 201) {
         login(res.data)
         showSuccess("Welcome back!")
         setTimeout(() => navigate("/listings"), 1500)
@@ -549,12 +548,12 @@ export default function Login() {
 
   const handleRegister = async () => {
     try {
-      const res = await axios.post(`${API_URL}/api/auth/register`, {
+      const res = await api.post('/api/auth/register', {
         email: form.email,
         username: form.username,
         password: form.password,
-      }, { withCredentials: true })
-      if (res.status === 200) {
+      })
+      if (res.status === 201) {
         login(res.data)
         showSuccess("Welcome to KBMARKET!")
         setTimeout(() => navigate("/listings"), 1500)

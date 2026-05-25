@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import axios from 'axios';
-import API_URL from '@/utils/config';
+import api from '@/utils/api';
 
 interface Conversation {
   userId: string;
@@ -23,7 +22,7 @@ export function ConversationsList({ currentUserId, onSelectConversation, onClose
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/chat/conversations/${currentUserId}`, { withCredentials: true });
+        const response = await api.get(`/api/chat/conversations/${currentUserId}`);
         setConversations(response.data);
       } catch (error) {
         console.error('Failed to load conversations:', error);

@@ -1,4 +1,4 @@
-name: Deploy Spring Boot on AWS EC2
+name: Deploy Backend to Fly.io
 
 on:
   push:
@@ -14,33 +14,12 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Ensure gradlew is executable
-        run: chmod +x ./backend/gradlew
+      - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Build Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/kbm-backend:latest ./backend
-
-      - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/kbm-backend:latest
-
-      - name: Deploy to AWS EC2
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kbm-backend:latest
-            docker stop kbm-backend || true
-            docker rm kbm-backend || true
-            docker run -d --name kbm-backend -p 8080:8080 --restart always \
-              -e DB_URL=${{ secrets.DB_URL }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              -e CORS_ORIGINS=${{ secrets.CORS_ORIGINS }} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/kbm-backend:latest
+      - run: flyctl deploy --remote-only
+        working-directory: backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

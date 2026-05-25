@@ -1,6 +1,6 @@
 import NavBar from "@/components/NavBar"
 import { useState } from "react"
-import axios from "axios"
+import api from "@/utils/api"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
@@ -77,7 +77,7 @@ export default function CreateListing() {
     e.preventDefault()
     if (!validateForm()) return
     try {
-      const res = await axios.post('/api/listings', { title, description, price, condition, imageUrl, offers }, { withCredentials: true })
+      const res = await api.post('/api/listings', { title, description, price, condition, imageUrl, offers })
       if (res.status === 201) { showSuccess('Listing created!'); navigate('/listings') }
     } catch {
       showError('Failed to create listing')

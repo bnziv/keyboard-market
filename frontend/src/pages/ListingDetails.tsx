@@ -4,10 +4,9 @@ import NavBar from "@/components/NavBar"
 import { MessageCircle, Heart, Share2, Shield } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
-import API_URL from "@/utils/config"
 import { useAuth } from "@/utils/AuthProvider"
 import { useChat } from '@/utils/ChatProvider'
-import axios from "axios"
+import api from "@/utils/api"
 
 interface Listing {
     id: string
@@ -42,7 +41,7 @@ export default function ListingDetailsPage() {
     const isMounted = useRef(false)
 
     useEffect(() => {
-        axios.get(`${API_URL}/api/listings/details/${id}`)
+        api.get(`/api/listings/details/${id}`)
             .then(res => { setListing(res.data); setLoading(false); })
             .catch(() => {
                 if (!isMounted.current) showError("Listing not found")
