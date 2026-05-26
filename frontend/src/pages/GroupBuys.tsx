@@ -10,6 +10,7 @@ import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import * as Dialog from '@radix-ui/react-dialog';
+import { cn } from '@/lib/utils';
 
 interface ApiGroupBuy {
   id: string;
@@ -139,7 +140,7 @@ const STAGE_TABS: { value: StageFilter; label: string }[] = [
   { value: 'closed',   label: 'Closed' },
 ];
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// ─── Carousel ─────────────────────────────────────────────────────────────────
 
 function Carousel({ images, category }: { images: string[]; category: string }) {
   const [active, setActive] = useState(0);
@@ -156,19 +157,20 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
 
   if (images.length === 0) {
     return (
-      <div style={{
-        width: '100%', aspectRatio: '4 / 3', borderRadius: 6, overflow: 'hidden',
-        background: `linear-gradient(135deg, ${bg} 0%, ${fg}66 100%)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: 8,
-          border: '1.5px solid rgba(255,255,255,0.15)',
-          background: 'rgba(255,255,255,0.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--km-font-mono)', fontSize: 12,
-          color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase',
-        }}>
+      <div
+        className="w-full rounded-[6px] overflow-hidden flex items-center justify-center"
+        style={{
+          aspectRatio: '4 / 3',
+          background: `linear-gradient(135deg, ${bg} 0%, ${fg}66 100%)`,
+        }}
+      >
+        <div className="w-[72px] h-[72px] rounded-[8px] flex items-center justify-center font-km-mono text-xs tracking-[0.12em] uppercase"
+          style={{
+            border: '1.5px solid rgba(255,255,255,0.15)',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'rgba(255,255,255,0.3)',
+          }}
+        >
           {category.slice(0, 3)}
         </div>
       </div>
@@ -178,44 +180,30 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
   return (
     <div>
       {/* Main image */}
-      <div style={{ width: '100%', aspectRatio: '4 / 3', position: 'relative', borderRadius: 6, overflow: 'hidden' }}>
+      <div className="w-full relative rounded-[6px] overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
         {/* Blurred backdrop */}
         <img
           key={`bg-${active}`}
           src={images[active]}
           aria-hidden
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            objectFit: 'cover',
-            filter: 'blur(18px) brightness(0.55)',
-            transform: 'scale(1.08)',
-          }}
+          className="absolute inset-0 w-full h-full object-cover scale-[1.08]"
+          style={{ filter: 'blur(18px) brightness(0.55)' }}
         />
-        {/* Foreground — full image, no crop */}
+        {/* Foreground */}
         <img
           key={active}
           src={images[active]}
           alt={`image ${active + 1}`}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 1,
-            width: '100%', height: '100%',
-            objectFit: 'contain',
-          }}
+          className="absolute inset-0 z-[1] w-full h-full object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
 
         {/* Counter */}
         {images.length > 1 && (
-          <div style={{
-            position: 'absolute', bottom: 10, right: 12, zIndex: 2,
-            padding: '3px 8px',
-            background: 'rgba(0,0,0,0.55)',
-            color: 'rgba(255,255,255,0.8)',
-            borderRadius: 4,
-            fontFamily: 'var(--km-font-mono)', fontSize: 10,
-            letterSpacing: '0.08em',
-          }}>
+          <div
+            className="absolute bottom-2.5 right-3 z-[2] px-2 py-[3px] rounded font-km-mono text-[10px] tracking-[0.08em]"
+            style={{ background: 'rgba(0,0,0,0.55)', color: 'rgba(255,255,255,0.8)' }}
+          >
             {active + 1} / {images.length}
           </div>
         )}
@@ -225,25 +213,15 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
           <>
             <button
               onClick={prev}
-              style={{
-                position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', zIndex: 2,
-                width: 32, height: 32, borderRadius: '50%',
-                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)',
-                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-white"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               <ArrowLeft size={14} />
             </button>
             <button
               onClick={next}
-              style={{
-                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', zIndex: 2,
-                width: 32, height: 32, borderRadius: '50%',
-                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)',
-                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-white"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               <ArrowRight size={14} />
             </button>
@@ -255,28 +233,23 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
       {images.length > 1 && (
         <div
           ref={thumbsRef}
-          style={{
-            display: 'flex', gap: 6, marginTop: 10,
-            overflowX: 'auto', scrollbarWidth: 'none',
-          }}
+          className="flex gap-1.5 mt-2.5 overflow-x-auto"
+          style={{ scrollbarWidth: 'none' }}
         >
           {images.map((src, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
-              style={{
-                flexShrink: 0, width: 72, height: 54, padding: 0,
-                borderRadius: 4, overflow: 'hidden', cursor: 'pointer',
-                border: `2px solid ${i === active ? 'var(--km-gold)' : 'var(--km-line)'}`,
-                opacity: i === active ? 1 : 0.65,
-                transition: 'border-color 120ms, opacity 120ms',
-                background: 'none',
-              }}
+              className={cn(
+                'flex-shrink-0 p-0 rounded overflow-hidden cursor-pointer border-2 bg-transparent transition-[border-color,opacity] duration-[120ms]',
+                i === active ? 'border-km-gold opacity-100' : 'border-km-line opacity-[0.65]'
+              )}
+              style={{ width: 72, height: 54 }}
             >
               <img
                 src={src}
                 alt={`view ${i + 1}`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                className="w-full h-full object-cover block"
                 onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
               />
             </button>
@@ -286,6 +259,8 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
     </div>
   );
 }
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
 
 function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void }) {
   const [open, setOpen] = useState(true);
@@ -303,308 +278,218 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
     <Dialog.Root open={open} onOpenChange={o => !o && setOpen(false)}>
       <Dialog.Portal forceMount>
         <Dialog.Overlay
-          className="gb-overlay"
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1000,
-            background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-          }}
+          className="gb-overlay fixed inset-0 z-[1000] bg-black/[0.72] backdrop-blur-[6px] flex items-center justify-center p-6"
         >
           <Dialog.Content
-            className="gb-content"
+            className="gb-content w-full max-w-[1100px] bg-km-surface border border-km-line rounded-[8px] shadow-[0_40px_120px_rgba(0,0,0,0.5)] grid overflow-hidden"
             onAnimationEnd={() => { if (!open) onClose(); }}
-            style={{
-              width: '100%', maxWidth: 1100,
-              maxHeight: 'calc(100vh - 48px)',
-              background: 'var(--km-surface)',
-              border: '1px solid var(--km-line)',
-              borderRadius: 8,
-              boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
-              display: 'grid', gridTemplateColumns: '1.1fr 1fr',
-              overflow: 'hidden',
-            }}
+            style={{ maxHeight: 'calc(100vh - 48px)', gridTemplateColumns: '1.1fr 1fr' }}
           >
             <Dialog.Title className="sr-only">{gb.name}</Dialog.Title>
-        {/* ── LEFT — Carousel + kits ── */}
-        <div style={{
-          background: 'var(--km-bg)',
-          padding: '24px',
-          display: 'flex', flexDirection: 'column', gap: 16,
-          borderRight: '1px solid var(--km-line)',
-          overflowY: 'auto',
-        }}>
-          <Carousel images={gb.images} category={gb.category} />
 
-          {gb.items.length > 0 && (
-            <div>
-              <div style={{
-                fontFamily: 'var(--km-font-mono)', fontSize: 10,
-                color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-                textTransform: 'uppercase', marginBottom: 10,
-              }}>
-                Kits & options
-              </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                gap: 8,
-              }}>
-                {gb.items.map((item, i) => (
-                  <div key={i} style={{
-                    padding: '10px 12px',
-                    border: '1px solid var(--km-line)',
-                    borderRadius: 4,
-                    background: 'var(--km-surface)',
-                  }}>
-                    <div style={{
-                      fontFamily: 'var(--km-font-mono)', fontSize: 9,
-                      color: item.price > 0 ? 'var(--km-gold)' : 'var(--km-ink-mute)',
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                    }}>
-                      {item.price > 0
-                        ? `${item.currency === 'USD' ? '$' : item.currency + ' '}${item.price}`
-                        : 'Included'}
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--km-ink)', marginTop: 4 }}>
-                      {item.name}
-                    </div>
+            {/* ── LEFT — Carousel + kits ── */}
+            <div className="bg-km-bg p-6 flex flex-col gap-4 border-r border-km-line overflow-y-auto">
+              <Carousel images={gb.images} category={gb.category} />
+
+              {gb.items.length > 0 && (
+                <div>
+                  <div className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.15em] uppercase mb-2.5">
+                    Kits & options
                   </div>
+                  <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+                    {gb.items.map((item, i) => (
+                      <div key={i} className="p-[10px_12px] border border-km-line rounded bg-km-surface">
+                        <div className={cn('font-km-mono text-[9px] tracking-[0.1em] uppercase', item.price > 0 ? 'text-km-gold' : 'text-km-ink-mute')}>
+                          {item.price > 0
+                            ? `${item.currency === 'USD' ? '$' : item.currency + ' '}${item.price}`
+                            : 'Included'}
+                        </div>
+                        <div className="text-[13px] font-semibold text-km-ink mt-1">
+                          {item.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT — Sticky header + tabs + scrollable body + sticky footer ── */}
+            <div className="flex flex-col min-h-0 overflow-hidden" style={{ maxHeight: 'calc(100vh - 48px)' }}>
+
+              {/* Sticky header */}
+              <div className="p-[20px_24px] border-b border-km-line flex items-start gap-3.5 flex-shrink-0">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+                    <StatusBadge tone="neutral">{gb.category}</StatusBadge>
+                    {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
+                  </div>
+                  <h2 className="m-0 font-km-body text-[26px] font-bold tracking-[-0.025em] leading-[1.15] text-km-ink">
+                    {gb.name}
+                  </h2>
+                  <div className="flex items-center gap-1.5 mt-1.5 font-km-mono text-[11px] text-km-ink-mute tracking-[0.05em]">
+                    by <span className="text-km-ink">@{gb.designer}</span>
+                  </div>
+                </div>
+                <Dialog.Close asChild>
+                  <Button variant="surface" size="icon" aria-label="Close" className="flex-shrink-0">
+                    <X size={14} />
+                  </Button>
+                </Dialog.Close>
+              </div>
+
+              {/* Tab bar */}
+              <div className="flex gap-[18px] px-6 border-b border-km-line flex-shrink-0">
+                {([
+                  ['overview', 'Overview'],
+                  ['vendors',  `Vendors (${gb.vendors.length})`],
+                ] as const).map(([v, l]) => (
+                  <button
+                    key={v}
+                    onClick={() => setTab(v)}
+                    className={cn(
+                      'py-3.5 font-km-mono text-[11px] tracking-[0.1em] uppercase bg-none border-none border-b-2 cursor-pointer whitespace-nowrap -mb-px',
+                      tab === v ? 'text-km-ink font-semibold border-km-gold' : 'text-km-ink-mute font-normal border-transparent'
+                    )}
+                  >
+                    {l}
+                  </button>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* ── RIGHT — Sticky header + tabs + scrollable body + sticky footer ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', maxHeight: 'calc(100vh - 48px)' }}>
+              {/* Scrollable tab body */}
+              <div className="flex-1 overflow-y-auto p-[20px_24px] min-h-0">
 
-          {/* Sticky header */}
-          <div style={{
-            padding: '20px 24px', borderBottom: '1px solid var(--km-line)',
-            display: 'flex', alignItems: 'flex-start', gap: 14,
-            flexShrink: 0,
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-                <StatusBadge tone="neutral">{gb.category}</StatusBadge>
-                {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
-              </div>
-              <h2 style={{
-                margin: 0,
-                fontFamily: 'var(--km-font-body)', fontSize: 26, fontWeight: 700,
-                letterSpacing: '-0.025em', lineHeight: 1.15,
-                color: 'var(--km-ink)',
-              }}>
-                {gb.name}
-              </h2>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6, marginTop: 6,
-                fontFamily: 'var(--km-font-mono)', fontSize: 11,
-                color: 'var(--km-ink-mute)', letterSpacing: '0.05em',
-              }}>
-                by <span style={{ color: 'var(--km-ink)' }}>@{gb.designer}</span>
-              </div>
-            </div>
-            <Dialog.Close asChild>
-              <Button variant="surface" size="icon" aria-label="Close" className="flex-shrink-0">
-                <X size={14} />
-              </Button>
-            </Dialog.Close>
-          </div>
+                {/* Overview tab */}
+                {tab === 'overview' && (
+                  <div>
+                    {gb.desc && (
+                      <p className="m-0 mb-[18px] text-sm leading-[1.6] text-km-ink-dim">
+                        {gb.desc}
+                      </p>
+                    )}
 
-          {/* Tab bar */}
-          <div style={{
-            display: 'flex', gap: 18, padding: '0 24px',
-            borderBottom: '1px solid var(--km-line)',
-            flexShrink: 0,
-          }}>
-            {([
-              ['overview', 'Overview'],
-              ['vendors',  `Vendors (${gb.vendors.length})`],
-            ] as const).map(([v, l]) => (
-              <button
-                key={v}
-                onClick={() => setTab(v)}
-                style={{
-                  padding: '14px 0',
-                  fontFamily: 'var(--km-font-mono)', fontSize: 11,
-                  color: tab === v ? 'var(--km-ink)' : 'var(--km-ink-mute)',
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  fontWeight: tab === v ? 600 : 400,
-                  background: 'none',
-                  border: 'none',
-                  borderBottom: `2px solid ${tab === v ? 'var(--km-gold)' : 'transparent'}`,
-                  cursor: 'pointer',
-                  marginBottom: -1,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+                    {/* 2×2 dates grid */}
+                    <div
+                      className="grid border border-km-line rounded overflow-hidden mb-[18px]"
+                      style={{ gridTemplateColumns: '1fr 1fr', gap: 0 }}
+                    >
+                      {([
+                        { label: 'Start date',      value: formatDate(gb.gbStartIso), accent: false },
+                        { label: 'End date',         value: formatDate(gb.gbEndIso),   accent: true  },
+                        { label: 'Closes in',        value: gb.closes,                accent: false },
+                        { label: 'Est. fulfillment', value: gb.eta,                   accent: false },
+                      ] as const).map(({ label, value, accent }, i) => (
+                        <div
+                          key={label}
+                          className={cn(
+                            'p-[14px_16px] bg-km-surface',
+                            i % 2 === 0 && 'border-r border-km-line',
+                            i >= 2 && 'border-t border-km-line'
+                          )}
+                        >
+                          <div className={cn('font-km-mono text-[10px] tracking-[0.12em] uppercase mb-1', accent ? 'text-km-gold' : 'text-km-ink-mute')}>
+                            {label}
+                          </div>
+                          <div className="text-km-ink text-sm font-medium">
+                            {value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-          {/* Scrollable tab body */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', minHeight: 0 }}>
-
-            {/* Overview tab */}
-            {tab === 'overview' && (
-              <div>
-                {gb.desc && (
-                  <p style={{ margin: '0 0 18px', fontSize: 14, lineHeight: 1.6, color: 'var(--km-ink-dim)' }}>
-                    {gb.desc}
-                  </p>
+                    {gb.discordUrl && (
+                      <Button size="sm" asChild style={{ background: '#5865F2', color: '#fff' }}>
+                        <a
+                          href={gb.discordUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
+                            <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
+                          </svg>
+                          Join Discord
+                        </a>
+                      </Button>
+                    )}
+                  </div>
                 )}
 
-                {/* 2×2 dates grid */}
-                <div style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr',
-                  gap: 0, border: '1px solid var(--km-line)',
-                  borderRadius: 4, overflow: 'hidden', marginBottom: 18,
-                }}>
-                  {([
-                    { label: 'Start date',      value: formatDate(gb.gbStartIso), accent: false },
-                    { label: 'End date',         value: formatDate(gb.gbEndIso),   accent: true  },
-                    { label: 'Closes in',        value: gb.closes,                accent: false },
-                    { label: 'Est. fulfillment', value: gb.eta,                   accent: false },
-                  ] as const).map(({ label, value, accent }, i) => (
-                    <div key={label} style={{
-                      padding: '14px 16px',
-                      background: 'var(--km-surface)',
-                      borderRight: i % 2 === 0 ? '1px solid var(--km-line)' : 'none',
-                      borderTop: i >= 2 ? '1px solid var(--km-line)' : 'none',
-                    }}>
-                      <div style={{
-                        fontFamily: 'var(--km-font-mono)', fontSize: 10,
-                        color: accent ? 'var(--km-gold)' : 'var(--km-ink-mute)',
-                        letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4,
-                      }}>
-                        {label}
+                {/* Vendors tab */}
+                {tab === 'vendors' && (
+                  <div>
+                    {gb.vendors.length === 0 ? (
+                      <div className="p-8 text-center text-km-ink-mute font-km-mono text-xs">
+                        No vendor information available.
                       </div>
-                      <div style={{ color: 'var(--km-ink)', fontSize: 14, fontWeight: 500 }}>
-                        {value}
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {gb.vendors.map((v, i) => (
+                          <div
+                            key={i}
+                            className="p-[14px_16px] border border-km-line rounded bg-km-bg grid gap-3.5 items-center"
+                            style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}
+                          >
+                            <div className="min-w-0">
+                              <div className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.12em] uppercase">
+                                {v.region}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                                <span className="text-km-ink font-semibold text-sm whitespace-nowrap">
+                                  {v.name}
+                                </span>
+                                <span className="font-km-mono text-[11px] text-km-ink-mute overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
+                                  {v.url}
+                                </span>
+                              </div>
+                            </div>
+                            <Button variant="surface" size="sm" asChild>
+                              <a
+                                href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={e => e.stopPropagation()}
+                              >
+                                Visit ↗
+                              </a>
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                )}
+
+              </div>
+
+              {/* Sticky footer */}
+              <div className="p-[16px_24px] border-t border-km-line bg-km-surface flex items-center gap-2.5 flex-shrink-0">
+                <div>
+                  <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase">
+                    Base price
+                  </div>
+                  <div className="font-km-body text-[22px] font-bold text-km-ink tracking-[-0.02em]">
+                    {gb.price > 0 ? `$${gb.price}` : '—'}
+                  </div>
                 </div>
 
-                {gb.discordUrl && (
-                  <Button size="sm" asChild style={{ background: '#5865F2', color: '#fff' }}>
+                <div className="flex-1" />
+
+                {gb.sourceUrl && (
+                  <Button variant="gold" asChild>
                     <a
-                      href={gb.discordUrl}
+                      href={gb.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
                     >
-                      <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
-                        <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
-                      </svg>
-                      Join Discord
+                      View original post <ExternalLink size={12} />
                     </a>
                   </Button>
                 )}
               </div>
-            )}
-
-            {/* Vendors tab */}
-            {tab === 'vendors' && (
-              <div>
-                {gb.vendors.length === 0 ? (
-                  <div style={{
-                    padding: '32px', textAlign: 'center',
-                    color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: 12,
-                  }}>
-                    No vendor information available.
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {gb.vendors.map((v, i) => (
-                      <div key={i} style={{
-                        padding: '14px 16px',
-                        border: '1px solid var(--km-line)', borderRadius: 4,
-                        background: 'var(--km-bg)',
-                        display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 14, alignItems: 'center',
-                      }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{
-                            fontFamily: 'var(--km-font-mono)', fontSize: 10,
-                            color: 'var(--km-ink-mute)', letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
-                          }}>
-                            {v.region}
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, minWidth: 0 }}>
-                            <span style={{ color: 'var(--km-ink)', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
-                              {v.name}
-                            </span>
-                            <span style={{
-                              fontFamily: 'var(--km-font-mono)', fontSize: 11, color: 'var(--km-ink-mute)',
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
-                            }}>
-                              {v.url}
-                            </span>
-                          </div>
-                        </div>
-                        <Button variant="surface" size="sm" asChild>
-                          <a
-                            href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            Visit ↗
-                          </a>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-
-          {/* Sticky footer */}
-          <div style={{
-            padding: '16px 24px',
-            borderTop: '1px solid var(--km-line)',
-            background: 'var(--km-surface)',
-            display: 'flex', alignItems: 'center', gap: 10,
-            flexShrink: 0,
-          }}>
-            <div>
-              <div style={{
-                fontFamily: 'var(--km-font-mono)', fontSize: 9,
-                color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-              }}>
-                Base price
-              </div>
-              <div style={{
-                fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 700,
-                color: 'var(--km-ink)', letterSpacing: '-0.02em',
-              }}>
-                {gb.price > 0 ? `$${gb.price}` : '—'}
-              </div>
             </div>
-
-            <div style={{ flex: 1 }} />
-
-            {gb.sourceUrl && (
-              <Button variant="gold" asChild>
-                <a
-                  href={gb.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                >
-                  View original post <ExternalLink size={12} />
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>
@@ -654,74 +539,42 @@ export default function GroupBuys() {
   const selectedGb = selectedId ? cards.find(g => g.id === selectedId) ?? null : null;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="groupbuys" />
 
       {/* Page header */}
-      <div style={{
-        borderBottom: '1px solid var(--km-line)',
-        background: 'var(--km-surface)',
-        padding: '40px 32px 0',
-      }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="border-b border-km-line bg-km-surface px-8 pt-10 pb-0">
+        <div className="max-w-[1280px] mx-auto">
 
-          <div style={{
-            fontFamily: 'var(--km-font-mono)', fontSize: 11,
-            color: 'var(--km-gold)', letterSpacing: '0.2em',
-            textTransform: 'uppercase', marginBottom: 12,
-          }}>
+          <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase mb-3">
             · Coordinated runs · pre-orders ·
           </div>
 
-          <div style={{
-            display: 'flex', alignItems: 'flex-end',
-            justifyContent: 'space-between', gap: 40, flexWrap: 'wrap',
-          }}>
+          <div className="flex items-end justify-between gap-10 flex-wrap">
             <div>
-              <h1 style={{
-                margin: 0,
-                fontFamily: 'var(--km-font-body)', fontSize: 42, fontWeight: 700,
-                letterSpacing: '-0.03em', lineHeight: 1, color: 'var(--km-ink)',
-              }}>
+              <h1 className="m-0 font-km-body text-[42px] font-bold tracking-[-0.03em] leading-none text-km-ink">
                 Group buys
               </h1>
-              <p style={{
-                marginTop: 12, maxWidth: 540,
-                fontSize: 14, color: 'var(--km-ink-dim)', lineHeight: 1.55,
-              }}>
+              <p className="mt-3 text-sm text-km-ink-dim leading-[1.55]" style={{ maxWidth: 540 }}>
                 Coordinated manufacturing runs from independent designers and vendors. Pay once,
                 wait for production, then it ships to your door. Refunded if MOQ isn't met.
               </p>
             </div>
 
             {/* Stats strip */}
-            <div style={{
-              display: 'flex',
-              border: '1px solid var(--km-line)',
-              borderRadius: 4,
-              background: 'var(--km-surface)',
-              overflow: 'hidden',
-            }}>
+            <div className="flex border border-km-line rounded bg-km-surface overflow-hidden">
               {([
                 [String(liveCount), 'live now'],
                 [String(cards.length), 'tracked'],
               ] as const).map(([v, l], i) => (
-                <div key={l} style={{
-                  padding: '16px 22px',
-                  borderRight: i < 1 ? '1px solid var(--km-line)' : 'none',
-                  minWidth: 110,
-                }}>
-                  <div style={{
-                    fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 700,
-                    color: 'var(--km-ink)', letterSpacing: '-0.02em',
-                  }}>
+                <div
+                  key={l}
+                  className={cn('p-[16px_22px] min-w-[110px]', i < 1 && 'border-r border-km-line')}
+                >
+                  <div className="font-km-body text-[22px] font-bold text-km-ink tracking-[-0.02em]">
                     {v}
                   </div>
-                  <div style={{
-                    fontFamily: 'var(--km-font-mono)', fontSize: 9,
-                    color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-                    textTransform: 'uppercase', marginTop: 2,
-                  }}>
+                  <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase mt-0.5">
                     {l}
                   </div>
                 </div>
@@ -730,10 +583,7 @@ export default function GroupBuys() {
           </div>
 
           {/* Stage tabs */}
-          <div style={{
-            display: 'flex', marginTop: 32,
-            alignItems: 'center', marginBottom: -1,
-          }}>
+          <div className="flex mt-8 items-center -mb-px">
             <TabBar
               tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
               active={stage}
@@ -741,37 +591,15 @@ export default function GroupBuys() {
               variant="body"
             />
 
-            <div style={{ flex: 1 }} />
+            <div className="flex-1" />
 
             <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
-              <SelectTrigger style={{
-                alignSelf: 'center',
-                marginBottom: 10,
-                height: 'auto',
-                width: 'auto',
-                padding: '7px 10px 7px 13px',
-                gap: 12,
-                border: 'none',
-                fontSize: 12,
-                color: 'var(--km-ink)',
-                background: 'var(--km-surface)',
-                fontFamily: 'var(--km-font-body)',
-                boxShadow: 'none',
-              }}>
+              <SelectTrigger className="self-center mb-2.5 h-auto w-auto py-[7px] pl-[13px] pr-[10px] gap-3 border-none text-xs text-km-ink bg-km-surface font-km-body shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent style={{
-                background: 'var(--km-surface)',
-                border: '1px solid var(--km-line)',
-                borderRadius: 4,
-                color: 'var(--km-ink)',
-              }}>
+              <SelectContent className="bg-km-surface border border-km-line rounded text-km-ink">
                 {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([val, label]) => (
-                  <SelectItem key={val} value={val} style={{
-                    fontFamily: 'var(--km-font-body)',
-                    fontSize: 12,
-                    cursor: 'pointer',
-                  }}>
+                  <SelectItem key={val} value={val} className="font-km-body text-xs cursor-pointer">
                     {label}
                   </SelectItem>
                 ))}
@@ -782,36 +610,24 @@ export default function GroupBuys() {
       </div>
 
       {/* Main content */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px', width: '100%' }}>
+      <div className="max-w-[1280px] mx-auto p-8 w-full">
 
-        {/* Loading / error / cards */}
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 0' }}>
-            <Loader2 size={28} className="animate-spin" style={{ color: 'var(--km-ink-mute)' }} />
+          <div className="flex justify-center py-16">
+            <Loader2 size={28} className="animate-spin text-km-ink-mute" />
           </div>
         ) : error ? (
-          <div style={{
-            padding: '64px 32px', textAlign: 'center',
-            color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: 13,
-          }}>
+          <div className="py-16 px-8 text-center text-km-ink-mute font-km-mono text-[13px]">
             {error}
           </div>
         ) : visible.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 20,
-          }}>
+          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
             {visible.map(g => (
               <GroupBuyCard key={g.id} gb={g} onOpen={() => setSelectedId(g.id)} />
             ))}
           </div>
         ) : (
-          <div style={{
-            padding: '64px 32px', textAlign: 'center',
-            color: 'var(--km-ink-mute)',
-            fontFamily: 'var(--km-font-mono)', fontSize: 13,
-          }}>
+          <div className="py-16 px-8 text-center text-km-ink-mute font-km-mono text-[13px]">
             No group buys in this stage right now.
           </div>
         )}

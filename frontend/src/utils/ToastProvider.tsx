@@ -28,7 +28,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
   const showError = (message: string) => {
     toast.error(message, {
-      style: { ...BASE, borderLeft: '2px solid hsl(0 62.8% 55%)' },
+      style: { ...BASE, borderLeft: '2px solid var(--km-error)' },
     })
   }
 

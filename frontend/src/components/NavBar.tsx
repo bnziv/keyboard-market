@@ -37,43 +37,32 @@ export default function NavBar({ className, activePage }: NavBarProps) {
   };
 
   return (
-    <header
-      className={cn('sticky top-0 z-50 flex items-center gap-4 px-6 h-14 border-b', className)}
-      style={{ background: 'var(--km-bg)', borderColor: 'var(--km-line)' }}
-    >
+    <header className={cn('sticky top-0 z-50 flex items-center gap-4 px-6 h-14 border-b bg-km-bg border-km-line', className)}>
       {/* Brand */}
       <Link
         to="/"
-        className="flex-shrink-0 text-base font-bold tracking-tight"
-        style={{ fontFamily: 'var(--km-font-body)', color: 'var(--km-ink)' }}
+        className="flex-shrink-0 text-base font-bold tracking-tight font-km-body text-km-ink"
       >
-        <span style={{ color: 'var(--km-gold)' }}>◆</span>{' '}
+        <span className="text-km-gold">◆</span>{' '}
         <span style={{ letterSpacing: '-0.02em' }}>KBMARKET</span>
       </Link>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-sm ml-4">
         <div
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-text"
-          style={{
-            background: 'var(--km-surface-2)',
-            borderColor: 'var(--km-line)',
-            color: 'var(--km-ink-mute)',
-            fontFamily: 'var(--km-font-mono)',
-          }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-text bg-km-surface-2 border-km-line text-km-ink-mute font-km-mono"
           onClick={() => document.getElementById('nav-search')?.focus()}
         >
-          <Search size={12} style={{ color: 'var(--km-ink-mute)', flexShrink: 0 }} />
+          <Search size={12} className="text-km-ink-mute flex-shrink-0" />
           <input
             id="nav-search"
             type="text"
             value={searchValue}
             onChange={e => setSearchValue(e.target.value)}
             placeholder="search keycaps, switches, PCBs…"
-            className="flex-1 bg-transparent outline-none"
-            style={{ color: 'var(--km-ink-dim)', fontFamily: 'var(--km-font-mono)', fontSize: '11px' }}
+            className="flex-1 bg-transparent outline-none text-km-ink-dim font-km-mono text-[11px]"
           />
-          <span className="ml-auto opacity-60" style={{ fontSize: '10px' }}>⌘K</span>
+          <span className="ml-auto opacity-60 text-[10px]">⌘K</span>
         </div>
       </form>
 
@@ -88,12 +77,14 @@ export default function NavBar({ className, activePage }: NavBarProps) {
             key={link.id}
             to={link.href}
             onClick={link.id === 'create' ? (e) => { e.preventDefault(); handleCreateListing(); } : undefined}
-            className="relative px-3 py-2 text-sm font-medium transition-colors"
-            style={{ color: activePage === link.id ? 'var(--km-ink)' : 'var(--km-ink-dim)' }}
+            className={cn(
+              'relative px-3 py-2 text-sm font-medium transition-colors',
+              activePage === link.id ? 'text-km-ink' : 'text-km-ink-dim',
+            )}
           >
             {link.label}
             {activePage === link.id && (
-              <span className="absolute bottom-0 left-3 right-3 h-0.5" style={{ background: 'var(--km-gold)' }} />
+              <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-km-gold" />
             )}
           </Link>
         ))}
@@ -101,8 +92,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         {/* Message icon */}
         <button
           onClick={toggleConversations}
-          className="relative ml-1 w-8 h-8 flex items-center justify-center rounded-full border transition-colors"
-          style={{ borderColor: 'var(--km-line)', color: 'var(--km-ink-dim)', background: 'transparent', cursor: 'pointer' }}
+          className="relative ml-1 w-8 h-8 flex items-center justify-center rounded-full border border-km-line text-km-ink-dim bg-transparent transition-colors cursor-pointer"
         >
           <MessageSquare size={14} />
         </button>
@@ -111,8 +101,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         <button
           onClick={toggle}
           title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-          className="ml-1 w-8 h-8 flex items-center justify-center rounded-full border transition-colors"
-          style={{ borderColor: 'var(--km-line)', color: 'var(--km-ink-dim)', background: 'transparent', cursor: 'pointer' }}
+          className="ml-1 w-8 h-8 flex items-center justify-center rounded-full border border-km-line text-km-ink-dim bg-transparent transition-colors cursor-pointer"
         >
           {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
@@ -121,38 +110,25 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         {isAuthenticated ? (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <button
-                className="ml-2 w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold border"
-                style={{
-                  fontFamily: 'var(--km-font-mono)',
-                  background: 'var(--km-gold-soft)',
-                  borderColor: 'rgba(212,178,76,0.33)',
-                  color: 'var(--km-gold)',
-                  cursor: 'pointer',
-                }}
-              >
+              <button className="ml-2 w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold border font-km-mono bg-km-gold-soft border-km-gold/33 text-km-gold cursor-pointer">
                 {(user?.username?.[0] ?? '?').toUpperCase()}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)', color: 'var(--km-ink)' }}
-            >
+            <DropdownMenuContent align="end" className="bg-km-surface border-km-line text-km-ink">
               <DropdownMenuItem asChild>
-                <Link to={`/profile/${user?.username}`} className="flex items-center gap-2 cursor-pointer" style={{ color: 'var(--km-ink)' }}>
+                <Link to={`/profile/${user?.username}`} className="flex items-center gap-2 cursor-pointer text-km-ink">
                   <User size={14} /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/create-listing" className="flex items-center gap-2 cursor-pointer" style={{ color: 'var(--km-ink)' }}>
+                <Link to="/create-listing" className="flex items-center gap-2 cursor-pointer text-km-ink">
                   <Plus size={14} /> Create Listing
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator style={{ background: 'var(--km-line)' }} />
+              <DropdownMenuSeparator className="bg-km-line" />
               <DropdownMenuItem
                 onClick={logout}
-                className="flex items-center gap-2 cursor-pointer"
-                style={{ color: 'hsl(0 62.8% 55%)' }}
+                className="flex items-center gap-2 cursor-pointer text-km-error"
               >
                 <LogOut size={14} /> Logout
               </DropdownMenuItem>
@@ -161,14 +137,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         ) : (
           <button
             onClick={() => navigate('/login')}
-            className="ml-2 px-3 py-1.5 text-xs font-semibold rounded border"
-            style={{
-              background: 'var(--km-gold)',
-              borderColor: 'var(--km-gold)',
-              color: theme === 'dark' ? 'var(--km-bg)' : '#fff',
-              fontFamily: 'var(--km-font-body)',
-              cursor: 'pointer',
-            }}
+            className="ml-2 px-3 py-1.5 text-xs font-semibold rounded border font-km-body bg-km-gold border-km-gold text-km-bg cursor-pointer"
           >
             Login
           </button>

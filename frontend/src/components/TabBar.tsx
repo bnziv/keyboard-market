@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils';
+
 interface TabItem<T extends string> {
   key: T;
   label: string;
@@ -14,42 +16,32 @@ interface TabBarProps<T extends string> {
 export function TabBar<T extends string>({ tabs, active, onChange, variant = 'mono' }: TabBarProps<T>) {
   const isBody = variant === 'body';
   return (
-    <div style={{ display: 'flex' }}>
-      {tabs.map(tab => (
-        <button
-          key={tab.key}
-          onClick={() => onChange(tab.key)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            background: 'none', border: 'none',
-            borderBottom: `2px solid ${active === tab.key ? 'var(--km-gold)' : 'transparent'}`,
-            padding: '10px 16px',
-            fontFamily: isBody ? 'var(--km-font-body)' : 'var(--km-font-mono)',
-            fontSize: isBody ? 13 : 11,
-            letterSpacing: isBody ? undefined : '0.1em',
-            textTransform: isBody ? undefined : 'uppercase',
-            cursor: 'pointer',
-            color: active === tab.key ? 'var(--km-ink)' : (isBody ? 'var(--km-ink-dim)' : 'var(--km-ink-mute)'),
-            fontWeight: active === tab.key ? 600 : 400,
-            marginBottom: -1,
-            whiteSpace: 'nowrap',
-            transition: 'color 150ms',
-          }}
-        >
-          {tab.label}
-          {tab.count !== undefined && (
-            <span style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 10,
-              color: 'var(--km-ink-mute)',
-              background: active === tab.key ? 'var(--km-gold-soft)' : 'var(--km-surface-2)',
-              padding: '1px 6px', borderRadius: 8,
-              transition: 'background 150ms',
-            }}>
-              {tab.count}
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="flex">
+      {tabs.map(tab => {
+        const isActive = active === tab.key;
+        return (
+          <button
+            key={tab.key}
+            onClick={() => onChange(tab.key)}
+            className={cn(
+              'flex items-center gap-2 bg-transparent border-b-2 px-4 py-2.5 -mb-px whitespace-nowrap cursor-pointer transition-colors',
+              isActive ? 'border-km-gold' : 'border-transparent',
+              isBody ? 'font-km-body text-[13px]' : 'font-km-mono text-[11px] tracking-[0.1em] uppercase',
+              isActive ? 'font-semibold text-km-ink' : isBody ? 'font-normal text-km-ink-dim' : 'font-normal text-km-ink-mute',
+            )}
+          >
+            {tab.label}
+            {tab.count !== undefined && (
+              <span className={cn(
+                'font-km-mono text-[10px] text-km-ink-mute px-1.5 py-[1px] rounded-full transition-colors',
+                isActive ? 'bg-km-gold-soft' : 'bg-km-surface-2',
+              )}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

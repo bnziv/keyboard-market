@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { websocketService } from '@/services/websocketService';
 import { X, Send } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import api from '@/utils/api';
 
 interface Message {
@@ -136,64 +137,41 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
     <>
       <style>{`.no-select { user-select: none; -webkit-user-select: none; }`}</style>
       <div
-        className="fixed flex flex-col rounded border z-50"
+        className="fixed flex flex-col rounded border z-50 bg-km-surface border-km-line shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
         style={{
           left: `${windowPosition.x}px`,
           top: `${windowPosition.y}px`,
           width: `${CHAT_WIDTH}px`,
           height: `${CHAT_HEIGHT}px`,
-          background: 'var(--km-surface)',
-          borderColor: 'var(--km-line)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
           cursor: isDragging ? 'grabbing' : 'default',
         }}
         onMouseDown={handleMouseDown}
       >
         {/* Header */}
-        <div
-          className="chat-header flex items-center justify-between px-4 py-3 border-b flex-shrink-0 cursor-grab"
-          style={{ borderColor: 'var(--km-line)' }}
-        >
+        <div className="chat-header flex items-center justify-between px-4 py-3 border-b border-km-line flex-shrink-0 cursor-grab">
           <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 text-xs font-semibold border"
-              style={{
-                background: 'var(--km-gold-soft)',
-                borderColor: 'rgba(212,178,76,0.33)',
-                color: 'var(--km-gold)',
-                fontFamily: 'var(--km-font-mono)',
-              }}
-            >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 text-xs font-semibold border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
               {otherUserName[0]?.toUpperCase() ?? '?'}
             </div>
-            <span className="text-sm font-medium" style={{ color: 'var(--km-ink)' }}>
-              {otherUserName}
-            </span>
+            <span className="text-sm font-medium text-km-ink">{otherUserName}</span>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded"
-            style={{ color: 'var(--km-ink-mute)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--km-ink)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--km-ink-mute)')}
+            className="w-7 h-7 flex items-center justify-center rounded text-km-ink-mute hover:text-km-ink transition-colors bg-transparent border-none cursor-pointer"
           >
             <X size={15} />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-3" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1.5">
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <span className="text-xs" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
-                Loading messages…
-              </span>
+              <span className="font-km-mono text-xs text-km-ink-mute">Loading messages…</span>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex justify-center items-center h-full">
-              <span className="text-xs" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
-                No messages yet. Start the conversation!
-              </span>
+              <span className="font-km-mono text-xs text-km-ink-mute">No messages yet. Start the conversation!</span>
             </div>
           ) : (
             messages.map((message, index) => (
@@ -202,19 +180,16 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
                 className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className="max-w-[72%] rounded px-3 py-2"
-                  style={
+                  className={cn(
+                    'max-w-[72%] rounded px-3 py-2',
                     message.senderId === currentUserId
-                      ? { background: 'var(--km-bg-sub)', color: 'var(--km-ink)' }
-                      : { background: 'var(--km-surface-2)', color: 'var(--km-ink)', borderColor: 'var(--km-line)' }
-                  }
+                      ? 'bg-km-bg-sub text-km-ink'
+                      : 'bg-km-surface-2 text-km-ink border border-km-line',
+                  )}
                 >
-                  <p className="text-sm break-words" style={{ lineHeight: 1.5 }}>{message.content}</p>
+                  <p className="text-sm break-words leading-[1.5]">{message.content}</p>
                   {message.timestamp && (
-                    <div
-                      className="mt-1 text-right"
-                      style={{ fontSize: '10px', fontFamily: 'var(--km-font-mono)', opacity: 0.5 }}
-                    >
+                    <div className="mt-1 text-right font-km-mono text-[10px] opacity-50">
                       {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   )}
@@ -226,27 +201,17 @@ export function Chat({ currentUserId, otherUserId, otherUserName, onClose, posit
         </div>
 
         {/* Input */}
-        <div
-          className="flex items-center gap-2 px-4 py-3 border-t flex-shrink-0"
-          style={{ borderColor: 'var(--km-line)' }}
-        >
+        <div className="flex items-center gap-2 px-4 py-3 border-t border-km-line flex-shrink-0">
           <input
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message…"
-            className="flex-1 rounded px-3 py-2 text-sm outline-none border"
-            style={{
-              background: 'var(--km-bg-sub)',
-              borderColor: 'var(--km-line)',
-              color: 'var(--km-ink)',
-              fontFamily: 'var(--km-font-body)',
-            }}
+            className="flex-1 rounded px-3 py-2 text-sm outline-none border bg-km-bg-sub border-km-line text-km-ink font-km-body"
           />
           <button
             onClick={handleSend}
-            className="w-9 h-9 flex items-center justify-center rounded transition-opacity hover:opacity-80 flex-shrink-0 border"
-            style={{ background: 'var(--km-bg-sub)', color: 'var(--km-ink)', borderColor: 'var(--km-line)', cursor: 'pointer' }}
+            className="w-9 h-9 flex items-center justify-center rounded transition-opacity hover:opacity-80 flex-shrink-0 border bg-km-bg-sub text-km-ink border-km-line cursor-pointer"
           >
             <Send size={14} />
           </button>

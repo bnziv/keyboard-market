@@ -15,29 +15,29 @@ const buttonVariants = cva(
     variants: {
       variant: {
         solid: [
-          "bg-[var(--km-ink)] text-[var(--km-bg)]",
+          "bg-km-ink text-km-bg",
           "transition-opacity hover:opacity-90",
-          "focus-visible:outline-[var(--km-ink)]",
+          "focus-visible:outline-km-ink",
         ],
         gold: [
-          "bg-[var(--km-gold)] text-[var(--km-bg)]",
+          "bg-km-gold text-km-bg",
           "transition-opacity hover:opacity-90",
-          "focus-visible:outline-[var(--km-gold)]",
+          "focus-visible:outline-km-gold",
         ],
         outline: [
-          "bg-transparent border border-[var(--km-line-strong)] text-[var(--km-ink-dim)]",
+          "bg-transparent border border-km-line-strong text-km-ink-dim",
           "transition-colors hover:opacity-80",
-          "focus-visible:outline-[var(--km-line-strong)]",
+          "focus-visible:outline-km-line-strong",
         ],
         surface: [
-          "bg-[var(--km-surface-2)] border border-[var(--km-line)] text-[var(--km-ink-dim)]",
+          "bg-km-surface-2 border border-km-line text-km-ink-dim",
           "transition-colors hover:opacity-80",
-          "focus-visible:outline-[var(--km-line)]",
+          "focus-visible:outline-km-line",
         ],
         ghost: [
-          "bg-transparent text-[var(--km-ink-dim)]",
+          "bg-transparent text-km-ink-dim",
           "transition-colors hover:opacity-80",
-          "focus-visible:outline-[var(--km-ink-dim)]",
+          "focus-visible:outline-km-ink-dim",
         ],
       },
       size: {
@@ -68,8 +68,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         data-slot="button"
-        className={cn(buttonVariants({ variant, size, className }))}
-        style={{ fontFamily: "var(--km-font-body)", ...style }}
+        className={cn(buttonVariants({ variant, size, className }), "font-km-body")}
+        style={style}
         {...props}
       />
     )

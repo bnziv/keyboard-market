@@ -51,6 +51,24 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --color-km-bg:          var(--km-bg);
+  --color-km-bg-sub:      var(--km-bg-sub);
+  --color-km-surface:     var(--km-surface);
+  --color-km-surface-2:   var(--km-surface-2);
+  --color-km-ink:         var(--km-ink);
+  --color-km-ink-dim:     var(--km-ink-dim);
+  --color-km-ink-mute:    var(--km-ink-mute);
+  --color-km-line:        var(--km-line);
+  --color-km-line-strong: var(--km-line-strong);
+  --color-km-gold:        var(--km-gold);
+  --color-km-gold-soft:   var(--km-gold-soft);
+  --color-km-ok:          var(--km-ok);
+  --color-km-error:       var(--km-error);
+
+  --font-km-body:  var(--km-font-body);
+  --font-km-mono:  var(--km-font-mono);
+  --font-km-serif: var(--km-font-serif);
 }
 
 /* Light mode (default) */
@@ -70,6 +88,7 @@
   --km-font-body: 'Inter', sans-serif;
   --km-font-serif: 'IBM Plex Serif', Georgia, serif;
   --km-ok: #3a7a2e;
+  --km-error: hsl(0 62.8% 55%);
 }
 
 /* Dark mode — deep indigo/violet, gold accent */

@@ -6,6 +6,7 @@ import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import { Check, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const CATEGORIES = [
   ['keyboard', 'Keyboard'], ['keycaps', 'Keycaps'], ['switches', 'Switches'],
@@ -23,30 +24,17 @@ function FormRow({ label, help, children }: { label: string; help?: string; chil
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <label
-          className="text-xs font-semibold uppercase tracking-widest"
-          style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink)', letterSpacing: '0.1em' }}
-        >
+        <label className="text-xs font-semibold uppercase font-km-mono text-km-ink tracking-[0.1em]">
           {label}
         </label>
-        {help && <span className="text-xs" style={{ color: 'var(--km-ink-mute)' }}>{help}</span>}
+        {help && <span className="text-xs text-km-ink-mute">{help}</span>}
       </div>
       {children}
     </div>
   )
 }
 
-const inputCls = {
-  width: '100%',
-  padding: '10px 14px',
-  border: '1px solid var(--km-line-strong)',
-  borderRadius: '4px',
-  background: 'var(--km-surface)',
-  color: 'var(--km-ink)',
-  fontSize: '14px',
-  fontFamily: 'var(--km-font-body)',
-  outline: 'none',
-} as const
+const inputCls = "w-full px-[14px] py-[10px] border border-km-line-strong rounded bg-km-surface text-km-ink text-sm font-km-body outline-none box-border"
 
 export default function CreateListing() {
   const { showError, showSuccess } = useToast()
@@ -85,7 +73,6 @@ export default function CreateListing() {
     }
   }
 
-  // Listing score
   const scoreItems = [
     { label: 'Title filled in', done: title.trim().length > 0 },
     { label: 'Description added', done: description.trim().length > 0 },
@@ -96,20 +83,17 @@ export default function CreateListing() {
   const score = Math.round((scoreItems.filter(i => i.done).length / scoreItems.length) * 100)
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="create" />
       <main className="flex-1 max-w-5xl mx-auto w-full px-8 py-8 pb-16">
         {/* Header */}
-        <div
-          className="text-xs uppercase tracking-widest mb-2"
-          style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.15em', fontSize: '11px' }}
-        >
+        <div className="font-km-mono text-[11px] uppercase text-km-gold tracking-[0.15em] mb-2">
           Step {step + 1} of {STEPS.length} — Listing details
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight mb-1" style={{ letterSpacing: '-0.02em', color: 'var(--km-ink)' }}>
+        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-km-ink mb-1">
           List a new item
         </h1>
-        <p className="text-sm mb-7" style={{ color: 'var(--km-ink-dim)', maxWidth: '560px' }}>
+        <p className="text-sm text-km-ink-dim mb-7" style={{ maxWidth: '560px' }}>
           Spec-rich listings sell faster. Fill in as much detail as you can — buyers here care about the build.
         </p>
 
@@ -118,27 +102,18 @@ export default function CreateListing() {
           {STEPS.map((label, i) => (
             <div key={label} className="flex items-center flex-1">
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border"
-                style={{
-                  fontFamily: 'var(--km-font-mono)',
-                  background: i === step ? 'var(--km-ink)' : 'var(--km-surface-2)',
-                  color: i === step ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                  borderColor: i === step ? 'var(--km-ink)' : 'var(--km-line-strong)',
-                }}
+                className={cn(
+                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border font-km-mono',
+                  i === step ? 'bg-km-ink text-km-bg border-km-ink' : 'bg-km-surface-2 text-km-ink-dim border-km-line-strong'
+                )}
               >
                 {i + 1}
               </div>
-              <span
-                className="ml-2.5 text-sm"
-                style={{
-                  color: i === step ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  fontWeight: i === step ? 600 : 400,
-                }}
-              >
+              <span className={cn('ml-2.5 text-sm', i === step ? 'text-km-ink font-semibold' : 'text-km-ink-dim')}>
                 {label}
               </span>
               {i < STEPS.length - 1 && (
-                <div className="flex-1 h-px mx-3" style={{ background: 'var(--km-line)' }} />
+                <div className="flex-1 h-px mx-3 bg-km-line" />
               )}
             </div>
           ))}
@@ -155,13 +130,10 @@ export default function CreateListing() {
                       key={v}
                       type="button"
                       onClick={() => setCategory(v)}
-                      className="py-3 px-2 text-xs font-medium text-center rounded border transition-colors"
-                      style={{
-                        background: category === v ? 'var(--km-ink)' : 'var(--km-surface)',
-                        color: category === v ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                        borderColor: category === v ? 'var(--km-ink)' : 'var(--km-line)',
-                        cursor: 'pointer',
-                      }}
+                      className={cn(
+                        'py-3 px-2 text-xs font-medium text-center rounded border transition-colors cursor-pointer',
+                        category === v ? 'bg-km-ink text-km-bg border-km-ink' : 'bg-km-surface text-km-ink-dim border-km-line'
+                      )}
                     >
                       {l}
                     </button>
@@ -175,12 +147,9 @@ export default function CreateListing() {
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Mode Sonnet — Hibiscus, Brass Weight"
-                  style={inputCls}
+                  className={inputCls}
                 />
-                <div
-                  className="flex justify-between mt-1.5 text-xs"
-                  style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px' }}
-                >
+                <div className="flex justify-between mt-1.5 font-km-mono text-[10px] text-km-ink-mute">
                   <span>{title.length > 0 ? '✓ Title looks good' : 'Required'}</span>
                   <span>{title.length}/80</span>
                 </div>
@@ -192,12 +161,9 @@ export default function CreateListing() {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Describe the item's condition, what's included, any flaws…"
                   rows={5}
-                  style={{ ...inputCls, resize: 'vertical', lineHeight: '1.5' }}
+                  className={cn(inputCls, "resize-y leading-[1.5]")}
                 />
-                <div
-                  className="text-right mt-1 text-xs"
-                  style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px' }}
-                >
+                <div className="text-right mt-1 font-km-mono text-[10px] text-km-ink-mute">
                   {description.length}/1000
                 </div>
               </FormRow>
@@ -209,13 +175,10 @@ export default function CreateListing() {
                       key={v}
                       type="button"
                       onClick={() => setCondition(v)}
-                      className="py-3.5 px-2 text-sm font-medium text-center rounded border transition-colors"
-                      style={{
-                        background: condition === v ? 'var(--km-ink)' : 'var(--km-surface)',
-                        color: condition === v ? 'var(--km-bg)' : 'var(--km-ink)',
-                        borderColor: condition === v ? 'var(--km-ink)' : 'var(--km-line)',
-                        cursor: 'pointer',
-                      }}
+                      className={cn(
+                        'py-3.5 px-2 text-sm font-medium text-center rounded border transition-colors cursor-pointer',
+                        condition === v ? 'bg-km-ink text-km-bg border-km-ink' : 'bg-km-surface text-km-ink border-km-line'
+                      )}
                     >
                       {l}
                     </button>
@@ -224,16 +187,14 @@ export default function CreateListing() {
               </FormRow>
 
               <FormRow label="Photo" help="Imgur direct link (jpg, png, gif, webp)">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={imageUrl}
-                    onChange={e => setImageUrl(e.target.value)}
-                    placeholder="https://i.imgur.com/example.jpg"
-                    style={inputCls}
-                  />
-                </div>
-                <div className="text-xs mt-1.5" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: '10px' }}>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={e => setImageUrl(e.target.value)}
+                  placeholder="https://i.imgur.com/example.jpg"
+                  className={inputCls}
+                />
+                <div className="mt-1.5 font-km-mono text-[10px] text-km-ink-mute">
                   Only Imgur direct image links are accepted
                 </div>
               </FormRow>
@@ -242,10 +203,7 @@ export default function CreateListing() {
                 <div className="flex gap-3">
                   {/* Price input */}
                   <div className="relative flex-1">
-                    <span
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm"
-                      style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}
-                    >
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-km-ink-mute font-km-mono">
                       $
                     </span>
                     <input
@@ -254,72 +212,42 @@ export default function CreateListing() {
                       onChange={e => setPrice(e.target.value)}
                       placeholder="0.00"
                       disabled={offers}
-                      style={{
-                        ...inputCls,
-                        paddingLeft: '28px',
-                        fontFamily: 'var(--km-font-mono)',
-                        fontSize: '18px',
-                        fontWeight: 600,
-                        opacity: offers ? 0.4 : 1,
-                      }}
+                      className={cn(inputCls, "pl-7 font-km-mono text-lg font-semibold", offers && "opacity-40")}
                     />
                   </div>
                   {/* Offers toggle */}
                   <div
-                    className="flex items-center gap-2.5 px-4 rounded border cursor-pointer flex-shrink-0"
-                    style={{
-                      background: 'var(--km-surface)',
-                      borderColor: 'var(--km-line)',
-                    }}
+                    className="flex items-center gap-2.5 px-4 rounded border cursor-pointer flex-shrink-0 bg-km-surface border-km-line"
                     onClick={() => setOffers(o => !o)}
                   >
                     <div
-                      className="relative flex-shrink-0"
-                      style={{
-                        width: '36px',
-                        height: '20px',
-                        borderRadius: '10px',
-                        background: offers ? 'var(--km-gold)' : 'var(--km-line-strong)',
-                        transition: 'background 150ms',
-                        padding: '2px',
-                      }}
+                      className={cn('relative flex-shrink-0', offers ? 'bg-km-gold' : 'bg-km-line-strong')}
+                      style={{ width: '36px', height: '20px', borderRadius: '10px', padding: '2px', transition: 'background 150ms' }}
                     >
                       <div
+                        className="bg-white"
                         style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '50%',
-                          background: '#fff',
+                          width: '16px', height: '16px', borderRadius: '50%',
                           transform: offers ? 'translateX(16px)' : 'translateX(0)',
                           transition: 'transform 150ms',
                         }}
                       />
                     </div>
-                    <span className="text-sm whitespace-nowrap" style={{ color: 'var(--km-ink)' }}>Accept offers</span>
+                    <span className="text-sm whitespace-nowrap text-km-ink">Accept offers</span>
                   </div>
                 </div>
                 {price && !offers && (
-                  <div
-                    className="flex items-center gap-2.5 mt-2.5 px-3.5 py-2.5 rounded border text-xs"
-                    style={{
-                      background: 'var(--km-surface-2)',
-                      borderColor: 'var(--km-line)',
-                      color: 'var(--km-ink-dim)',
-                    }}
-                  >
-                    <span style={{ color: 'var(--km-gold)' }}>⚡</span>
+                  <div className="flex items-center gap-2.5 mt-2.5 px-3.5 py-2.5 rounded border text-xs bg-km-surface-2 border-km-line text-km-ink-dim">
+                    <span className="text-km-gold">⚡</span>
                     <span>
-                      <strong style={{ color: 'var(--km-ink)' }}>Price tip:</strong> Check Browse for similar items to price competitively.
+                      <strong className="text-km-ink">Price tip:</strong> Check Browse for similar items to price competitively.
                     </span>
                   </div>
                 )}
               </FormRow>
 
               {/* Actions */}
-              <div
-                className="flex justify-between pt-6 mt-2 border-t"
-                style={{ borderColor: 'var(--km-line)' }}
-              >
+              <div className="flex justify-between pt-6 mt-2 border-t border-km-line">
                 <Button type="button" variant="outline" onClick={() => navigate('/listings')}>
                   Cancel
                 </Button>
@@ -336,23 +264,16 @@ export default function CreateListing() {
 
             {/* Preview column */}
             <div className="flex flex-col gap-4" style={{ position: 'sticky', top: '72px', alignSelf: 'start' }}>
-              <div
-                className="text-xs uppercase tracking-widest"
-                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', letterSpacing: '0.15em', fontSize: '10px' }}
-              >
+              <div className="font-km-mono text-[10px] uppercase text-km-ink-mute tracking-[0.15em]">
                 Live preview
               </div>
 
               {/* Preview card */}
-              <div
-                className="rounded border overflow-hidden"
-                style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-              >
+              <div className="rounded border overflow-hidden bg-km-surface border-km-line">
                 <div
-                  className="relative flex items-center justify-center"
+                  className={cn('relative flex items-center justify-center', !imageUrl && 'bg-km-bg-sub')}
                   style={{
                     aspectRatio: '4/3',
-                    background: imageUrl ? undefined : 'var(--km-bg-sub)',
                     backgroundImage: imageUrl
                       ? undefined
                       : 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
@@ -362,10 +283,7 @@ export default function CreateListing() {
                   {imageUrl ? (
                     <img src={imageUrl} alt="preview" className="w-full h-full object-cover" />
                   ) : (
-                    <div
-                      className="flex flex-col items-center gap-2 text-xs"
-                      style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}
-                    >
+                    <div className="flex flex-col items-center gap-2 text-xs text-km-ink-mute font-km-mono">
                       <Upload size={20} style={{ opacity: 0.4 }} />
                       <span>photo preview</span>
                     </div>
@@ -376,48 +294,30 @@ export default function CreateListing() {
                     {[category, condition].map((tag, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 text-xs rounded border"
-                        style={{
-                          fontFamily: 'var(--km-font-mono)',
-                          background: 'var(--km-surface-2)',
-                          borderColor: 'var(--km-line)',
-                          color: 'var(--km-ink-dim)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          fontSize: '10px',
-                        }}
+                        className="px-2 py-0.5 text-[10px] rounded border font-km-mono bg-km-surface-2 border-km-line text-km-ink-dim uppercase tracking-[0.05em]"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
                   <div
-                    className="font-semibold text-sm leading-tight"
-                    style={{ color: title ? 'var(--km-ink)' : 'var(--km-ink-mute)', minHeight: '2.5rem' }}
+                    className={cn('font-semibold text-sm leading-tight', title ? 'text-km-ink' : 'text-km-ink-mute')}
+                    style={{ minHeight: '2.5rem' }}
                   >
                     {title || 'Your listing title will appear here'}
                   </div>
                   <div className="flex items-baseline justify-between mt-3">
                     <div>
-                      <span
-                        className="font-semibold text-xl"
-                        style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink)' }}
-                      >
+                      <span className="font-semibold text-xl font-km-mono text-km-ink">
                         {offers ? 'Open to offers' : price ? `$${price}` : '—'}
                       </span>
                       {offers && price && (
-                        <span
-                          className="ml-1.5 text-xs"
-                          style={{ color: 'var(--km-gold)', fontFamily: 'var(--km-font-mono)' }}
-                        >
+                        <span className="ml-1.5 text-xs text-km-gold font-km-mono">
                           or best offer
                         </span>
                       )}
                     </div>
-                    <span
-                      className="text-xs"
-                      style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}
-                    >
+                    <span className="text-xs text-km-ink-mute font-km-mono">
                       @{user?.username ?? 'you'} · now
                     </span>
                   </div>
@@ -425,51 +325,33 @@ export default function CreateListing() {
               </div>
 
               {/* Listing score */}
-              <div
-                className="p-4 rounded border"
-                style={{ background: 'var(--km-surface-2)', borderColor: 'var(--km-line)' }}
-              >
+              <div className="p-4 rounded border bg-km-surface-2 border-km-line">
                 <div className="flex items-center justify-between mb-3">
-                  <div
-                    className="text-xs uppercase tracking-widest"
-                    style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.15em', fontSize: '10px' }}
-                  >
+                  <div className="font-km-mono text-[10px] uppercase text-km-gold tracking-[0.15em]">
                     Listing score
                   </div>
-                  <div
-                    className="text-sm font-semibold"
-                    style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink)' }}
-                  >
+                  <div className="text-sm font-semibold font-km-mono text-km-ink">
                     {score}/100
                   </div>
                 </div>
-                {/* Score bar */}
-                <div
-                  className="h-1 rounded-full mb-3"
-                  style={{ background: 'var(--km-line)' }}
-                >
+                <div className="h-1 rounded-full mb-3 bg-km-line">
                   <div
-                    className="h-1 rounded-full transition-all duration-300"
-                    style={{ width: `${score}%`, background: score >= 80 ? 'var(--km-gold)' : 'var(--km-ink-mute)' }}
+                    className={cn('h-1 rounded-full transition-all duration-300', score >= 80 ? 'bg-km-gold' : 'bg-km-ink-mute')}
+                    style={{ width: `${score}%` }}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {scoreItems.map(item => (
                     <div key={item.label} className="flex items-center gap-2.5">
                       <div
-                        className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border"
-                        style={{
-                          background: item.done ? 'var(--km-gold)' : 'transparent',
-                          borderColor: item.done ? 'var(--km-gold)' : 'var(--km-line-strong)',
-                          color: '#fff',
-                        }}
+                        className={cn(
+                          'w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border',
+                          item.done ? 'bg-km-gold border-km-gold text-white' : 'bg-transparent border-km-line-strong'
+                        )}
                       >
                         {item.done && <Check size={8} strokeWidth={3} />}
                       </div>
-                      <span
-                        className="text-xs"
-                        style={{ color: item.done ? 'var(--km-ink)' : 'var(--km-ink-mute)' }}
-                      >
+                      <span className={cn('text-xs', item.done ? 'text-km-ink' : 'text-km-ink-mute')}>
                         {item.label}
                       </span>
                     </div>

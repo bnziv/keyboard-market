@@ -7,6 +7,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2, LayoutGrid, List } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface FilterState {
     minPrice: number;
@@ -29,10 +30,7 @@ const SORT_OPTIONS = [
 function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="mb-6">
-            <div
-                className="flex items-center justify-between pb-2 mb-2.5 text-xs uppercase tracking-widest border-b"
-                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', borderColor: 'var(--km-line)', letterSpacing: '0.15em', fontSize: '10px' }}
-            >
+            <div className="flex items-center justify-between pb-2 mb-2.5 text-[10px] uppercase tracking-[0.15em] border-b font-km-mono text-km-ink-mute border-km-line">
                 <span>{label}</span>
             </div>
             {children}
@@ -44,11 +42,10 @@ function CheckLine({ label, checked, onChange }: { label: string; checked: boole
     return (
         <div className="flex items-center gap-2 py-1.5 cursor-pointer" onClick={onChange}>
             <div
-                className="w-3.5 h-3.5 flex items-center justify-center border rounded-sm flex-shrink-0"
-                style={{
-                    background: checked ? 'var(--km-ink)' : 'transparent',
-                    borderColor: checked ? 'var(--km-ink)' : 'var(--km-line-strong)',
-                }}
+                className={cn(
+                    'w-3.5 h-3.5 flex items-center justify-center border rounded-sm flex-shrink-0',
+                    checked ? 'bg-km-ink border-km-ink' : 'bg-transparent border-km-line-strong'
+                )}
             >
                 {checked && (
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -56,7 +53,7 @@ function CheckLine({ label, checked, onChange }: { label: string; checked: boole
                     </svg>
                 )}
             </div>
-            <span className="text-xs" style={{ color: 'var(--km-ink-dim)' }}>{label}</span>
+            <span className="text-xs text-km-ink-dim">{label}</span>
         </div>
     );
 }
@@ -126,19 +123,14 @@ export default function Listings() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+        <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
             <NavBar activePage="listings" />
 
             <div className="flex flex-1" style={{ minHeight: 'calc(100vh - 56px)' }}>
                 {/* Sidebar */}
                 <aside
-                    className="w-64 flex-shrink-0 sticky top-14 p-6 border-r overflow-y-auto"
-                    style={{
-                        background: 'var(--km-bg-sub)',
-                        borderColor: 'var(--km-line)',
-                        height: 'calc(100vh - 56px)',
-                        fontSize: '12px',
-                    }}
+                    className="w-64 flex-shrink-0 sticky top-14 p-6 border-r overflow-y-auto bg-km-bg-sub border-km-line text-xs"
+                    style={{ height: 'calc(100vh - 56px)' }}
                 >
                     <FilterSection label="Search">
                         <input
@@ -146,38 +138,16 @@ export default function Listings() {
                             placeholder="title, brand, model…"
                             value={filters.title}
                             onChange={e => setFilters(prev => ({ ...prev, title: e.target.value }))}
-                            className="w-full px-3 py-1.5 rounded border text-xs outline-none"
-                            style={{
-                                background: 'var(--km-bg)',
-                                borderColor: 'var(--km-line)',
-                                color: 'var(--km-ink)',
-                                fontFamily: 'var(--km-font-mono)',
-                            }}
+                            className="w-full px-3 py-1.5 rounded border text-xs outline-none bg-km-bg border-km-line text-km-ink font-km-mono"
                         />
                     </FilterSection>
 
                     <FilterSection label="Price">
                         <div className="flex gap-2 mb-3">
-                            <div
-                                className="flex-1 px-2.5 py-1.5 rounded border text-xs"
-                                style={{
-                                    background: 'var(--km-bg)',
-                                    borderColor: 'var(--km-line)',
-                                    color: 'var(--km-ink)',
-                                    fontFamily: 'var(--km-font-mono)',
-                                }}
-                            >
+                            <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
                                 ${filters.minPrice}
                             </div>
-                            <div
-                                className="flex-1 px-2.5 py-1.5 rounded border text-xs"
-                                style={{
-                                    background: 'var(--km-bg)',
-                                    borderColor: 'var(--km-line)',
-                                    color: 'var(--km-ink)',
-                                    fontFamily: 'var(--km-font-mono)',
-                                }}
-                            >
+                            <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
                                 ${filters.maxPrice}
                             </div>
                         </div>
@@ -187,7 +157,7 @@ export default function Listings() {
                             step={10}
                             value={[filters.minPrice, filters.maxPrice]}
                             onValueChange={([min, max]) => setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))}
-                            className="[&_[role=slider]]:bg-[var(--km-ink)] [&_.range]:bg-[var(--km-gold)]"
+                            className="[&_[role=slider]]:bg-km-ink [&_.range]:bg-km-gold"
                         />
                     </FilterSection>
 
@@ -215,15 +185,7 @@ export default function Listings() {
 
                     <button
                         onClick={() => setFilters({ minPrice: 0, maxPrice: 1000, offers: null, condition: null, title: '', sortBy: 'createdOn', sortDirection: 'desc' })}
-                        className="w-full mt-2 py-2 text-xs rounded border text-center transition-colors hover:opacity-80"
-                        style={{
-                            fontFamily: 'var(--km-font-mono)',
-                            color: 'var(--km-gold)',
-                            borderColor: 'var(--km-line)',
-                            background: 'transparent',
-                            cursor: 'pointer',
-                            letterSpacing: '0.05em',
-                        }}
+                        className="w-full mt-2 py-2 text-xs rounded border text-center transition-colors hover:opacity-80 font-km-mono text-km-gold border-km-line bg-transparent cursor-pointer tracking-[0.05em]"
                     >
                         Clear all filters
                     </button>
@@ -234,37 +196,22 @@ export default function Listings() {
                     {/* Header bar */}
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <div
-                                className="text-xs uppercase tracking-widest mb-1"
-                                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.15em', fontSize: '11px' }}
-                            >
+                            <div className="font-km-mono text-[11px] uppercase tracking-[0.15em] mb-1 text-km-gold">
                                 {listings.length > 0 ? `Showing ${listings.length} results` : 'All listings'}
                             </div>
-                            <h1
-                                className="text-2xl font-semibold tracking-tight"
-                                style={{ color: 'var(--km-ink)', letterSpacing: '-0.02em' }}
-                            >
+                            <h1 className="text-2xl font-semibold tracking-[-0.02em] text-km-ink">
                                 Browse listings
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
                             {/* Sort */}
                             <Select value={sortValue} onValueChange={handleSortChange}>
-                                <SelectTrigger
-                                    className="h-8 text-xs border gap-2"
-                                    style={{
-                                        background: 'var(--km-surface)',
-                                        borderColor: 'var(--km-line)',
-                                        color: 'var(--km-ink)',
-                                        fontFamily: 'var(--km-font-body)',
-                                        minWidth: '160px',
-                                    }}
-                                >
+                                <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body min-w-[160px]">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)', color: 'var(--km-ink)' }}>
+                                <SelectContent className="bg-km-surface border-km-line text-km-ink">
                                     {SORT_OPTIONS.map(opt => (
-                                        <SelectItem key={opt.value} value={opt.value} style={{ color: 'var(--km-ink)' }}>
+                                        <SelectItem key={opt.value} value={opt.value} className="text-km-ink">
                                             {opt.label}
                                         </SelectItem>
                                     ))}
@@ -272,28 +219,22 @@ export default function Listings() {
                             </Select>
 
                             {/* Density toggle */}
-                            <div className="flex border rounded overflow-hidden" style={{ borderColor: 'var(--km-line)', background: 'var(--km-surface)' }}>
+                            <div className="flex border rounded overflow-hidden border-km-line bg-km-surface">
                                 <button
                                     onClick={() => setDensity('grid')}
-                                    className="w-8 h-8 flex items-center justify-center transition-colors"
-                                    style={{
-                                        background: density === 'grid' ? 'var(--km-ink)' : 'transparent',
-                                        color: density === 'grid' ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                    }}
+                                    className={cn(
+                                        'w-8 h-8 flex items-center justify-center transition-colors border-none cursor-pointer',
+                                        density === 'grid' ? 'bg-km-ink text-km-bg' : 'bg-transparent text-km-ink-dim'
+                                    )}
                                 >
                                     <LayoutGrid size={14} />
                                 </button>
                                 <button
                                     onClick={() => setDensity('list')}
-                                    className="w-8 h-8 flex items-center justify-center transition-colors"
-                                    style={{
-                                        background: density === 'list' ? 'var(--km-ink)' : 'transparent',
-                                        color: density === 'list' ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                    }}
+                                    className={cn(
+                                        'w-8 h-8 flex items-center justify-center transition-colors border-none cursor-pointer',
+                                        density === 'list' ? 'bg-km-ink text-km-bg' : 'bg-transparent text-km-ink-dim'
+                                    )}
                                 >
                                     <List size={14} />
                                 </button>
@@ -311,31 +252,27 @@ export default function Listings() {
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col border rounded overflow-hidden" style={{ borderColor: 'var(--km-line)' }}>
+                        <div className="flex flex-col border rounded overflow-hidden border-km-line">
                             {listings.map((listing, i) => (
                                 <a
                                     key={listing.id}
                                     href={`/listings/${listing.id}`}
                                     ref={i === listings.length - 1 ? (lastListingRef as any) : undefined}
-                                    className="flex items-center gap-4 px-4 py-3 border-b transition-colors hover:bg-[var(--km-surface-2)]"
-                                    style={{ borderColor: 'var(--km-line)', background: 'var(--km-surface)', textDecoration: 'none' }}
+                                    className="flex items-center gap-4 px-4 py-3 border-b border-km-line bg-km-surface text-km-ink transition-colors hover:bg-km-surface-2 no-underline"
                                 >
-                                    <div
-                                        className="w-20 flex-shrink-0 rounded overflow-hidden"
-                                        style={{ aspectRatio: '4/3', background: 'var(--km-bg-sub)' }}
-                                    >
+                                    <div className="w-20 flex-shrink-0 rounded overflow-hidden bg-km-bg-sub" style={{ aspectRatio: '4/3' }}>
                                         {listing.imageUrl && <img src={listing.imageUrl} alt={listing.title} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="font-medium text-sm truncate" style={{ color: 'var(--km-ink)' }}>{listing.title}</div>
-                                        <div className="text-xs mt-0.5" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>{listing.condition}</div>
+                                        <div className="font-medium text-sm truncate text-km-ink">{listing.title}</div>
+                                        <div className="text-xs mt-0.5 text-km-ink-mute font-km-mono">{listing.condition}</div>
                                     </div>
                                     <div className="text-right flex-shrink-0">
-                                        <div className="font-semibold text-sm" style={{ color: 'var(--km-ink)', fontFamily: 'var(--km-font-mono)' }}>
+                                        <div className="font-semibold text-sm text-km-ink font-km-mono">
                                             {listing.price ? `$${parseFloat(listing.price.toFixed(2))}` : 'Open to Offers'}
                                         </div>
                                         {listing.offers && listing.price > 0 && (
-                                            <div className="text-xs" style={{ color: 'var(--km-gold)', fontFamily: 'var(--km-font-mono)', fontSize: '10px' }}>OBO</div>
+                                            <div className="text-[10px] text-km-gold font-km-mono">OBO</div>
                                         )}
                                     </div>
                                 </a>
@@ -345,23 +282,20 @@ export default function Listings() {
 
                     {loading && (
                         <div className="flex justify-center py-8">
-                            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--km-gold)' }} />
+                            <Loader2 className="w-5 h-5 animate-spin text-km-gold" />
                         </div>
                     )}
 
                     {!loading && !hasMore && listings.length > 0 && (
-                        <div
-                            className="text-center py-8 text-xs"
-                            style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', letterSpacing: '0.1em' }}
-                        >
+                        <div className="text-center py-8 text-xs font-km-mono text-km-ink-mute tracking-[0.1em]">
                             — end of results —
                         </div>
                     )}
 
                     {!loading && listings.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-20 gap-3">
-                            <div className="text-4xl" style={{ color: 'var(--km-line-strong)' }}>◆</div>
-                            <div className="text-sm" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
+                            <div className="text-4xl text-km-line-strong">◆</div>
+                            <div className="text-sm text-km-ink-mute font-km-mono">
                                 No listings found. Try adjusting your filters.
                             </div>
                         </div>

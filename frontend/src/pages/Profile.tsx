@@ -10,6 +10,7 @@ import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate } from "@/utils/helpers"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface UserProps {
   id: string
@@ -81,78 +82,51 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)' }}>
+      <div className="min-h-screen flex flex-col bg-km-bg">
         <NavBar activePage="profile" />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-sm" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>Loading profile…</div>
+          <div className="font-km-mono text-sm text-km-ink-mute">Loading profile…</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="profile" />
 
       {/* Banner */}
-      <div className="border-b px-8 pt-9 pb-0" style={{ background: 'var(--km-bg-sub)', borderColor: 'var(--km-line)' }}>
+      <div className="border-b border-km-line px-8 pt-9 pb-0 bg-km-bg-sub">
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumb */}
-          <div
-            className="text-xs mb-5"
-            style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}
-          >
-            <Link to="/" className="hover:opacity-80" style={{ color: 'var(--km-ink-mute)' }}>← Home</Link>
+          <div className="font-km-mono text-xs mb-5 text-km-ink-mute">
+            <Link to="/" className="hover:opacity-80 text-km-ink-mute">← Home</Link>
             <span className="mx-1.5">/</span>
             <span>profiles</span>
             <span className="mx-1.5">/</span>
-            <span style={{ color: 'var(--km-ink)' }}>@{userData.username}</span>
+            <span className="text-km-ink">@{userData.username}</span>
           </div>
 
           {/* Profile header */}
           <div className="flex items-end gap-6">
             {/* Avatar */}
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-semibold flex-shrink-0 border"
-              style={{
-                background: 'var(--km-gold-soft)',
-                borderColor: 'rgba(184,146,42,0.33)',
-                color: 'var(--km-gold)',
-                fontFamily: 'var(--km-font-mono)',
-              }}
-            >
+            <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-semibold flex-shrink-0 border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
               {initial}
             </div>
 
             {/* Info */}
             <div className="flex-1 pb-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1
-                  className="text-3xl font-semibold tracking-tight"
-                  style={{ letterSpacing: '-0.02em', color: 'var(--km-ink)' }}
-                >
+                <h1 className="text-3xl font-semibold tracking-[-0.02em] text-km-ink">
                   @{userData.username}
                 </h1>
-                <span
-                  className="px-2 py-0.5 text-xs rounded border"
-                  style={{
-                    fontFamily: 'var(--km-font-mono)',
-                    background: 'var(--km-gold-soft)',
-                    borderColor: 'var(--km-gold)',
-                    color: 'var(--km-gold)',
-                    fontSize: '10px',
-                    letterSpacing: '0.05em',
-                  }}
-                >
+                <span className="px-2 py-0.5 text-[10px] rounded border font-km-mono bg-km-gold-soft border-km-gold text-km-gold tracking-[0.05em]">
                   VERIFIED
                 </span>
               </div>
-              <div
-                className="flex gap-4 text-xs"
-                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-dim)' }}
-              >
+              <div className="flex gap-4 text-xs font-km-mono text-km-ink-dim">
                 <span>Joined {userData.dateJoined ? formatDate(userData.dateJoined) : '—'}</span>
-                <span style={{ color: 'var(--km-line-strong)' }}>·</span>
+                <span className="text-km-line-strong">·</span>
                 <span>{userData.totalListings ?? 0} listings</span>
               </div>
             </div>
@@ -179,30 +153,18 @@ export default function Profile() {
 
           {/* Stats bar */}
           <div
-            className="grid mt-7 border-t border-b"
-            style={{
-              gridTemplateColumns: `repeat(${STATS.length}, 1fr)`,
-              borderColor: 'var(--km-line)',
-            }}
+            className="grid mt-7 border-t border-b border-km-line"
+            style={{ gridTemplateColumns: `repeat(${STATS.length}, 1fr)` }}
           >
             {STATS.map(([value, label], i) => (
               <div
                 key={label}
-                className="py-4 px-5"
-                style={{
-                  borderRight: i < STATS.length - 1 ? '1px solid var(--km-line)' : 'none',
-                }}
+                className={cn('py-4 px-5', i < STATS.length - 1 && 'border-r border-km-line')}
               >
-                <div
-                  className="text-2xl font-semibold"
-                  style={{ fontFamily: 'var(--km-font-body)', letterSpacing: '-0.02em', color: 'var(--km-ink)' }}
-                >
+                <div className="text-2xl font-semibold font-km-body text-km-ink tracking-[-0.02em]">
                   {value}
                 </div>
-                <div
-                  className="mt-0.5 text-xs uppercase tracking-widest"
-                  style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', letterSpacing: '0.12em', fontSize: '10px' }}
-                >
+                <div className="mt-0.5 text-[10px] uppercase font-km-mono text-km-ink-mute tracking-[0.12em]">
                   {label}
                 </div>
               </div>
@@ -226,10 +188,7 @@ export default function Profile() {
         {tab === 'listings' && (
           <div>
             <div className="flex items-center justify-between mb-5">
-              <div
-                className="text-xs"
-                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-dim)' }}
-              >
+              <div className="font-km-mono text-xs text-km-ink-dim">
                 {userListings.length} active listing{userListings.length !== 1 ? 's' : ''}
               </div>
               {isOwnProfile && (
@@ -243,10 +202,8 @@ export default function Profile() {
 
             {userListings.length === 0 && !isOwnProfile ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <div className="text-4xl" style={{ color: 'var(--km-line-strong)' }}>◆</div>
-                <div className="text-sm" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
-                  No active listings.
-                </div>
+                <div className="text-4xl text-km-line-strong">◆</div>
+                <div className="font-km-mono text-sm text-km-ink-mute">No active listings.</div>
               </div>
             ) : (
               <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
@@ -256,15 +213,8 @@ export default function Profile() {
                 {isOwnProfile && (
                   <Link
                     to="/create-listing"
-                    className="flex flex-col items-center justify-center gap-2.5 rounded border text-sm transition-colors hover:border-[var(--km-ink-mute)]"
-                    style={{
-                      minHeight: '200px',
-                      aspectRatio: '4/3',
-                      border: '1px dashed var(--km-line-strong)',
-                      color: 'var(--km-ink-mute)',
-                      fontFamily: 'var(--km-font-mono)',
-                      fontSize: '11px',
-                    }}
+                    className="flex flex-col items-center justify-center gap-2.5 rounded text-sm transition-colors hover:border-km-ink-mute font-km-mono text-[11px] text-km-ink-mute border border-dashed border-km-line-strong"
+                    style={{ minHeight: '200px', aspectRatio: '4/3' }}
                   >
                     <Plus size={20} style={{ opacity: 0.5 }} />
                     List another item
@@ -275,31 +225,19 @@ export default function Profile() {
 
             {/* Sales chart — own profile only */}
             {isOwnProfile && (
-              <div
-                className="mt-10 p-6 rounded border"
-                style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-              >
+              <div className="mt-10 p-6 rounded border bg-km-surface border-km-line">
                 <div className="flex items-baseline justify-between mb-5">
                   <div>
-                    <div
-                      className="text-xs uppercase tracking-widest mb-1"
-                      style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.15em', fontSize: '10px' }}
-                    >
+                    <div className="font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-gold mb-1">
                       Last 6 months
                     </div>
-                    <div
-                      className="text-xl font-semibold"
-                      style={{ color: 'var(--km-ink)', letterSpacing: '-0.02em' }}
-                    >
+                    <div className="text-xl font-semibold text-km-ink tracking-[-0.02em]">
                       Sales activity
                     </div>
                   </div>
-                  <div
-                    className="flex gap-5 text-xs"
-                    style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-dim)' }}
-                  >
-                    <span><span style={{ color: 'var(--km-ink-mute)' }}>Total: </span><strong style={{ color: 'var(--km-ink)' }}>—</strong></span>
-                    <span><span style={{ color: 'var(--km-ink-mute)' }}>Items: </span><strong style={{ color: 'var(--km-ink)' }}>{userData.totalListings ?? 0}</strong></span>
+                  <div className="flex gap-5 text-xs font-km-mono text-km-ink-dim">
+                    <span><span className="text-km-ink-mute">Total: </span><strong className="text-km-ink">—</strong></span>
+                    <span><span className="text-km-ink-mute">Items: </span><strong className="text-km-ink">{userData.totalListings ?? 0}</strong></span>
                   </div>
                 </div>
                 {/* Bar chart */}
@@ -310,17 +248,10 @@ export default function Profile() {
                   {CHART_DATA.map((d, i) => (
                     <div key={d.month} className="flex flex-col items-center gap-1.5">
                       <div
-                        className="w-full rounded-sm transition-all"
-                        style={{
-                          height: `${d.h}%`,
-                          background: i === 3 ? 'var(--km-gold)' : 'var(--km-line-strong)',
-                          minHeight: '4px',
-                        }}
+                        className={cn('w-full rounded-sm transition-all min-h-[4px]', i === 3 ? 'bg-km-gold' : 'bg-km-line-strong')}
+                        style={{ height: `${d.h}%` }}
                       />
-                      <div
-                        className="text-xs"
-                        style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px' }}
-                      >
+                      <div className="font-km-mono text-[10px] text-km-ink-mute">
                         {d.month}
                       </div>
                     </div>
@@ -332,35 +263,26 @@ export default function Profile() {
         )}
 
         {tab === 'reviews' && (
-          <div
-            className="rounded border p-6"
-            style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-          >
+          <div className="rounded border p-6 bg-km-surface border-km-line">
             <div className="flex items-center gap-4 mb-4">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: 'var(--km-gold-soft)', color: 'var(--km-gold)' }}
-              >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-km-gold-soft text-km-gold">
                 ★
               </div>
               <div>
-                <div className="font-medium text-sm" style={{ color: 'var(--km-ink)' }}>
+                <div className="font-medium text-sm text-km-ink">
                   {userData.rating ?? '—'} out of 5
                 </div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
+                <div className="font-km-mono text-xs mt-0.5 text-km-ink-mute">
                   Based on {userData.reviewCount ?? 0} reviews
                 </div>
               </div>
-              <div className="flex gap-1 ml-auto text-lg" style={{ color: 'var(--km-gold)' }}>
+              <div className="flex gap-1 ml-auto text-lg text-km-gold">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span key={star} style={{ opacity: star <= Math.round(userData.rating ?? 0) ? 1 : 0.2 }}>★</span>
                 ))}
               </div>
             </div>
-            <div
-              className="border-t pt-4 text-sm text-center"
-              style={{ borderColor: 'var(--km-line)', color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}
-            >
+            <div className="border-t border-km-line pt-4 text-sm text-center font-km-mono text-km-ink-mute">
               No reviews yet.
             </div>
           </div>
