@@ -9,6 +9,7 @@ import { BadgeTone } from '@/utils/badgeTones';
 import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface ApiGroupBuy {
   id: string;
@@ -287,7 +288,8 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
 }
 
 function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void }) {
-  const [tab, setTab] = useState<'overview' | 'vendors' | 'timeline'>('overview');
+  const [open, setOpen] = useState(true);
+  const [tab, setTab] = useState<'overview' | 'vendors'>('overview');
 
   const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
     interest: { label: 'Interest check', tone: 'neutral' },
@@ -297,48 +299,33 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
   };
   const meta = stageMeta[gb.stage];
 
-  useEffect(() => {
-    const saved = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = saved; };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-        animation: 'gbFadeIn 180ms ease',
-      }}
-    >
-      <style>{`
-        @keyframes gbFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes gbScaleIn { from { opacity: 0; transform: scale(0.98) translateY(8px) } to { opacity: 1; transform: scale(1) translateY(0) } }
-      `}</style>
-
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 1100,
-          maxHeight: 'calc(100vh - 48px)',
-          background: 'var(--km-surface)',
-          border: '1px solid var(--km-line)',
-          borderRadius: 8,
-          boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
-          display: 'grid', gridTemplateColumns: '1.1fr 1fr',
-          overflow: 'hidden',
-          animation: 'gbScaleIn 200ms ease',
-        }}
-      >
+    <Dialog.Root open={open} onOpenChange={o => !o && setOpen(false)}>
+      <Dialog.Portal forceMount>
+        <Dialog.Overlay
+          className="gb-overlay"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <Dialog.Content
+            className="gb-content"
+            onAnimationEnd={() => { if (!open) onClose(); }}
+            style={{
+              width: '100%', maxWidth: 1100,
+              maxHeight: 'calc(100vh - 48px)',
+              background: 'var(--km-surface)',
+              border: '1px solid var(--km-line)',
+              borderRadius: 8,
+              boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
+              display: 'grid', gridTemplateColumns: '1.1fr 1fr',
+              overflow: 'hidden',
+            }}
+          >
+            <Dialog.Title className="sr-only">{gb.name}</Dialog.Title>
         {/* ── LEFT — Carousel + kits ── */}
         <div style={{
           background: 'var(--km-bg)',
@@ -420,18 +407,11 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                 by <span style={{ color: 'var(--km-ink)' }}>@{gb.designer}</span>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'transparent', border: '1px solid var(--km-line)',
-                color: 'var(--km-ink-dim)', width: 32, height: 32,
-                borderRadius: 4, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <X size={14} />
-            </button>
+            <Dialog.Close asChild>
+              <Button variant="surface" size="icon" aria-label="Close" className="flex-shrink-0">
+                <X size={14} />
+              </Button>
+            </Dialog.Close>
           </div>
 
           {/* Tab bar */}
@@ -511,25 +491,18 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                 </div>
 
                 {gb.discordUrl && (
-                  <a
-                    href={gb.discordUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 7,
-                      padding: '8px 14px',
-                      background: '#5865F2', color: '#fff',
-                      border: 'none', borderRadius: 4,
-                      fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 600,
-                      textDecoration: 'none', cursor: 'pointer',
-                    }}
-                  >
-                    <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
-                      <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
-                    </svg>
-                    Join Discord
-                  </a>
+                  <Button size="sm" asChild style={{ background: '#5865F2', color: '#fff' }}>
+                    <a
+                      href={gb.discordUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
+                        <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
+                      </svg>
+                      Join Discord
+                    </a>
+                  </Button>
                 )}
               </div>
             )}
@@ -632,8 +605,10 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
             )}
           </div>
         </div>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
