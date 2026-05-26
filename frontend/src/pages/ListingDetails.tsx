@@ -8,6 +8,7 @@ import { formatDate, titleCase } from "@/utils/helpers"
 import { useAuth } from "@/utils/AuthProvider"
 import { useChat } from '@/utils/ChatProvider'
 import api from "@/utils/api"
+import { Button } from "@/components/ui/button"
 
 interface Listing {
     id: string
@@ -224,71 +225,26 @@ export default function ListingDetailsPage() {
                             )}
 
                             <div className="flex gap-2 mt-4">
-                                <button
-                                    className="flex-1 py-2.5 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                                    style={{
-                                        background: 'var(--km-ink)',
-                                        color: 'var(--km-bg)',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        fontFamily: 'var(--km-font-body)',
-                                    }}
-                                >
+                                <Button variant="solid" className="flex-1 py-2.5">
                                     {listing.price ? `Buy for $${parseFloat(listing.price.toFixed(2))}` : 'Make an offer'}
-                                </button>
+                                </Button>
                                 {listing.offers && listing.price > 0 && (
-                                    <button
-                                        className="flex-1 py-2.5 text-sm font-medium rounded border transition-colors hover:border-white/40"
-                                        style={{
-                                            background: 'transparent',
-                                            color: 'var(--km-ink-dim)',
-                                            borderColor: 'var(--km-line-strong)',
-                                            cursor: 'pointer',
-                                            fontFamily: 'var(--km-font-body)',
-                                        }}
-                                    >
+                                    <Button variant="outline" className="flex-1 py-2.5">
                                         Make an offer
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
 
                             <div className="flex gap-2 mt-2">
-                                <button
-                                    onClick={handleContactSeller}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded border transition-colors hover:border-white/30"
-                                    style={{
-                                        background: 'var(--km-surface-2)',
-                                        color: 'var(--km-ink-dim)',
-                                        borderColor: 'var(--km-line)',
-                                        cursor: 'pointer',
-                                        fontFamily: 'var(--km-font-body)',
-                                    }}
-                                >
+                                <Button variant="surface" size="sm" className="flex-1" onClick={handleContactSeller}>
                                     <MessageCircle size={13} /> Message seller
-                                </button>
-                                <button
-                                    onClick={handleShare}
-                                    className="w-9 flex items-center justify-center rounded border transition-colors hover:border-white/30"
-                                    style={{
-                                        background: 'var(--km-surface-2)',
-                                        color: 'var(--km-ink-dim)',
-                                        borderColor: 'var(--km-line)',
-                                        cursor: 'pointer',
-                                    }}
-                                >
+                                </Button>
+                                <Button variant="surface" size="sm" className="w-9 px-0 flex-shrink-0" onClick={handleShare}>
                                     <Share2 size={13} />
-                                </button>
-                                <button
-                                    className="w-9 flex items-center justify-center rounded border transition-colors hover:border-white/30"
-                                    style={{
-                                        background: 'var(--km-surface-2)',
-                                        color: 'var(--km-ink-dim)',
-                                        borderColor: 'var(--km-line)',
-                                        cursor: 'pointer',
-                                    }}
-                                >
+                                </Button>
+                                <Button variant="surface" size="sm" className="w-9 px-0 flex-shrink-0">
                                     <Heart size={13} />
-                                </button>
+                                </Button>
                             </div>
                         </div>
 

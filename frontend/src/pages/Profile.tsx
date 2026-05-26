@@ -9,6 +9,7 @@ import { useChat } from "@/utils/ChatProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate } from "@/utils/helpers"
+import { Button } from "@/components/ui/button"
 
 interface UserProps {
   id: string
@@ -159,46 +160,19 @@ export default function Profile() {
             {/* Actions */}
             <div className="flex gap-2 pb-1">
               {!isOwnProfile && (
-                <button
-                  onClick={handleMessage}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-ink)',
-                    color: 'var(--km-bg)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
+                <Button variant="solid" onClick={handleMessage}>
                   <MessageCircle size={14} /> Message
-                </button>
+                </Button>
               )}
               {isOwnProfile && (
-                <Link
-                  to="/create-listing"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-gold)',
-                    color: 'var(--km-bg)',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  <Plus size={14} /> New listing
-                </Link>
+                <Button variant="gold" asChild>
+                  <Link to="/create-listing">
+                    <Plus size={14} /> New listing
+                  </Link>
+                </Button>
               )}
               {!isOwnProfile && (
-                <button
-                  className="px-4 py-2 text-sm rounded border transition-colors hover:opacity-80"
-                  style={{
-                    background: 'transparent',
-                    color: 'var(--km-ink-dim)',
-                    borderColor: 'var(--km-line-strong)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  Follow
-                </button>
+                <Button variant="outline">Follow</Button>
               )}
             </div>
           </div>
@@ -259,17 +233,11 @@ export default function Profile() {
                 {userListings.length} active listing{userListings.length !== 1 ? 's' : ''}
               </div>
               {isOwnProfile && (
-                <Link
-                  to="/create-listing"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-ink)',
-                    color: 'var(--km-bg)',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  <Plus size={12} /> New listing
-                </Link>
+                <Button variant="solid" size="sm" asChild>
+                  <Link to="/create-listing">
+                    <Plus size={12} /> New listing
+                  </Link>
+                </Button>
               )}
             </div>
 

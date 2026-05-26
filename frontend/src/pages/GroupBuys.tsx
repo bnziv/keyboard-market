@@ -8,6 +8,7 @@ import { TabBar } from '@/components/TabBar';
 import { BadgeTone } from '@/utils/badgeTones';
 import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 interface ApiGroupBuy {
   id: string;
@@ -308,13 +309,6 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const ctaLabel = {
-    interest: 'Express interest →',
-    live:     'Join group buy →',
-    closed:   'Join waitlist',
-    shipping: 'Track shipment →',
-  }[gb.stage];
-
   return (
     <div
       onClick={onClose}
@@ -579,25 +573,16 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                             </span>
                           </div>
                         </div>
-                        <a
-                          href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                            padding: '7px 12px',
-                            background: 'var(--km-surface)', color: 'var(--km-ink)',
-                            border: '1px solid var(--km-line)', borderRadius: 4,
-                            fontFamily: 'var(--km-font-body)', fontSize: 12, fontWeight: 600,
-                            textDecoration: 'none', cursor: 'pointer', flexShrink: 0,
-                            transition: 'border-color 120ms',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--km-ink)')}
-                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--km-line)')}
-                        >
-                          Visit ↗
-                        </a>
+                        <Button variant="surface" size="sm" asChild>
+                          <a
+                            href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            Visit ↗
+                          </a>
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -634,52 +619,16 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
             <div style={{ flex: 1 }} />
 
             {gb.sourceUrl && (
-              <a
-                href={gb.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '10px 14px',
-                  background: 'transparent', color: 'var(--km-ink-dim)',
-                  border: '1px solid var(--km-line)', borderRadius: 4,
-                  fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 500,
-                  textDecoration: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
-                View original post <ExternalLink size={12} />
-              </a>
-            )}
-
-            {gb.sourceUrl && (
-              <a
-                href={gb.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '11px 16px',
-                  borderRadius: 4,
-                  fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 700,
-                  textDecoration: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                  ...(gb.stage === 'closed'
-                    ? {
-                        background: 'var(--km-surface-2)',
-                        color: 'var(--km-ink-dim)',
-                        border: '1px solid var(--km-line)',
-                      }
-                    : {
-                        background: 'var(--km-gold)',
-                        color: 'var(--km-bg)',
-                        border: 'none',
-                      }),
-                }}
-              >
-                {ctaLabel}
-                {gb.stage !== 'closed' && <ExternalLink size={13} />}
-              </a>
+              <Button variant="gold" asChild>
+                <a
+                  href={gb.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                >
+                  View original post <ExternalLink size={12} />
+                </a>
+              </Button>
             )}
           </div>
         </div>

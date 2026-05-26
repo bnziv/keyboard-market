@@ -6,6 +6,7 @@ import { useToast } from "@/utils/ToastProvider";
 import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
 import { ArrowRight, Loader2 } from "lucide-react";
 import api from "@/utils/api";
+import { Button } from "@/components/ui/button";
 
 const STATS = [
   ['2,847', 'Active listings'],
@@ -98,30 +99,14 @@ export default function Home() {
               no dropshippers — just people who care about the click.
             </p>
             <div className="flex gap-3">
-              <Link
-                to="/listings"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                style={{
-                  background: 'var(--km-gold)',
-                  color: 'var(--km-bg)',
-                  fontFamily: 'var(--km-font-body)',
-                }}
-              >
-                Browse the market <ArrowRight size={14} />
-              </Link>
-              <button
-                onClick={handleCreateListing}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded border transition-colors hover:border-white/40"
-                style={{
-                  background: 'transparent',
-                  color: 'var(--km-ink-dim)',
-                  borderColor: 'var(--km-line-strong)',
-                  fontFamily: 'var(--km-font-body)',
-                  cursor: 'pointer',
-                }}
-              >
+              <Button variant="gold" size="lg" asChild>
+                <Link to="/listings">
+                  Browse the market <ArrowRight size={14} />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleCreateListing}>
                 List an item
-              </button>
+              </Button>
             </div>
           </div>
 
