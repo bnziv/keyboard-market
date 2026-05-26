@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
+import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
+import { CATEGORY_PALETTES } from '@/components/GroupBuyImage';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TabBar } from '@/components/TabBar';
 import { BadgeTone } from '@/utils/badgeTones';
@@ -21,29 +23,6 @@ interface ApiGroupBuy {
   overview: string | null;
   images: string[];
   sourceUrl: string;
-  vendors: { region: string; name: string; url: string }[];
-  discordUrl: string | null;
-  items: { name: string; price: number; currency: string }[];
-}
-
-interface CardGroupBuy {
-  id: string;
-  name: string;
-  designer: string;
-  category: string;
-  stage: 'interest' | 'live' | 'closed' | 'shipping';
-  price: number;
-  closes: string;
-  gbStartMs: number | null;
-  gbEndMs: number | null;
-  gbStartIso: string | null;
-  gbEndIso: string | null;
-  eta: string;
-  closingSoon: boolean;
-  desc: string;
-  sourceUrl: string;
-  imageUrl: string | null;
-  images: string[];
   vendors: { region: string; name: string; url: string }[];
   discordUrl: string | null;
   items: { name: string; price: number; currency: string }[];
@@ -157,47 +136,6 @@ const STAGE_TABS: { value: StageFilter; label: string }[] = [
   { value: 'live',     label: 'Live' },
   { value: 'closed',   label: 'Closed' },
 ];
-
-const CATEGORY_PALETTES: Record<string, [string, string]> = {
-  Keyboard:    ['#1e2a5e', '#3d5af1'],
-  Keycaps:     ['#3b1f5c', '#8b5cf6'],
-  Switches:    ['#1a3a2e', '#22c55e'],
-  Accessories: ['#3a2a1a', '#f59e0b'],
-};
-
-function GroupBuyImage({ category, imageUrl }: { category: string; imageUrl: string | null }) {
-  const [bg, fg] = CATEGORY_PALETTES[category] ?? ['#1c1c2e', '#6366f1'];
-  if (imageUrl) {
-    return (
-      <img
-        src={imageUrl}
-        alt={category}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-    );
-  }
-  return (
-    <div style={{
-      width: '100%', height: '100%',
-      background: `linear-gradient(135deg, ${bg} 0%, ${fg}66 100%)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        width: 60, height: 60,
-        border: '1.5px solid rgba(255,255,255,0.15)',
-        borderRadius: 6,
-        background: 'rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--km-font-mono)', fontSize: 10,
-        color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-      }}>
-        {category.slice(0, 3)}
-      </div>
-    </div>
-  );
-}
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
@@ -352,7 +290,7 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
 
   const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
     interest: { label: 'Interest check', tone: 'neutral' },
-    live:     { label: 'Live · pledging', tone: 'ok' },
+    live:     { label: 'Live', tone: 'ok' },
     closed:   { label: 'In production',  tone: 'accent' },
     shipping: { label: 'Shipping',       tone: 'accent' },
   };
@@ -750,148 +688,6 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
   );
 }
 
-// ─── Card ─────────────────────────────────────────────────────────────────────
-
-function GroupBuyCard({ gb, onOpen }: { gb: CardGroupBuy; onOpen: () => void }) {
-  const [hovered, setHovered] = useState(false);
-
-  const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
-    interest: { label: 'Interest check', tone: 'neutral' },
-    live:     { label: 'Live', tone: 'ok' },
-    closed:   { label: 'In production', tone: 'accent' },
-    shipping: { label: 'Shipping', tone: 'accent' },
-  };
-  const meta = stageMeta[gb.stage];
-
-  return (
-    <div
-      onClick={onOpen}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: 'var(--km-surface)',
-        border: `1px solid ${hovered ? 'var(--km-ink)' : 'var(--km-line)'}`,
-        borderRadius: 6,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        display: 'flex', flexDirection: 'column',
-        transition: 'border-color 150ms ease',
-      }}
-    >
-      {/* Image */}
-      <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
-        <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
-        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-          {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
-        </div>
-        <div style={{
-          position: 'absolute', bottom: 12, right: 12,
-          padding: '4px 10px',
-          background: 'rgba(0,0,0,0.65)',
-          color: '#fff',
-          borderRadius: 4,
-          fontFamily: 'var(--km-font-mono)', fontSize: 11,
-          letterSpacing: '0.05em',
-        }}>
-          {gb.eta}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--km-font-mono)', fontSize: 10,
-          color: 'var(--km-ink-mute)', letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>
-          {gb.category} · by @{gb.designer}
-        </div>
-
-        <div style={{
-          fontFamily: 'var(--km-font-body)', fontSize: 19, fontWeight: 600,
-          color: 'var(--km-ink)', marginTop: 4, lineHeight: 1.2,
-          letterSpacing: '-0.02em',
-        }}>
-          {gb.name}
-        </div>
-
-        <p style={{
-          margin: '8px 0 16px', fontSize: 13,
-          color: 'var(--km-ink-dim)', lineHeight: 1.5, flex: 1,
-        }}>
-          {gb.desc || 'No description available.'}
-        </p>
-
-        {/* Price + countdown */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-end',
-          justifyContent: 'space-between', marginTop: 'auto', gap: 14,
-        }}>
-          <div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
-              Base price
-            </div>
-            <div style={{
-              fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 700,
-              color: 'var(--km-ink)', letterSpacing: '-0.02em',
-            }}>
-              {gb.price > 0 ? `$${gb.price}` : '—'}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
-              {gb.stage === 'closed' ? 'Status' : 'Closes in'}
-            </div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 14, fontWeight: 600,
-              color: gb.closingSoon ? 'var(--km-gold)' : 'var(--km-ink)',
-            }}>
-              {gb.closes}
-            </div>
-          </div>
-        </div>
-
-        {/* CTA button */}
-        <button
-          onClick={e => { e.stopPropagation(); onOpen(); }}
-          style={{
-            marginTop: 14, width: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '10px 16px', borderRadius: 4,
-            fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', transition: 'opacity 150ms',
-            ...(gb.stage === 'closed'
-              ? {
-                  background: 'var(--km-surface-2)',
-                  color: 'var(--km-ink-dim)',
-                  border: '1px solid var(--km-line)',
-                }
-              : {
-                  background: 'var(--km-gold)',
-                  color: 'var(--km-bg)',
-                  border: 'none',
-                }),
-          }}
-        >
-          {gb.stage === 'interest' && <>Express interest <ArrowRight size={13} /></>}
-          {gb.stage === 'live' && <>Join group buy · {gb.price > 0 ? `$${gb.price}` : 'view'} <ArrowRight size={13} /></>}
-          {gb.stage === 'closed' && <>View details</>}
-          {gb.stage === 'shipping' && <>Track shipment <ArrowRight size={13} /></>}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function GroupBuys() {
@@ -931,7 +727,6 @@ export default function GroupBuys() {
     sortBy,
   );
 
-  const closingSoonCount = cards.filter(g => g.closingSoon).length;
   const selectedGb = selectedId ? cards.find(g => g.id === selectedId) ?? null : null;
 
   return (
@@ -1064,47 +859,6 @@ export default function GroupBuys() {
 
       {/* Main content */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px', width: '100%' }}>
-
-        {/* Closing-soon callout */}
-        {closingSoonCount > 0 && (
-          <div style={{
-            padding: '20px 24px', marginBottom: 28,
-            border: '1px dashed var(--km-gold)',
-            borderRadius: 4,
-            background: 'var(--km-gold-soft)',
-            display: 'flex', alignItems: 'center', gap: 20,
-          }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 11,
-              color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase',
-              padding: '6px 10px',
-              border: '1px solid var(--km-gold)',
-              borderRadius: 4,
-              whiteSpace: 'nowrap',
-            }}>
-              ⏱ Closing soon
-            </div>
-            <div style={{ flex: 1, fontSize: 13, color: 'var(--km-ink)' }}>
-              <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy' : 'buys'}</strong>{' '}
-              close in the next 48 hours.
-            </div>
-            <button
-              onClick={() => setStage('live')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 16px',
-                background: 'var(--km-gold)',
-                color: 'var(--km-bg)',
-                border: 'none', borderRadius: 4,
-                fontSize: 13, fontWeight: 600,
-                fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              View closing soon <ArrowRight size={13} />
-            </button>
-          </div>
-        )}
 
         {/* Loading / error / cards */}
         {loading ? (
