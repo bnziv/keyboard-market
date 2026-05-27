@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import NavBar from "@/components/NavBar"
+import { TabBar } from "@/components/TabBar"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
 import { MessageCircle, Plus } from "lucide-react"
 import { useNavigate, useParams, Link } from "react-router-dom"
@@ -8,6 +9,7 @@ import { useChat } from "@/utils/ChatProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate } from "@/utils/helpers"
+import { Button } from "@/components/ui/button"
 
 interface UserProps {
   id: string
@@ -158,46 +160,19 @@ export default function Profile() {
             {/* Actions */}
             <div className="flex gap-2 pb-1">
               {!isOwnProfile && (
-                <button
-                  onClick={handleMessage}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-ink)',
-                    color: 'var(--km-bg)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
+                <Button variant="solid" onClick={handleMessage}>
                   <MessageCircle size={14} /> Message
-                </button>
+                </Button>
               )}
               {isOwnProfile && (
-                <Link
-                  to="/create-listing"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-gold)',
-                    color: 'var(--km-bg)',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  <Plus size={14} /> New listing
-                </Link>
+                <Button variant="gold" asChild>
+                  <Link to="/create-listing">
+                    <Plus size={14} /> New listing
+                  </Link>
+                </Button>
               )}
               {!isOwnProfile && (
-                <button
-                  className="px-4 py-2 text-sm rounded border transition-colors hover:opacity-80"
-                  style={{
-                    background: 'transparent',
-                    color: 'var(--km-ink-dim)',
-                    borderColor: 'var(--km-line-strong)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  Follow
-                </button>
+                <Button variant="outline">Follow</Button>
               )}
             </div>
           </div>
@@ -235,32 +210,13 @@ export default function Profile() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-5">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: tab === t.id ? 600 : 400,
-                  color: tab === t.id ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  borderBottom: tab === t.id ? '2px solid var(--km-gold)' : '2px solid transparent',
-                  marginBottom: '-1px',
-                  fontFamily: 'var(--km-font-body)',
-                }}
-              >
-                {t.label}
-                <span
-                  className="text-xs"
-                  style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px' }}
-                >
-                  {t.count}
-                </span>
-              </button>
-            ))}
+          <div className="mt-5">
+            <TabBar
+              tabs={TABS.map(t => ({ key: t.id, label: t.label, count: t.count }))}
+              active={tab}
+              onChange={setTab}
+              variant="body"
+            />
           </div>
         </div>
       </div>
@@ -277,17 +233,11 @@ export default function Profile() {
                 {userListings.length} active listing{userListings.length !== 1 ? 's' : ''}
               </div>
               {isOwnProfile && (
-                <Link
-                  to="/create-listing"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--km-ink)',
-                    color: 'var(--km-bg)',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
-                  <Plus size={12} /> New listing
-                </Link>
+                <Button variant="solid" size="sm" asChild>
+                  <Link to="/create-listing">
+                    <Plus size={12} /> New listing
+                  </Link>
+                </Button>
               )}
             </div>
 

@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
+import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
+import { CATEGORY_PALETTES } from '@/components/GroupBuyImage';
+import { StatusBadge } from '@/components/StatusBadge';
+import { TabBar } from '@/components/TabBar';
+import { BadgeTone } from '@/utils/badgeTones';
 import { ArrowRight, ArrowLeft, Loader2, ExternalLink, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface ApiGroupBuy {
   id: string;
@@ -18,29 +25,6 @@ interface ApiGroupBuy {
   overview: string | null;
   images: string[];
   sourceUrl: string;
-  vendors: { region: string; name: string; url: string }[];
-  discordUrl: string | null;
-  items: { name: string; price: number; currency: string }[];
-}
-
-interface CardGroupBuy {
-  id: string;
-  name: string;
-  designer: string;
-  category: string;
-  stage: 'interest' | 'live' | 'closed' | 'shipping';
-  price: number;
-  closes: string;
-  gbStartMs: number | null;
-  gbEndMs: number | null;
-  gbStartIso: string | null;
-  gbEndIso: string | null;
-  eta: string;
-  closingSoon: boolean;
-  desc: string;
-  sourceUrl: string;
-  imageUrl: string | null;
-  images: string[];
   vendors: { region: string; name: string; url: string }[];
   discordUrl: string | null;
   items: { name: string; price: number; currency: string }[];
@@ -154,73 +138,6 @@ const STAGE_TABS: { value: StageFilter; label: string }[] = [
   { value: 'live',     label: 'Live' },
   { value: 'closed',   label: 'Closed' },
 ];
-
-const CATEGORY_PALETTES: Record<string, [string, string]> = {
-  Keyboard:    ['#1e2a5e', '#3d5af1'],
-  Keycaps:     ['#3b1f5c', '#8b5cf6'],
-  Switches:    ['#1a3a2e', '#22c55e'],
-  Accessories: ['#3a2a1a', '#f59e0b'],
-};
-
-type BadgeTone = 'neutral' | 'ok' | 'accent';
-
-const BADGE_TONES: Record<BadgeTone, { bg: string; fg: string; border: string }> = {
-  neutral: { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-dim)', border: 'var(--km-line)' },
-  accent:  { bg: 'var(--km-gold-soft)',  fg: 'var(--km-gold)',    border: 'var(--km-gold)' },
-  ok:      { bg: 'color-mix(in srgb, var(--km-ok) 20%, var(--km-surface))', fg: 'var(--km-ok)', border: 'var(--km-ok)' },
-};
-
-function GroupBuyImage({ category, imageUrl }: { category: string; imageUrl: string | null }) {
-  const [bg, fg] = CATEGORY_PALETTES[category] ?? ['#1c1c2e', '#6366f1'];
-  if (imageUrl) {
-    return (
-      <img
-        src={imageUrl}
-        alt={category}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-    );
-  }
-  return (
-    <div style={{
-      width: '100%', height: '100%',
-      background: `linear-gradient(135deg, ${bg} 0%, ${fg}66 100%)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        width: 60, height: 60,
-        border: '1.5px solid rgba(255,255,255,0.15)',
-        borderRadius: 6,
-        background: 'rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--km-font-mono)', fontSize: 10,
-        color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-      }}>
-        {category.slice(0, 3)}
-      </div>
-    </div>
-  );
-}
-
-function StagePill({ children, tone }: { children: React.ReactNode; tone: BadgeTone }) {
-  const t = BADGE_TONES[tone];
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '2px 8px',
-      fontFamily: 'var(--km-font-mono)', fontSize: 10,
-      letterSpacing: '0.05em', textTransform: 'uppercase',
-      whiteSpace: 'nowrap',
-      background: t.bg, color: t.fg,
-      border: `1px solid ${t.border}`,
-      borderRadius: 4,
-    }}>
-      {children}
-    </span>
-  );
-}
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
@@ -371,65 +288,44 @@ function Carousel({ images, category }: { images: string[]; category: string }) 
 }
 
 function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void }) {
-  const [tab, setTab] = useState<'overview' | 'vendors' | 'timeline'>('overview');
+  const [open, setOpen] = useState(true);
+  const [tab, setTab] = useState<'overview' | 'vendors'>('overview');
 
   const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
     interest: { label: 'Interest check', tone: 'neutral' },
-    live:     { label: 'Live · pledging', tone: 'ok' },
+    live:     { label: 'Live', tone: 'ok' },
     closed:   { label: 'In production',  tone: 'accent' },
     shipping: { label: 'Shipping',       tone: 'accent' },
   };
   const meta = stageMeta[gb.stage];
 
-  useEffect(() => {
-    const saved = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = saved; };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  const ctaLabel = {
-    interest: 'Express interest →',
-    live:     'Join group buy →',
-    closed:   'Join waitlist',
-    shipping: 'Track shipment →',
-  }[gb.stage];
-
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-        animation: 'gbFadeIn 180ms ease',
-      }}
-    >
-      <style>{`
-        @keyframes gbFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes gbScaleIn { from { opacity: 0; transform: scale(0.98) translateY(8px) } to { opacity: 1; transform: scale(1) translateY(0) } }
-      `}</style>
-
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 1100,
-          maxHeight: 'calc(100vh - 48px)',
-          background: 'var(--km-surface)',
-          border: '1px solid var(--km-line)',
-          borderRadius: 8,
-          boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
-          display: 'grid', gridTemplateColumns: '1.1fr 1fr',
-          overflow: 'hidden',
-          animation: 'gbScaleIn 200ms ease',
-        }}
-      >
+    <Dialog.Root open={open} onOpenChange={o => !o && setOpen(false)}>
+      <Dialog.Portal forceMount>
+        <Dialog.Overlay
+          className="gb-overlay"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <Dialog.Content
+            className="gb-content"
+            onAnimationEnd={() => { if (!open) onClose(); }}
+            style={{
+              width: '100%', maxWidth: 1100,
+              maxHeight: 'calc(100vh - 48px)',
+              background: 'var(--km-surface)',
+              border: '1px solid var(--km-line)',
+              borderRadius: 8,
+              boxShadow: '0 40px 120px rgba(0,0,0,0.5)',
+              display: 'grid', gridTemplateColumns: '1.1fr 1fr',
+              overflow: 'hidden',
+            }}
+          >
+            <Dialog.Title className="sr-only">{gb.name}</Dialog.Title>
         {/* ── LEFT — Carousel + kits ── */}
         <div style={{
           background: 'var(--km-bg)',
@@ -491,9 +387,9 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
           }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                <StagePill tone={meta.tone}>{meta.label}</StagePill>
-                <StagePill tone="neutral">{gb.category}</StagePill>
-                {gb.closingSoon && <StagePill tone="accent">⏱ {gb.closes} left</StagePill>}
+                <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+                <StatusBadge tone="neutral">{gb.category}</StatusBadge>
+                {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
               </div>
               <h2 style={{
                 margin: 0,
@@ -511,18 +407,11 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                 by <span style={{ color: 'var(--km-ink)' }}>@{gb.designer}</span>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'transparent', border: '1px solid var(--km-line)',
-                color: 'var(--km-ink-dim)', width: 32, height: 32,
-                borderRadius: 4, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <X size={14} />
-            </button>
+            <Dialog.Close asChild>
+              <Button variant="surface" size="icon" aria-label="Close" className="flex-shrink-0">
+                <X size={14} />
+              </Button>
+            </Dialog.Close>
           </div>
 
           {/* Tab bar */}
@@ -602,25 +491,18 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                 </div>
 
                 {gb.discordUrl && (
-                  <a
-                    href={gb.discordUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 7,
-                      padding: '8px 14px',
-                      background: '#5865F2', color: '#fff',
-                      border: 'none', borderRadius: 4,
-                      fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 600,
-                      textDecoration: 'none', cursor: 'pointer',
-                    }}
-                  >
-                    <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
-                      <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
-                    </svg>
-                    Join Discord
-                  </a>
+                  <Button size="sm" asChild style={{ background: '#5865F2', color: '#fff' }}>
+                    <a
+                      href={gb.discordUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
+                        <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
+                      </svg>
+                      Join Discord
+                    </a>
+                  </Button>
                 )}
               </div>
             )}
@@ -664,25 +546,16 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
                             </span>
                           </div>
                         </div>
-                        <a
-                          href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                            padding: '7px 12px',
-                            background: 'var(--km-surface)', color: 'var(--km-ink)',
-                            border: '1px solid var(--km-line)', borderRadius: 4,
-                            fontFamily: 'var(--km-font-body)', fontSize: 12, fontWeight: 600,
-                            textDecoration: 'none', cursor: 'pointer', flexShrink: 0,
-                            transition: 'border-color 120ms',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--km-ink)')}
-                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--km-line)')}
-                        >
-                          Visit ↗
-                        </a>
+                        <Button variant="surface" size="sm" asChild>
+                          <a
+                            href={v.url ? (v.url.startsWith('http') ? v.url : `https://${v.url}`) : undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            Visit ↗
+                          </a>
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -719,199 +592,23 @@ function GroupBuyModal({ gb, onClose }: { gb: CardGroupBuy; onClose: () => void 
             <div style={{ flex: 1 }} />
 
             {gb.sourceUrl && (
-              <a
-                href={gb.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '10px 14px',
-                  background: 'transparent', color: 'var(--km-ink-dim)',
-                  border: '1px solid var(--km-line)', borderRadius: 4,
-                  fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 500,
-                  textDecoration: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
-                View original post <ExternalLink size={12} />
-              </a>
-            )}
-
-            {gb.sourceUrl && (
-              <a
-                href={gb.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '11px 16px',
-                  borderRadius: 4,
-                  fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 700,
-                  textDecoration: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                  ...(gb.stage === 'closed'
-                    ? {
-                        background: 'var(--km-surface-2)',
-                        color: 'var(--km-ink-dim)',
-                        border: '1px solid var(--km-line)',
-                      }
-                    : {
-                        background: 'var(--km-gold)',
-                        color: 'var(--km-bg)',
-                        border: 'none',
-                      }),
-                }}
-              >
-                {ctaLabel}
-                {gb.stage !== 'closed' && <ExternalLink size={13} />}
-              </a>
+              <Button variant="gold" asChild>
+                <a
+                  href={gb.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                >
+                  View original post <ExternalLink size={12} />
+                </a>
+              </Button>
             )}
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Card ─────────────────────────────────────────────────────────────────────
-
-function GroupBuyCard({ gb, onOpen }: { gb: CardGroupBuy; onOpen: () => void }) {
-  const [hovered, setHovered] = useState(false);
-
-  const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
-    interest: { label: 'Interest check', tone: 'neutral' },
-    live:     { label: 'Live', tone: 'ok' },
-    closed:   { label: 'In production', tone: 'accent' },
-    shipping: { label: 'Shipping', tone: 'accent' },
-  };
-  const meta = stageMeta[gb.stage];
-
-  return (
-    <div
-      onClick={onOpen}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: 'var(--km-surface)',
-        border: `1px solid ${hovered ? 'var(--km-ink)' : 'var(--km-line)'}`,
-        borderRadius: 6,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        display: 'flex', flexDirection: 'column',
-        transition: 'border-color 150ms ease',
-      }}
-    >
-      {/* Image */}
-      <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
-        <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
-        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <StagePill tone={meta.tone}>{meta.label}</StagePill>
-          {gb.closingSoon && <StagePill tone="accent">⏱ {gb.closes} left</StagePill>}
-        </div>
-        <div style={{
-          position: 'absolute', bottom: 12, right: 12,
-          padding: '4px 10px',
-          background: 'rgba(0,0,0,0.65)',
-          color: '#fff',
-          borderRadius: 4,
-          fontFamily: 'var(--km-font-mono)', fontSize: 11,
-          letterSpacing: '0.05em',
-        }}>
-          {gb.eta}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--km-font-mono)', fontSize: 10,
-          color: 'var(--km-ink-mute)', letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>
-          {gb.category} · by @{gb.designer}
-        </div>
-
-        <div style={{
-          fontFamily: 'var(--km-font-body)', fontSize: 19, fontWeight: 600,
-          color: 'var(--km-ink)', marginTop: 4, lineHeight: 1.2,
-          letterSpacing: '-0.02em',
-        }}>
-          {gb.name}
-        </div>
-
-        <p style={{
-          margin: '8px 0 16px', fontSize: 13,
-          color: 'var(--km-ink-dim)', lineHeight: 1.5, flex: 1,
-        }}>
-          {gb.desc || 'No description available.'}
-        </p>
-
-        {/* Price + countdown */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-end',
-          justifyContent: 'space-between', marginTop: 'auto', gap: 14,
-        }}>
-          <div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
-              Base price
-            </div>
-            <div style={{
-              fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 700,
-              color: 'var(--km-ink)', letterSpacing: '-0.02em',
-            }}>
-              {gb.price > 0 ? `$${gb.price}` : '—'}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
-              {gb.stage === 'closed' ? 'Status' : 'Closes in'}
-            </div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 14, fontWeight: 600,
-              color: gb.closingSoon ? 'var(--km-gold)' : 'var(--km-ink)',
-            }}>
-              {gb.closes}
-            </div>
-          </div>
-        </div>
-
-        {/* CTA button */}
-        <button
-          onClick={e => { e.stopPropagation(); onOpen(); }}
-          style={{
-            marginTop: 14, width: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '10px 16px', borderRadius: 4,
-            fontFamily: 'var(--km-font-body)', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', transition: 'opacity 150ms',
-            ...(gb.stage === 'closed'
-              ? {
-                  background: 'var(--km-surface-2)',
-                  color: 'var(--km-ink-dim)',
-                  border: '1px solid var(--km-line)',
-                }
-              : {
-                  background: 'var(--km-gold)',
-                  color: 'var(--km-bg)',
-                  border: 'none',
-                }),
-          }}
-        >
-          {gb.stage === 'interest' && <>Express interest <ArrowRight size={13} /></>}
-          {gb.stage === 'live' && <>Join group buy · {gb.price > 0 ? `$${gb.price}` : 'view'} <ArrowRight size={13} /></>}
-          {gb.stage === 'closed' && <>View details</>}
-          {gb.stage === 'shipping' && <>Track shipment <ArrowRight size={13} /></>}
-        </button>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -954,7 +651,6 @@ export default function GroupBuys() {
     sortBy,
   );
 
-  const closingSoonCount = cards.filter(g => g.closingSoon).length;
   const selectedGb = selectedId ? cards.find(g => g.id === selectedId) ?? null : null;
 
   return (
@@ -1035,42 +731,15 @@ export default function GroupBuys() {
 
           {/* Stage tabs */}
           <div style={{
-            display: 'flex', gap: 2, marginTop: 32,
+            display: 'flex', marginTop: 32,
             alignItems: 'center', marginBottom: -1,
           }}>
-            {STAGE_TABS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setStage(value)}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: 13,
-                  fontWeight: stage === value ? 600 : 400,
-                  color: stage === value ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  background: 'none',
-                  outline: 'none',
-                  borderWidth: '0 0 2px 0',
-                  borderStyle: 'solid',
-                  borderColor: stage === value ? 'var(--km-gold)' : 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  fontFamily: 'var(--km-font-body)',
-                  whiteSpace: 'nowrap',
-                  transition: 'color 150ms',
-                }}
-              >
-                {label}
-                <span style={{
-                  fontFamily: 'var(--km-font-mono)', fontSize: 10,
-                  color: 'var(--km-ink-mute)',
-                  background: stage === value ? 'var(--km-gold-soft)' : 'var(--km-surface-2)',
-                  padding: '1px 6px', borderRadius: 8,
-                  transition: 'background 150ms',
-                }}>
-                  {tabCount(value)}
-                </span>
-              </button>
-            ))}
+            <TabBar
+              tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
+              active={stage}
+              onChange={setStage}
+              variant="body"
+            />
 
             <div style={{ flex: 1 }} />
 
@@ -1114,47 +783,6 @@ export default function GroupBuys() {
 
       {/* Main content */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px', width: '100%' }}>
-
-        {/* Closing-soon callout */}
-        {closingSoonCount > 0 && (
-          <div style={{
-            padding: '20px 24px', marginBottom: 28,
-            border: '1px dashed var(--km-gold)',
-            borderRadius: 4,
-            background: 'var(--km-gold-soft)',
-            display: 'flex', alignItems: 'center', gap: 20,
-          }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 11,
-              color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase',
-              padding: '6px 10px',
-              border: '1px solid var(--km-gold)',
-              borderRadius: 4,
-              whiteSpace: 'nowrap',
-            }}>
-              ⏱ Closing soon
-            </div>
-            <div style={{ flex: 1, fontSize: 13, color: 'var(--km-ink)' }}>
-              <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy' : 'buys'}</strong>{' '}
-              close in the next 48 hours.
-            </div>
-            <button
-              onClick={() => setStage('live')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 16px',
-                background: 'var(--km-gold)',
-                color: 'var(--km-bg)',
-                border: 'none', borderRadius: 4,
-                fontSize: 13, fontWeight: 600,
-                fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              View closing soon <ArrowRight size={13} />
-            </button>
-          </div>
-        )}
 
         {/* Loading / error / cards */}
         {loading ? (

@@ -3,8 +3,10 @@ import NavBar from "@/components/NavBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/AuthProvider";
 import { useToast } from "@/utils/ToastProvider";
+import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
 import { ArrowRight, Loader2 } from "lucide-react";
 import api from "@/utils/api";
+import { Button } from "@/components/ui/button";
 
 const STATS = [
   ['2,847', 'Active listings'],
@@ -23,19 +25,6 @@ interface GroupBuy {
   images: string[];
 }
 
-const STAGE_META: Record<string, { label: string; bg: string; fg: string; border: string }> = {
-  GB:       { label: 'Live',           bg: 'color-mix(in srgb, var(--km-ok) 20%, var(--km-surface))', fg: 'var(--km-ok)',   border: 'var(--km-ok)' },
-  IC:       { label: 'Interest check', bg: 'var(--km-surface-2)', fg: 'var(--km-ink-dim)', border: 'var(--km-line)' },
-  shipping: { label: 'Shipping',       bg: 'var(--km-gold-soft)',  fg: 'var(--km-gold)',    border: 'var(--km-gold)' },
-};
-
-const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
-  keyboard:    ['#1e2a5e', '#3d5af1'],
-  keycaps:     ['#3b1f5c', '#8b5cf6'],
-  switches:    ['#1a3a2e', '#22c55e'],
-  accessories: ['#3a2a1a', '#f59e0b'],
-};
-
 function stagePriority(status: string): number {
   if (status === 'GB') return 0;
   if (status === 'IC') return 1;
@@ -43,40 +32,25 @@ function stagePriority(status: string): number {
   return 3;
 }
 
-function GbImage({ type, images }: { type: string; images: string[] }) {
-  const imageUrl = images?.[0] ?? null;
-  const [bg, fg] = CATEGORY_GRADIENTS[type?.toLowerCase()] ?? ['#1c1c2e', '#6366f1'];
+function mapStage(status: string): CardGroupBuy['stage'] {
+  if (status === 'GB') return 'live';
+  if (status === 'IC') return 'interest';
+  if (status === 'shipping') return 'shipping';
+  return 'closed';
+}
 
-  if (imageUrl) {
-    return (
-      <img
-        src={imageUrl}
-        alt={type}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-    );
-  }
-  return (
-    <div style={{
-      width: '100%', height: '100%',
-      background: `linear-gradient(135deg, ${bg} 0%, ${fg}66 100%)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        width: 48, height: 48,
-        border: '1.5px solid rgba(255,255,255,0.15)',
-        borderRadius: 6,
-        background: 'rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--km-font-mono)', fontSize: 9,
-        color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-      }}>
-        {type?.slice(0, 3) ?? '—'}
-      </div>
-    </div>
-  );
+function toFeaturedCard(gb: GroupBuy): CardGroupBuy {
+  const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
+  return {
+    id: gb.id, name: gb.name, designer: gb.designer,
+    category, stage: mapStage(gb.status),
+    price: gb.basePrice?.amount ?? 0,
+    imageUrl: gb.images?.[0] ?? null,
+    images: gb.images ?? [],
+    closes: '—', closingSoon: false, eta: '—', desc: '',
+    gbStartMs: null, gbEndMs: null, gbStartIso: null, gbEndIso: null,
+    sourceUrl: '', vendors: [], discordUrl: null, items: [],
+  };
 }
 
 export default function Home() {
@@ -97,7 +71,6 @@ export default function Home() {
     .slice(0, 3);
 
   const heroGb = featured[0] ?? null;
-  const heroMeta = heroGb ? (STAGE_META[heroGb.status] ?? STAGE_META.IC) : null;
 
   const handleCreateListing = () => {
     if (isAuthenticated) {
@@ -126,85 +99,35 @@ export default function Home() {
               no dropshippers — just people who care about the click.
             </p>
             <div className="flex gap-3">
-              <Link
-                to="/listings"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                style={{
-                  background: 'var(--km-gold)',
-                  color: 'var(--km-bg)',
-                  fontFamily: 'var(--km-font-body)',
-                }}
-              >
-                Browse the market <ArrowRight size={14} />
-              </Link>
-              <button
-                onClick={handleCreateListing}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded border transition-colors hover:border-white/40"
-                style={{
-                  background: 'transparent',
-                  color: 'var(--km-ink-dim)',
-                  borderColor: 'var(--km-line-strong)',
-                  fontFamily: 'var(--km-font-body)',
-                  cursor: 'pointer',
-                }}
-              >
+              <Button variant="gold" size="lg" asChild>
+                <Link to="/listings">
+                  Browse the market <ArrowRight size={14} />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleCreateListing}>
                 List an item
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Hero group buy card */}
-          <div
-            className="rounded-lg overflow-hidden border"
-            style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-          >
-            <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
-              {heroGb ? (
-                <GbImage type={heroGb.type} images={heroGb.images} />
-              ) : (
-                <div style={{
-                  width: '100%', height: '100%',
-                  background: 'var(--km-bg-sub)',
-                  backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
-                  backgroundSize: '8px 8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <div className="text-xs tracking-widest uppercase" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
-                    [ loading ]
-                  </div>
-                </div>
-              )}
-              {heroMeta && (
-                <div
-                  className="absolute top-3 left-3 px-2 py-0.5 rounded border"
-                  style={{
-                    fontFamily: 'var(--km-font-mono)',
-                    background: heroMeta.bg,
-                    borderColor: heroMeta.border,
-                    color: heroMeta.fg,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    fontSize: 10,
-                  }}
-                >
-                  {heroMeta.label}
-                </div>
-              )}
-            </div>
-            <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--km-line)' }}>
-              <div className="flex items-center justify-between">
-                <div className="font-semibold text-sm" style={{ color: 'var(--km-ink)' }}>
-                  {heroGb?.name ?? '—'}
-                </div>
-                <div className="font-semibold" style={{ color: 'var(--km-gold)', fontFamily: 'var(--km-font-mono)' }}>
-                  {heroGb?.basePrice?.amount ? `$${heroGb.basePrice.amount}` : '—'}
+          {gbLoading ? (
+            <div className="rounded-lg overflow-hidden border" style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}>
+              <div style={{
+                aspectRatio: '4/3', width: '100%',
+                background: 'var(--km-bg-sub)',
+                backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
+                backgroundSize: '8px 8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div className="text-xs tracking-widest uppercase" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
+                  [ loading ]
                 </div>
               </div>
-              <div className="mt-1 text-xs" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
-                {heroGb ? `by @${heroGb.designer}` : '—'}
-              </div>
             </div>
-          </div>
+          ) : heroGb ? (
+            <GroupBuyCard gb={toFeaturedCard(heroGb)} variant="featured" />
+          ) : null}
         </div>
       </div>
 
@@ -237,67 +160,9 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-5">
-            {featured.map((gb) => {
-              const meta = STAGE_META[gb.status] ?? STAGE_META.IC;
-              const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
-              return (
-                <Link
-                  to="/group-buys"
-                  key={gb.id}
-                  className="block rounded border overflow-hidden transition-all hover:-translate-y-0.5"
-                  style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--km-ink)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--km-line)')}
-                >
-                  <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
-                    <GbImage type={gb.type} images={gb.images} />
-                    <div
-                      className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded border"
-                      style={{
-                        fontFamily: 'var(--km-font-mono)',
-                        background: meta.bg,
-                        borderColor: meta.border,
-                        color: meta.fg,
-                        fontSize: 10,
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {meta.label}
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex gap-2 flex-wrap mb-2.5">
-                      <span
-                        className="px-2 py-0.5 rounded border"
-                        style={{
-                          fontFamily: 'var(--km-font-mono)',
-                          background: 'var(--km-surface-2)',
-                          borderColor: 'var(--km-line)',
-                          color: 'var(--km-ink-dim)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          fontSize: 10,
-                        }}
-                      >
-                        {category}
-                      </span>
-                    </div>
-                    <div className="font-semibold text-sm leading-tight" style={{ color: 'var(--km-ink)' }}>
-                      {gb.name}
-                    </div>
-                    <div className="flex items-baseline justify-between mt-3">
-                      <span className="font-semibold text-lg" style={{ color: 'var(--km-ink)', fontFamily: 'var(--km-font-mono)' }}>
-                        {gb.basePrice?.amount ? `$${gb.basePrice.amount}` : '—'}
-                      </span>
-                      <span className="text-xs" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
-                        @{gb.designer}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+            {featured.map(gb => (
+              <GroupBuyCard key={gb.id} gb={toFeaturedCard(gb)} variant="featured" />
+            ))}
           </div>
         )}
 

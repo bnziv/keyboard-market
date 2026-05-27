@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
 import { Check, Upload } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const CATEGORIES = [
   ['keyboard', 'Keyboard'], ['keycaps', 'Keycaps'], ['switches', 'Switches'],
@@ -319,47 +320,16 @@ export default function CreateListing() {
                 className="flex justify-between pt-6 mt-2 border-t"
                 style={{ borderColor: 'var(--km-line)' }}
               >
-                <button
-                  type="button"
-                  onClick={() => navigate('/listings')}
-                  className="px-4 py-2 text-sm rounded border transition-colors hover:opacity-80"
-                  style={{
-                    background: 'transparent',
-                    color: 'var(--km-ink-dim)',
-                    borderColor: 'var(--km-line-strong)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                  }}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate('/listings')}>
                   Cancel
-                </button>
+                </Button>
                 <div className="flex gap-2.5">
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm rounded border transition-colors hover:opacity-80"
-                    style={{
-                      background: 'var(--km-surface-2)',
-                      color: 'var(--km-ink-dim)',
-                      borderColor: 'var(--km-line)',
-                      cursor: 'pointer',
-                      fontFamily: 'var(--km-font-body)',
-                    }}
-                  >
+                  <Button type="button" variant="surface">
                     Save draft
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded transition-opacity hover:opacity-90"
-                    style={{
-                      background: 'var(--km-ink)',
-                      color: 'var(--km-bg)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontFamily: 'var(--km-font-body)',
-                    }}
-                  >
+                  </Button>
+                  <Button type="submit" variant="solid" size="lg">
                     Publish listing →
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

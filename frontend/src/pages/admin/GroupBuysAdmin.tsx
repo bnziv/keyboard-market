@@ -3,6 +3,8 @@ import { Eye, EyeOff, Loader2, Pencil } from 'lucide-react'
 import NavBar from '@/components/NavBar'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
+import { StatusBadge } from '@/components/StatusBadge'
+import { STATUS_TO_TONE } from '@/utils/badgeTones'
 
 const STATUS_FILTERS = ['All', 'IC', 'GB', 'shipping', 'closed'] as const
 type StatusFilter = (typeof STATUS_FILTERS)[number]
@@ -15,31 +17,6 @@ const STATUS_LABELS: Record<string, string> = {
   closed: 'Closed',
 }
 
-const STATUS_COLORS: Record<string, { bg: string; fg: string; border: string }> = {
-  IC:        { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-dim)', border: 'var(--km-line)' },
-  GB:        { bg: 'color-mix(in srgb, var(--km-ok) 20%, var(--km-surface))', fg: 'var(--km-ok)', border: 'var(--km-ok)' },
-  shipping:  { bg: 'var(--km-gold-soft)',  fg: 'var(--km-gold)',    border: 'var(--km-gold)' },
-  closed:    { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-mute)', border: 'var(--km-line)' },
-  fulfilled: { bg: 'var(--km-surface-2)', fg: 'var(--km-ink-mute)', border: 'var(--km-line)' },
-}
-
-function StatusPill({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] ?? STATUS_COLORS.closed
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '2px 8px',
-      fontFamily: 'var(--km-font-mono)', fontSize: 10,
-      letterSpacing: '0.05em', textTransform: 'uppercase',
-      whiteSpace: 'nowrap',
-      background: c.bg, color: c.fg,
-      border: `1px solid ${c.border}`,
-      borderRadius: 4,
-    }}>
-      {status}
-    </span>
-  )
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
@@ -70,7 +47,7 @@ function TableRow({ gb, isLast, onEdit, onToggleHidden }: { gb: AdminGroupBuy; i
         </span>
       </td>
       <td style={{ padding: '12px 16px' }}>
-        <StatusPill status={gb.status} />
+        <StatusBadge tone={STATUS_TO_TONE[gb.status] ?? 'muted'}>{gb.status}</StatusBadge>
       </td>
       <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', textTransform: 'capitalize' }}>
         {gb.type ?? '—'}
