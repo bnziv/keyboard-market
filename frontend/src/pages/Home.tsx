@@ -85,16 +85,16 @@ export default function Home() {
       <NavBar activePage="home" />
 
       {/* Hero */}
-      <div className="border-b border-km-line px-8 py-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 gap-10 items-center">
+      <div className="border-b border-km-line px-4 sm:px-8 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
           <div>
             <h1
-              className="text-7xl font-bold leading-none mb-5 font-km-body"
+              className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-none mb-5 font-km-body"
               style={{ letterSpacing: '-0.04em' }}
             >
               where the boards<br />change hands.
             </h1>
-            <p className="text-base leading-relaxed mb-7 text-km-ink-dim" style={{ maxWidth: '480px' }}>
+            <p className="text-base leading-relaxed mb-7 text-km-ink-dim max-w-sm lg:max-w-none">
               A members-only marketplace for enthusiast keyboards. No scalpers,
               no dropshippers — just people who care about the click.
             </p>
@@ -133,7 +133,7 @@ export default function Home() {
       </div>
 
       {/* Group buys section */}
-      <div className="px-8 py-10 max-w-6xl mx-auto w-full">
+      <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-6xl mx-auto w-full">
         <div className="flex items-baseline justify-between mb-5">
           <div>
             <div className="font-km-mono text-xs uppercase mb-1 text-km-gold tracking-[0.15em]">
@@ -156,7 +156,7 @@ export default function Home() {
             <Loader2 size={24} className="animate-spin text-km-ink-mute" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {featured.map(gb => (
               <GroupBuyCard key={gb.id} gb={toFeaturedCard(gb)} variant="featured" />
             ))}
@@ -164,7 +164,7 @@ export default function Home() {
         )}
 
         {/* Stats strip */}
-        <div className="mt-12 grid grid-cols-4 gap-8 p-7 rounded border bg-km-surface border-km-line">
+        <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 p-5 sm:p-7 rounded border bg-km-surface border-km-line">
           {STATS.map(([value, label]) => (
             <div key={label}>
               <div className="text-3xl font-semibold font-km-body text-km-ink" style={{ letterSpacing: '-0.03em' }}>

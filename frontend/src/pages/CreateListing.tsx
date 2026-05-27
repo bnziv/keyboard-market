@@ -85,7 +85,7 @@ export default function CreateListing() {
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="create" />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-8 py-8 pb-16">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-8 py-8 pb-16">
         {/* Header */}
         <div className="font-km-mono text-[11px] uppercase text-km-gold tracking-[0.15em] mb-2">
           Step {step + 1} of {STEPS.length} — Listing details
@@ -120,7 +120,7 @@ export default function CreateListing() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-8" style={{ gridTemplateColumns: '1.3fr 1fr' }}>
+          <div className="grid gap-8 grid-cols-1 lg:grid-cols-[1.3fr_1fr]">
             {/* Form column */}
             <div>
               <FormRow label="Category">
@@ -262,8 +262,8 @@ export default function CreateListing() {
               </div>
             </div>
 
-            {/* Preview column */}
-            <div className="flex flex-col gap-4" style={{ position: 'sticky', top: '72px', alignSelf: 'start' }}>
+            {/* Preview column — hidden on mobile */}
+            <div className="hidden lg:flex flex-col gap-4" style={{ position: 'sticky', top: '72px', alignSelf: 'start' }}>
               <div className="font-km-mono text-[10px] uppercase text-km-ink-mute tracking-[0.15em]">
                 Live preview
               </div>

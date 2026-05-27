@@ -366,7 +366,7 @@ export default function GroupBuyDetails() {
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="groupbuys" />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full py-6 pb-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-8 py-6 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
           <Link
@@ -379,12 +379,9 @@ export default function GroupBuyDetails() {
           <span className="text-km-ink truncate max-w-[320px]">{gb.name}</span>
         </div>
 
-        <div
-          className="grid gap-10"
-          style={{ gridTemplateColumns: "minmax(0, 6fr) minmax(0, 4fr)" }}
-        >
+        <div className="grid gap-10 grid-cols-1 lg:grid-cols-[minmax(0,6fr)_minmax(0,4fr)]">
           {/* ── LEFT — Carousel ── */}
-          <div style={{ position: "sticky", top: "72px", alignSelf: "start" }}>
+          <div className="lg:sticky lg:top-[72px] lg:self-start">
             <Carousel images={gb.images} category={gb.category} />
           </div>
 

@@ -174,16 +174,16 @@ export default function GroupBuys() {
       <NavBar activePage="groupbuys" />
 
       {/* Page header */}
-      <div className="border-b border-km-line bg-km-surface px-8 pt-10 pb-0">
+      <div className="border-b border-km-line bg-km-surface px-4 sm:px-8 pt-8 sm:pt-10 pb-0">
         <div className="max-w-[1280px] mx-auto">
 
           <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase mb-3">
             · Coordinated runs · pre-orders ·
           </div>
 
-          <div className="flex items-end justify-between gap-10 flex-wrap">
+          <div className="flex items-start sm:items-end justify-between gap-5 sm:gap-10 flex-wrap">
             <div>
-              <h1 className="m-0 font-km-body text-[42px] font-bold tracking-[-0.03em] leading-none text-km-ink">
+              <h1 className="m-0 font-km-body text-[32px] sm:text-[42px] font-bold tracking-[-0.03em] leading-none text-km-ink">
                 Group buys
               </h1>
               <p className="mt-3 text-sm text-km-ink-dim leading-[1.55]" style={{ maxWidth: 540 }}>
@@ -214,18 +214,20 @@ export default function GroupBuys() {
           </div>
 
           {/* Stage tabs */}
-          <div className="flex mt-8 items-center -mb-px">
-            <TabBar
-              tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
-              active={stage}
-              onChange={setStage}
-              variant="body"
-            />
+          <div className="flex mt-6 sm:mt-8 items-center -mb-px overflow-x-auto">
+            <div className="flex-shrink-0">
+              <TabBar
+                tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
+                active={stage}
+                onChange={setStage}
+                variant="body"
+              />
+            </div>
 
-            <div className="flex-1" />
+            <div className="flex-1 min-w-4" />
 
             <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
-              <SelectTrigger className="self-center mb-2.5 h-auto w-auto py-[7px] pl-[13px] pr-[10px] gap-3 border-none text-xs text-km-ink bg-km-surface font-km-body shadow-none">
+              <SelectTrigger className="flex-shrink-0 self-center mb-2.5 h-auto w-auto py-[7px] pl-[13px] pr-[10px] gap-3 border-none text-xs text-km-ink bg-km-surface font-km-body shadow-none">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-km-surface border border-km-line rounded text-km-ink">
@@ -241,7 +243,7 @@ export default function GroupBuys() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-[1280px] mx-auto p-8 w-full">
+      <div className="max-w-[1280px] mx-auto p-4 sm:p-8 w-full">
 
         {/* Closing-soon callout */}
         {closingSoonCount > 0 && (

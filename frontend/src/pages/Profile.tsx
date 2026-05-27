@@ -96,7 +96,7 @@ export default function Profile() {
       <NavBar activePage="profile" />
 
       {/* Banner */}
-      <div className="border-b border-km-line px-8 pt-9 pb-0 bg-km-bg-sub">
+      <div className="border-b border-km-line px-4 sm:px-8 pt-6 sm:pt-9 pb-0 bg-km-bg-sub">
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumb */}
           <div className="font-km-mono text-xs mb-5 text-km-ink-mute">
@@ -108,7 +108,7 @@ export default function Profile() {
           </div>
 
           {/* Profile header */}
-          <div className="flex items-end gap-6">
+          <div className="flex flex-wrap items-end gap-4 sm:gap-6">
             {/* Avatar */}
             <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-semibold flex-shrink-0 border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
               {initial}
@@ -152,10 +152,7 @@ export default function Profile() {
           </div>
 
           {/* Stats bar */}
-          <div
-            className="grid mt-7 border-t border-b border-km-line"
-            style={{ gridTemplateColumns: `repeat(${STATS.length}, 1fr)` }}
-          >
+          <div className="grid mt-6 sm:mt-7 border-t border-b border-km-line grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {STATS.map(([value, label], i) => (
               <div
                 key={label}
@@ -184,7 +181,7 @@ export default function Profile() {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto w-full px-8 py-8 pb-16">
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-8 pb-16">
         {tab === 'listings' && (
           <div>
             <div className="flex items-center justify-between mb-5">

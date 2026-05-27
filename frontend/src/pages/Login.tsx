@@ -500,12 +500,9 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen grid bg-km-bg text-km-ink"
-      style={{ gridTemplateColumns: '1.1fr 1fr' }}
-    >
-      {/* ── Left: brand panel ── */}
-      <aside className="bg-km-bg-sub border-r border-km-line px-14 py-10 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[1.1fr_1fr] bg-km-bg text-km-ink">
+      {/* ── Left: brand panel — hidden on mobile ── */}
+      <aside className="hidden md:flex flex-col bg-km-bg-sub border-r border-km-line px-14 py-10 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -575,7 +572,7 @@ export default function Login() {
       </aside>
 
       {/* ── Right: form panel ── */}
-      <main className="bg-km-bg px-14 py-10 flex flex-col">
+      <main className="bg-km-bg px-6 sm:px-14 py-8 sm:py-10 flex flex-col">
         {/* Top bar */}
         <div className="flex justify-between items-center">
           <button
