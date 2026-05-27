@@ -298,7 +298,7 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
         images,
         excludedImages,
       }
-      const res = await api.patch(`/api/groupbuys/${groupBuy.id}`, payload)
+      const res = await api.patch(`/api/groupbuys/admin/${groupBuy.id}`, payload)
       onSaved(res.data)
     } catch (e: any) {
       setError(e.response?.data?.message ?? 'Save failed')

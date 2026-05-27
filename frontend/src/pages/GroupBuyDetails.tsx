@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/utils/ToastProvider";
 import { useAuth } from "@/utils/AuthProvider";
+import { GroupBuyEditModal, AdminGroupBuy } from "@/pages/admin/GroupBuyEditModal";
 
 interface ApiGroupBuy {
   id: string;
@@ -275,23 +276,29 @@ export default function GroupBuyDetails() {
   const [gb, setGb] = useState<CardGroupBuy | null>(
     location.state as CardGroupBuy | null,
   );
+  const [editGb, setEditGb] = useState<AdminGroupBuy | null>(null);
   const [loading, setLoading] = useState(!gb);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<DetailTab>("overview");
   const [selectedKitIdx, setSelectedKitIdx] = useState<number>(0);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (gb) return;
     api
-      .get<ApiGroupBuy[]>("/api/groupbuys")
-      .then((res) => {
-        const found = res.data.find((item) => item.id === id);
-        if (found) setGb(toCardData(found));
-        else setError("Group buy not found.");
-      })
+      .get<ApiGroupBuy>(`/api/groupbuys/${id}`)
+      .then((res) => setGb(toCardData(res.data)))
       .catch(() => setError("Failed to load group buy."))
       .finally(() => setLoading(false));
-  }, [id, gb]);
+  }, [id]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    api
+      .get<AdminGroupBuy>(`/api/groupbuys/admin/${id}`)
+      .then((res) => setEditGb(res.data))
+      .catch(() => {});
+  }, [id, isAdmin]);
 
   const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
     interest: { label: "Interest check", tone: "neutral" },
@@ -480,6 +487,7 @@ export default function GroupBuyDetails() {
                         variant="surface"
                         size="sm"
                         className="w-9 px-0 flex-shrink-0"
+                        onClick={() => setEditOpen(true)}
                       >
                         <Pencil size={13} />
                       </Button>
@@ -512,6 +520,7 @@ export default function GroupBuyDetails() {
                       variant="surface"
                       size="sm"
                       className="w-9 px-0 flex-shrink-0"
+                      onClick={() => setEditOpen(true)}
                     >
                       <Pencil size={13} />
                     </Button>
@@ -626,6 +635,17 @@ export default function GroupBuyDetails() {
           </div>
         </div>
       </main>
+
+      {editOpen && editGb && (
+        <GroupBuyEditModal
+          groupBuy={editGb}
+          onClose={() => setEditOpen(false)}
+          onSaved={(updated) => {
+            setEditGb(updated);
+            setEditOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
