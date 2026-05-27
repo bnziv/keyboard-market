@@ -81,20 +81,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
       <NavBar activePage="home" />
 
       {/* Hero */}
-      <div className="border-b px-8 py-12" style={{ borderColor: 'var(--km-line)' }}>
+      <div className="border-b border-km-line px-8 py-12">
         <div className="max-w-6xl mx-auto grid grid-cols-2 gap-10 items-center">
           <div>
             <h1
-              className="text-7xl font-bold leading-none tracking-tight mb-5"
-              style={{ fontFamily: 'var(--km-font-body)', letterSpacing: '-0.04em' }}
+              className="text-7xl font-bold leading-none mb-5 font-km-body"
+              style={{ letterSpacing: '-0.04em' }}
             >
               where the boards<br />change hands.
             </h1>
-            <p className="text-base leading-relaxed mb-7" style={{ color: 'var(--km-ink-dim)', maxWidth: '480px' }}>
+            <p className="text-base leading-relaxed mb-7 text-km-ink-dim" style={{ maxWidth: '480px' }}>
               A members-only marketplace for enthusiast keyboards. No scalpers,
               no dropshippers — just people who care about the click.
             </p>
@@ -112,15 +112,16 @@ export default function Home() {
 
           {/* Hero group buy card */}
           {gbLoading ? (
-            <div className="rounded-lg overflow-hidden border" style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}>
-              <div style={{
-                aspectRatio: '4/3', width: '100%',
-                background: 'var(--km-bg-sub)',
-                backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
-                backgroundSize: '8px 8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <div className="text-xs tracking-widest uppercase" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}>
+            <div className="rounded-lg overflow-hidden border bg-km-surface border-km-line">
+              <div
+                className="flex items-center justify-center bg-km-bg-sub"
+                style={{
+                  aspectRatio: '4/3',
+                  backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
+                  backgroundSize: '8px 8px',
+                }}
+              >
+                <div className="font-km-mono text-xs tracking-widest uppercase text-km-ink-mute">
                   [ loading ]
                 </div>
               </div>
@@ -135,20 +136,16 @@ export default function Home() {
       <div className="px-8 py-10 max-w-6xl mx-auto w-full">
         <div className="flex items-baseline justify-between mb-5">
           <div>
-            <div
-              className="text-xs uppercase tracking-widest mb-1"
-              style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.15em' }}
-            >
+            <div className="font-km-mono text-xs uppercase mb-1 text-km-gold tracking-[0.15em]">
               Active runs
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--km-ink)', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-semibold text-km-ink tracking-[-0.02em]">
               Group buys
             </h2>
           </div>
           <Link
             to="/group-buys"
-            className="text-xs uppercase tracking-widest transition-colors hover:opacity-80"
-            style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', letterSpacing: '0.1em' }}
+            className="font-km-mono text-xs uppercase transition-colors hover:opacity-80 text-km-ink-mute tracking-[0.1em]"
           >
             All group buys →
           </Link>
@@ -156,7 +153,7 @@ export default function Home() {
 
         {gbLoading ? (
           <div className="flex justify-center py-16">
-            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--km-ink-mute)' }} />
+            <Loader2 size={24} className="animate-spin text-km-ink-mute" />
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-5">
@@ -167,22 +164,13 @@ export default function Home() {
         )}
 
         {/* Stats strip */}
-        <div
-          className="mt-12 grid grid-cols-4 gap-8 p-7 rounded border"
-          style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-        >
+        <div className="mt-12 grid grid-cols-4 gap-8 p-7 rounded border bg-km-surface border-km-line">
           {STATS.map(([value, label]) => (
             <div key={label}>
-              <div
-                className="text-3xl font-semibold"
-                style={{ fontFamily: 'var(--km-font-body)', letterSpacing: '-0.03em', color: 'var(--km-ink)' }}
-              >
+              <div className="text-3xl font-semibold font-km-body text-km-ink" style={{ letterSpacing: '-0.03em' }}>
                 {value}
               </div>
-              <div
-                className="mt-1 text-xs uppercase tracking-widest"
-                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', letterSpacing: '0.12em' }}
-              >
+              <div className="mt-1 text-xs uppercase tracking-widest font-km-mono text-km-ink-mute tracking-[0.12em]">
                 {label}
               </div>
             </div>

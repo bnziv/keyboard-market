@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GroupBuyImage } from '@/components/GroupBuyImage';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -43,42 +42,28 @@ interface GroupBuyCardProps {
 }
 
 export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps) {
-  const [hovered, setHovered] = useState(false);
   const meta = STAGE_BADGE_META[gb.stage];
 
   if (variant === 'featured') {
     return (
       <Link
         to="/group-buys"
-        className="block rounded border overflow-hidden"
-        style={{
-          background: 'var(--km-surface)',
-          borderColor: hovered ? 'var(--km-ink)' : 'var(--km-line)',
-          transition: 'border-color 150ms ease, transform 150ms ease',
-          transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-          textDecoration: 'none',
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        className="block rounded border overflow-hidden transition-all duration-150 bg-km-surface border-km-line hover:border-km-ink hover:-translate-y-0.5 no-underline"
       >
         <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
           <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
-          <div style={{ position: 'absolute', top: 10, left: 10 }}>
+          <div className="absolute top-2.5 left-2.5">
             <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
           </div>
         </div>
-        <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--km-line)'}}>
+        <div className="px-4 py-3 border-t border-km-line">
           <div className="flex items-center justify-between">
-                <div className="font-semibold text-sm" style={{ color: 'var(--km-ink)' }}>
-                  {gb.name ?? '—'}
-                </div>
-                <div className="font-semibold" style={{ color: 'var(--km-gold)', fontFamily: 'var(--km-font-mono)' }}>
-                  {gb.price ? `$${gb.price}` : '—'}
-                </div>
-              </div>
-              <div className="mt-1 text-xs" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
-                {gb ? `by ${gb.designer}` : '—'}
-              </div>
+            <div className="font-semibold text-sm text-km-ink">{gb.name ?? '—'}</div>
+            <div className="font-semibold font-km-mono text-km-gold">{gb.price ? `$${gb.price}` : '—'}</div>
+          </div>
+          <div className="mt-1 text-xs font-km-mono text-km-ink-mute">
+            {gb ? `by ${gb.designer}` : '—'}
+          </div>
         </div>
       </Link>
     );
@@ -87,95 +72,50 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
   return (
     <div
       onClick={onOpen}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: 'var(--km-surface)',
-        border: `1px solid ${hovered ? 'var(--km-ink)' : 'var(--km-line)'}`,
-        borderRadius: 6,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        display: 'flex', flexDirection: 'column',
-        transition: 'border-color 150ms ease',
-      }}
+      className="bg-km-surface border border-km-line hover:border-km-ink rounded-[6px] overflow-hidden cursor-pointer flex flex-col transition-colors duration-150"
     >
       {/* Image */}
       <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
         <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
-        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
           <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
           {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
         </div>
-        <div style={{
-          position: 'absolute', bottom: 12, right: 12,
-          padding: '4px 10px',
-          background: 'rgba(0,0,0,0.65)',
-          color: '#fff',
-          borderRadius: 4,
-          fontFamily: 'var(--km-font-mono)', fontSize: 11,
-          letterSpacing: '0.05em',
-        }}>
+        <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-black/65 text-white rounded font-km-mono text-[11px] tracking-[0.05em]">
           {gb.eta}
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--km-font-mono)', fontSize: 10,
-          color: 'var(--km-ink-mute)', letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>
+      <div className="px-5 pt-[18px] pb-5 flex flex-col flex-1">
+        <div className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.1em] uppercase">
           {gb.category} · by {gb.designer}
         </div>
 
-        <div style={{
-          fontFamily: 'var(--km-font-body)', fontSize: 19, fontWeight: 600,
-          color: 'var(--km-ink)', marginTop: 4, lineHeight: 1.2,
-          letterSpacing: '-0.02em',
-        }}>
+        <div className="font-km-body text-[19px] font-semibold text-km-ink mt-1 leading-tight tracking-[-0.02em]">
           {gb.name}
         </div>
 
-        <p style={{
-          margin: '8px 0 16px', fontSize: 13,
-          color: 'var(--km-ink-dim)', lineHeight: 1.5, flex: 1,
-        }}>
+        <p className="mt-2 mb-4 text-[13px] text-km-ink-dim leading-[1.5] flex-1">
           {gb.desc || 'No description available.'}
         </p>
 
         {/* Price + countdown */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-end',
-          justifyContent: 'space-between', marginTop: 'auto', gap: 14,
-        }}>
+        <div className="flex items-end justify-between mt-auto gap-3.5">
           <div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
+            <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase mb-0.5">
               Base price
             </div>
-            <div style={{
-              fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 700,
-              color: 'var(--km-ink)', letterSpacing: '-0.02em',
-            }}>
+            <div className="font-km-body text-[22px] font-bold text-km-ink tracking-[-0.02em]">
               {gb.price > 0 ? `$${gb.price}` : '—'}
             </div>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 9,
-              color: 'var(--km-ink-mute)', letterSpacing: '0.15em',
-              textTransform: 'uppercase', marginBottom: 2,
-            }}>
+          <div className="text-right">
+            <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase mb-0.5">
               {gb.stage === 'closed' ? 'Status' : 'Closes in'}
             </div>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 14, fontWeight: 600,
-              color: gb.closingSoon ? 'var(--km-gold)' : 'var(--km-ink)',
-            }}>
+            <div className={`font-km-mono text-sm font-semibold ${gb.closingSoon ? 'text-km-gold' : 'text-km-ink'}`}>
               {gb.closes}
             </div>
           </div>

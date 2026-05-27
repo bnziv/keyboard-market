@@ -5,8 +5,7 @@ import { useAuth } from "@/utils/AuthProvider"
 import api from "@/utils/api"
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Check } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { cn } from "@/lib/utils"
 
 type Mode = 'signin' | 'signup'
 
@@ -21,47 +20,32 @@ interface FormState {
   location: string
 }
 
-// ── Shared sub-components ─────────────────────────────────────────────────────
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '11px 14px',
-  border: '1px solid var(--km-line-strong)',
-  borderRadius: 6,
-  background: 'var(--km-surface)',
-  color: 'var(--km-ink)',
-  fontSize: 14,
-  fontFamily: 'var(--km-font-body)',
-  outline: 'none',
-  boxSizing: 'border-box',
-}
+const inputCls = "w-full px-[14px] py-[11px] border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-sm font-km-body outline-none box-border"
 
 function FieldLabel({ label, right }: { label: string; right?: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
-      <label style={{
-        fontFamily: 'var(--km-font-mono)', fontSize: 10,
-        color: 'var(--km-ink-dim)', letterSpacing: '0.1em',
-        textTransform: 'uppercase', fontWeight: 600,
-      }}>{label}</label>
+    <div className="flex items-baseline justify-between mb-1.5">
+      <label className="font-km-mono text-[10px] text-km-ink-dim tracking-[0.1em] uppercase font-semibold">
+        {label}
+      </label>
       {right}
     </div>
   )
 }
 
-function Field({ label, right, help, style, children }: {
+function Field({ label, right, help, className, children }: {
   label: string
   right?: React.ReactNode
   help?: string
-  style?: React.CSSProperties
+  className?: string
   children: React.ReactNode
 }) {
   return (
-    <div style={{ marginBottom: 18, ...style }}>
+    <div className={cn("mb-[18px]", className)}>
       <FieldLabel label={label} right={right} />
       {children}
       {help && (
-        <div style={{ marginTop: 6, fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-ink-mute)' }}>
+        <div className="mt-1.5 font-km-mono text-[10px] text-km-ink-mute">
           {help}
         </div>
       )}
@@ -71,41 +55,31 @@ function Field({ label, right, help, style, children }: {
 
 function OAuthBtn({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <button type="button" style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-      padding: '11px 16px',
-      border: '1px solid var(--km-line-strong)',
-      borderRadius: 6,
-      background: 'var(--km-surface)', color: 'var(--km-ink)',
-      fontSize: 13, fontWeight: 500, cursor: 'pointer',
-      fontFamily: 'var(--km-font-body)',
-      width: '100%',
-    }}>
+    <button
+      type="button"
+      className="flex items-center justify-center gap-2.5 w-full py-[11px] px-4 border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-[13px] font-medium cursor-pointer font-km-body"
+    >
       {icon}
       <span>{label}</span>
     </button>
   )
 }
 
-function PrimaryBtn({ children, onClick, type = 'button', style }: {
+function PrimaryBtn({ children, onClick, type = 'button', className }: {
   children: React.ReactNode
   onClick?: () => void
   type?: 'button' | 'submit'
-  style?: React.CSSProperties
+  className?: string
 }) {
   return (
-    <button type={type} onClick={onClick} style={{
-      width: '100%',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      padding: '13px',
-      border: '1px solid var(--km-ink)',
-      borderRadius: 6,
-      background: 'var(--km-ink)', color: 'var(--km-bg)',
-      fontSize: 14, fontWeight: 600, cursor: 'pointer',
-      fontFamily: 'var(--km-font-body)',
-      transition: 'all 120ms ease',
-      ...style,
-    }}>
+    <button
+      type={type}
+      onClick={onClick}
+      className={cn(
+        "w-full flex items-center justify-center gap-2 py-[13px] border border-km-ink rounded-[6px] bg-km-ink text-km-bg text-sm font-semibold cursor-pointer font-km-body transition-all duration-[120ms]",
+        className
+      )}
+    >
       {children}
     </button>
   )
@@ -113,15 +87,11 @@ function PrimaryBtn({ children, onClick, type = 'button', style }: {
 
 function GhostBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      padding: '13px 20px',
-      border: '1px solid var(--km-line-strong)',
-      borderRadius: 6,
-      background: 'transparent', color: 'var(--km-ink)',
-      fontSize: 14, fontWeight: 500, cursor: 'pointer',
-      fontFamily: 'var(--km-font-body)',
-    }}>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center justify-center gap-2 py-[13px] px-5 border border-km-line-strong rounded-[6px] bg-transparent text-km-ink text-sm font-medium cursor-pointer font-km-body"
+    >
       {children}
     </button>
   )
@@ -129,26 +99,20 @@ function GhostBtn({ children, onClick }: { children: React.ReactNode; onClick?: 
 
 function Checkbox({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+    <div className="flex items-start gap-2">
       <div
         onClick={onChange}
-        style={{
-          width: 16, height: 16, flexShrink: 0, marginTop: 1,
-          border: '1px solid var(--km-line-strong)',
-          borderRadius: 3,
-          background: checked ? 'var(--km-ink)' : 'transparent',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--km-bg)', cursor: 'pointer',
-        }}
+        className={cn(
+          'w-4 h-4 flex-shrink-0 mt-px border border-km-line-strong rounded-[3px] flex items-center justify-center text-km-bg cursor-pointer',
+          checked ? 'bg-km-ink' : 'bg-transparent'
+        )}
       >
         {checked && <Check size={11} strokeWidth={3} />}
       </div>
-      <span style={{ fontSize: 13, color: 'var(--km-ink-dim)', lineHeight: 1.5 }}>{label}</span>
+      <span className="text-[13px] text-km-ink-dim leading-[1.5]">{label}</span>
     </div>
   )
 }
-
-// ── Password strength ─────────────────────────────────────────────────────────
 
 function getPasswordStrength(pw: string): number {
   if (!pw) return 0
@@ -161,22 +125,21 @@ function getPasswordStrength(pw: string): number {
 }
 
 function PasswordStrengthBar({ strength }: { strength: number }) {
-  const color = strength >= 3 ? 'var(--km-gold)' : strength >= 2 ? 'var(--km-gold)' : 'var(--km-line-strong)'
+  const activeColor = strength >= 2 ? 'bg-km-gold' : 'bg-km-line-strong'
   return (
     <>
-      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+      <div className="flex gap-1 mt-2">
         {[0, 1, 2, 3].map(i => (
-          <div key={i} style={{
-            flex: 1, height: 3, borderRadius: 1,
-            background: i < strength ? color : 'var(--km-line)',
-            transition: 'background 200ms',
-          }} />
+          <div
+            key={i}
+            className={cn('flex-1 h-[3px] rounded-[1px] transition-colors duration-200', i < strength ? activeColor : 'bg-km-line')}
+          />
         ))}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-ink-mute)' }}>
+      <div className="flex justify-between mt-1.5 font-km-mono text-[10px] text-km-ink-mute">
         <span>min 8 chars · 1 number · 1 symbol</span>
         {strength > 0 && (
-          <span style={{ color: strength >= 3 ? 'var(--km-gold)' : 'var(--km-ink-mute)' }}>
+          <span className={strength >= 3 ? 'text-km-gold' : 'text-km-ink-mute'}>
             {(['weak', 'okay', 'good', 'strong'])[strength - 1]}
           </span>
         )}
@@ -184,8 +147,6 @@ function PasswordStrengthBar({ strength }: { strength: number }) {
     </>
   )
 }
-
-// ── Form screens ──────────────────────────────────────────────────────────────
 
 function SignInForm({ form, setForm, onSubmit, switchMode }: {
   form: FormState
@@ -197,29 +158,24 @@ function SignInForm({ form, setForm, onSubmit, switchMode }: {
 
   return (
     <form onSubmit={onSubmit}>
-      <div style={{
-        fontFamily: 'var(--km-font-mono)', fontSize: 11,
-        color: 'var(--km-gold)', letterSpacing: '0.2em',
-        textTransform: 'uppercase', marginBottom: 10,
-      }}>Sign in</div>
-      <h2 style={{
-        margin: 0,
-        fontFamily: 'var(--km-font-body)',
-        fontSize: 28, fontWeight: 600,
-        letterSpacing: '-0.02em', color: 'var(--km-ink)',
-      }}>Sign in to your account</h2>
-      <p style={{ marginTop: 8, color: 'var(--km-ink-dim)', fontSize: 13 }}>
+      <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase mb-2.5">
+        Sign in
+      </div>
+      <h2 className="m-0 font-km-body text-[28px] font-semibold tracking-[-0.02em] text-km-ink">
+        Sign in to your account
+      </h2>
+      <p className="mt-2 text-[13px] text-km-ink-dim">
         Welcome back. Pick up where you left off.
       </p>
 
-      <div style={{ marginTop: 28 }}>
+      <div className="mt-7">
         <OAuthBtn label="Continue with Google" icon={<FcGoogle size={16} />} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-        <div style={{ flex: 1, height: 1, background: 'var(--km-line)' }} />
-        <span style={{ fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-ink-mute)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>or with email</span>
-        <div style={{ flex: 1, height: 1, background: 'var(--km-line)' }} />
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1 h-px bg-km-line" />
+        <span className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.15em] uppercase">or with email</span>
+        <div className="flex-1 h-px bg-km-line" />
       </div>
 
       <Field label="Email or username">
@@ -228,41 +184,37 @@ function SignInForm({ form, setForm, onSubmit, switchMode }: {
           value={form.identifier}
           onChange={e => setForm(f => ({ ...f, identifier: e.target.value }))}
           placeholder="you@example.com"
-          style={inputStyle}
+          className={inputCls}
         />
       </Field>
 
       <Field
         label="Password"
         right={
-          <span style={{ fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-gold)', cursor: 'pointer', letterSpacing: '0.05em' }}>
+          <span className="font-km-mono text-[10px] text-km-gold cursor-pointer tracking-[0.05em]">
             Forgot?
           </span>
         }
       >
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <input
             type={showPw ? 'text' : 'password'}
             value={form.password}
             onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
             placeholder="••••••••"
-            style={inputStyle}
+            className={inputCls}
           />
           <button
             type="button"
             onClick={() => setShowPw(v => !v)}
-            style={{
-              position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--km-ink-mute)', padding: 6,
-            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-km-ink-mute p-1.5"
           >
             {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
         </div>
       </Field>
 
-      <div style={{ marginBottom: 24 }}>
+      <div className="mb-6">
         <Checkbox
           checked={form.rememberMe}
           onChange={() => setForm(f => ({ ...f, rememberMe: !f.rememberMe }))}
@@ -274,11 +226,11 @@ function SignInForm({ form, setForm, onSubmit, switchMode }: {
         Sign in <ArrowRight size={14} />
       </PrimaryBtn>
 
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: 'var(--km-ink-dim)' }}>
+      <div className="mt-6 text-center text-[13px] text-km-ink-dim">
         New here?{' '}
         <span
           onClick={() => switchMode('signup')}
-          style={{ color: 'var(--km-gold)', fontWeight: 500, cursor: 'pointer' }}
+          className="text-km-gold font-medium cursor-pointer"
         >
           Create an account →
         </span>
@@ -307,48 +259,43 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div style={{ fontFamily: 'var(--km-font-mono)', fontSize: 11, color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase">
           Step 1 of 2
         </div>
-        <div style={{ flex: 1, height: 2, background: 'var(--km-line)', borderRadius: 1, position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '50%', background: 'var(--km-gold)', borderRadius: 1 }} />
+        <div className="flex-1 h-0.5 bg-km-line rounded-[1px] relative">
+          <div className="absolute left-0 top-0 h-full w-1/2 bg-km-gold rounded-[1px]" />
         </div>
       </div>
 
-      <h2 style={{
-        margin: 0,
-        fontFamily: 'var(--km-font-body)',
-        fontSize: 28, fontWeight: 600,
-        letterSpacing: '-0.02em', color: 'var(--km-ink)',
-      }}>Create your account</h2>
-      <p style={{ marginTop: 8, color: 'var(--km-ink-dim)', fontSize: 13 }}>
+      <h2 className="m-0 font-km-body text-[28px] font-semibold tracking-[-0.02em] text-km-ink">
+        Create your account
+      </h2>
+      <p className="mt-2 text-[13px] text-km-ink-dim">
         Free, takes about a minute. Verified by email — no card required.
       </p>
 
-      <div style={{ marginTop: 28 }}>
+      <div className="mt-7">
         <Field
           label="Username"
           right={
             form.username.trim().length > 2 ? (
-              <span style={{ fontFamily: 'var(--km-font-mono)', fontSize: 10, color: 'var(--km-gold)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span className="font-km-mono text-[10px] text-km-gold flex items-center gap-1">
                 <Check size={10} strokeWidth={3} /> available
               </span>
             ) : undefined
           }
         >
-          <div style={{ position: 'relative' }}>
-            <span style={{
-              position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-              color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)', fontSize: 14,
-              pointerEvents: 'none',
-            }}>@</span>
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-km-ink-mute font-km-mono text-sm pointer-events-none">
+              @
+            </span>
             <input
               type="text"
               value={form.username}
               onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
               placeholder="yourname"
-              style={{ ...inputStyle, paddingLeft: 32, fontFamily: 'var(--km-font-mono)' }}
+              className={cn(inputCls, "pl-8 font-km-mono")}
             />
           </div>
         </Field>
@@ -359,7 +306,7 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             placeholder="you@example.com"
-            style={inputStyle}
+            className={inputCls}
           />
         </Field>
 
@@ -369,21 +316,21 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
             value={form.password}
             onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
             placeholder="••••••••"
-            style={inputStyle}
+            className={inputCls}
           />
           <PasswordStrengthBar strength={pwStrength} />
         </Field>
 
-        <div style={{ marginBottom: 20 }}>
+        <div className="mb-5">
           <Checkbox
             checked={agreed}
             onChange={() => setAgreed(v => !v)}
             label={
               <>
                 I agree to the{' '}
-                <span style={{ color: 'var(--km-gold)', cursor: 'pointer' }}>Terms</span>
+                <span className="text-km-gold cursor-pointer">Terms</span>
                 {' '}and the{' '}
-                <span style={{ color: 'var(--km-gold)', cursor: 'pointer' }}>community guidelines</span>
+                <span className="text-km-gold cursor-pointer">community guidelines</span>
                 . I'll only sell items I actually own.
               </>
             }
@@ -394,11 +341,11 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
           Continue <ArrowRight size={14} />
         </PrimaryBtn>
 
-        <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: 'var(--km-ink-dim)' }}>
+        <div className="mt-6 text-center text-[13px] text-km-ink-dim">
           Already a member?{' '}
           <span
             onClick={() => switchMode('signin')}
-            style={{ color: 'var(--km-gold)', fontWeight: 500, cursor: 'pointer' }}
+            className="text-km-gold font-medium cursor-pointer"
           >
             Sign in →
           </span>
@@ -426,42 +373,33 @@ function SignUpStep2({ form, setForm, onBack, onFinish }: {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div style={{ fontFamily: 'var(--km-font-mono)', fontSize: 11, color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase">
           Step 2 of 2
         </div>
-        <div style={{ flex: 1, height: 2, background: 'var(--km-line)', borderRadius: 1, position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '100%', background: 'var(--km-gold)', borderRadius: 1 }} />
+        <div className="flex-1 h-0.5 bg-km-line rounded-[1px] relative">
+          <div className="absolute left-0 top-0 h-full w-full bg-km-gold rounded-[1px]" />
         </div>
       </div>
 
-      <h2 style={{
-        margin: 0,
-        fontFamily: 'var(--km-font-body)',
-        fontSize: 28, fontWeight: 600,
-        letterSpacing: '-0.02em', color: 'var(--km-ink)',
-      }}>What are you into?</h2>
-      <p style={{ marginTop: 8, color: 'var(--km-ink-dim)', fontSize: 13 }}>
+      <h2 className="m-0 font-km-body text-[28px] font-semibold tracking-[-0.02em] text-km-ink">
+        What are you into?
+      </h2>
+      <p className="mt-2 text-[13px] text-km-ink-dim">
         We'll tailor your feed and notify you about group buys that match. You can change this any time.
       </p>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 24 }}>
+      <div className="flex flex-wrap gap-2 mt-6">
         {INTERESTS.map(o => {
           const on = form.interests.includes(o)
           return (
             <div
               key={o}
               onClick={() => toggle(o)}
-              style={{
-                padding: '8px 14px',
-                border: on ? '1px solid var(--km-ink)' : '1px solid var(--km-line-strong)',
-                background: on ? 'var(--km-ink)' : 'transparent',
-                color: on ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                borderRadius: 6,
-                fontSize: 12, cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                transition: 'all 120ms',
-              }}
+              className={cn(
+                'px-3.5 py-2 border rounded-[6px] text-xs cursor-pointer inline-flex items-center gap-1.5 transition-all duration-[120ms]',
+                on ? 'border-km-ink bg-km-ink text-km-bg' : 'border-km-line-strong bg-transparent text-km-ink-dim'
+              )}
             >
               {on && <Check size={10} strokeWidth={3} />}
               {o}
@@ -470,13 +408,13 @@ function SignUpStep2({ form, setForm, onBack, onFinish }: {
         })}
       </div>
 
-      <Field label="Display name (optional)" style={{ marginTop: 24 }}>
+      <Field label="Display name (optional)" className="mt-6">
         <input
           type="text"
           value={form.displayName}
           onChange={e => setForm(f => ({ ...f, displayName: e.target.value }))}
           placeholder="Your name"
-          style={inputStyle}
+          className={inputCls}
         />
       </Field>
 
@@ -489,23 +427,21 @@ function SignUpStep2({ form, setForm, onBack, onFinish }: {
           value={form.location}
           onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
           placeholder="City, State"
-          style={inputStyle}
+          className={inputCls}
         />
       </Field>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+      <div className="flex gap-2.5 mt-6">
         <GhostBtn onClick={onBack}>
           <ArrowLeft size={14} /> Back
         </GhostBtn>
-        <PrimaryBtn onClick={onFinish} style={{ flex: 1 }}>
+        <PrimaryBtn onClick={onFinish} className="flex-1">
           Finish &amp; enter market <ArrowRight size={14} />
         </PrimaryBtn>
       </div>
     </div>
   )
 }
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Login() {
   const { showError, showSuccess } = useToast()
@@ -564,53 +500,36 @@ export default function Login() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'grid',
-      gridTemplateColumns: '1.1fr 1fr',
-      background: 'var(--km-bg)',
-      color: 'var(--km-ink)',
-    }}>
-
+    <div
+      className="min-h-screen grid bg-km-bg text-km-ink"
+      style={{ gridTemplateColumns: '1.1fr 1fr' }}
+    >
       {/* ── Left: brand panel ── */}
-      <aside style={{
-        background: 'var(--km-bg-sub)',
-        borderRight: '1px solid var(--km-line)',
-        padding: '40px 56px',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at top right, rgba(212,178,76,0.08), transparent 60%), radial-gradient(ellipse at bottom left, rgba(139,122,212,0.12), transparent 50%)',
-        }} />
+      <aside className="bg-km-bg-sub border-r border-km-line px-14 py-10 flex flex-col relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at top right, rgba(212,178,76,0.08), transparent 60%), radial-gradient(ellipse at bottom left, rgba(139,122,212,0.12), transparent 50%)',
+          }}
+        />
 
         {/* Brand */}
-        <div onClick={() => navigate('/')} style={{ position: 'relative', cursor: 'pointer' }}>
-          <span style={{ fontFamily: 'var(--km-font-body)', fontWeight: 700, letterSpacing: '-0.02em', fontSize: 18, color: 'var(--km-ink)' }}>
-            <span style={{ color: 'var(--km-gold)' }}>◆</span> KBMARKET
+        <div onClick={() => navigate('/')} className="relative cursor-pointer">
+          <span className="font-km-body font-bold tracking-[-0.02em] text-[18px] text-km-ink">
+            <span className="text-km-gold">◆</span> KBMARKET
           </span>
         </div>
 
         {/* Hero copy */}
-        <div style={{ position: 'relative', marginTop: 'auto', marginBottom: 'auto' }}>
-          <div style={{
-            fontFamily: 'var(--km-font-mono)', fontSize: 11,
-            color: 'var(--km-gold)', letterSpacing: '0.2em',
-            textTransform: 'uppercase', marginBottom: 20,
-          }}>
+        <div className="relative mt-auto mb-auto">
+          <div className="font-km-mono text-[11px] text-km-gold tracking-[0.2em] uppercase mb-5">
             {mode === 'signin' ? 'Welcome back' : '· New member'}
           </div>
 
-          <h1 style={{
-            margin: 0,
-            fontFamily: 'var(--km-font-body)',
-            fontSize: 48, fontWeight: 700,
-            lineHeight: 1.05, letterSpacing: '-0.03em',
-            color: 'var(--km-ink)', maxWidth: 460,
-          }}>
+          <h1
+            className="m-0 font-km-body text-[48px] font-bold leading-[1.05] tracking-[-0.03em] text-km-ink"
+            style={{ maxWidth: 460 }}
+          >
             {mode === 'signin' ? (
               <>The market is<br />where you left it.</>
             ) : (
@@ -618,31 +537,27 @@ export default function Login() {
             )}
           </h1>
 
-          <p style={{ marginTop: 22, maxWidth: 420, fontSize: 15, lineHeight: 1.6, color: 'var(--km-ink-dim)' }}>
+          <p className="mt-[22px] text-[15px] leading-[1.6] text-km-ink-dim" style={{ maxWidth: 420 }}>
             {mode === 'signin'
               ? 'Pick up your saved searches, watchlist, and conversations. Your reputation comes with you.'
               : 'A small, verified community trading enthusiast keyboards, switches, and keycaps. No bots, no scalpers.'}
           </p>
 
           {/* Trust strip */}
-          <div style={{
-            marginTop: 36, padding: '18px 22px',
-            border: '1px solid var(--km-line)',
-            borderRadius: 6,
-            background: 'rgba(255,255,255,0.02)',
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 28,
-            maxWidth: 460,
-          }}>
+          <div
+            className="mt-9 p-[18px_22px] border border-km-line rounded-[6px] bg-white/[0.02] grid gap-7"
+            style={{ gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: 460 }}
+          >
             {([
               ['18.2k', 'verified members'],
               ['$1.4M', 'traded · 30d'],
               ['99.2%', 'ship-on-time'],
             ] as const).map(([v, l]) => (
               <div key={l}>
-                <div style={{ fontFamily: 'var(--km-font-body)', fontSize: 22, fontWeight: 600, color: 'var(--km-ink)', letterSpacing: '-0.02em' }}>
+                <div className="font-km-body text-[22px] font-semibold text-km-ink tracking-[-0.02em]">
                   {v}
                 </div>
-                <div style={{ fontFamily: 'var(--km-font-mono)', fontSize: 9, color: 'var(--km-ink-mute)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 4 }}>
+                <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.12em] uppercase mt-1">
                   {l}
                 </div>
               </div>
@@ -651,13 +566,8 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <div style={{ position: 'relative', marginTop: 20 }}>
-          <div style={{
-            paddingTop: 20, borderTop: '1px solid var(--km-line)',
-            fontFamily: 'var(--km-font-mono)', fontSize: 11,
-            color: 'var(--km-ink-mute)', letterSpacing: '0.05em',
-            display: 'flex', justifyContent: 'space-between',
-          }}>
+        <div className="relative mt-5">
+          <div className="pt-5 border-t border-km-line font-km-mono text-[11px] text-km-ink-mute tracking-[0.05em] flex justify-between">
             <span>v2.14 · est. 2021</span>
             <span>built for the click</span>
           </div>
@@ -665,33 +575,18 @@ export default function Login() {
       </aside>
 
       {/* ── Right: form panel ── */}
-      <main style={{
-        background: 'var(--km-bg)',
-        padding: '40px 56px',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
+      <main className="bg-km-bg px-14 py-10 flex flex-col">
         {/* Top bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex justify-between items-center">
           <button
             type="button"
             onClick={() => navigate('/')}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8,
-              color: 'var(--km-ink-dim)', fontFamily: 'var(--km-font-mono)', fontSize: 12,
-              letterSpacing: '0.05em', padding: 0,
-            }}
+            className="bg-transparent border-none cursor-pointer flex items-center gap-2 text-km-ink-dim font-km-mono text-xs tracking-[0.05em] p-0"
           >
             <ArrowLeft size={14} /> Back to home
           </button>
 
-          <div style={{
-            display: 'flex', gap: 4, padding: 4,
-            border: '1px solid var(--km-line)',
-            borderRadius: 6,
-            background: 'var(--km-surface)',
-          }}>
+          <div className="flex gap-1 p-1 border border-km-line rounded-[6px] bg-km-surface">
             {([['signin', 'Sign in'], ['signup', 'Create account']] as [Mode, string][]).map(([v, l]) => {
               const active = mode === v
               return (
@@ -699,18 +594,10 @@ export default function Login() {
                   key={v}
                   type="button"
                   onClick={() => switchMode(v)}
-                  style={{
-                    padding: '7px 18px',
-                    border: 'none',
-                    borderRadius: 4,
-                    background: active ? 'var(--km-ink)' : 'transparent',
-                    color: active ? 'var(--km-bg)' : 'var(--km-ink-dim)',
-                    fontSize: 12, fontWeight: active ? 600 : 500,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--km-font-body)',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 120ms',
-                  }}
+                  className={cn(
+                    'py-[7px] px-[18px] border-none rounded text-xs cursor-pointer font-km-body whitespace-nowrap transition-all duration-[120ms]',
+                    active ? 'bg-km-ink text-km-bg font-semibold' : 'bg-transparent text-km-ink-dim font-medium'
+                  )}
                 >
                   {l}
                 </button>
@@ -720,11 +607,8 @@ export default function Login() {
         </div>
 
         {/* Form body — vertically centered */}
-        <div style={{
-          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '40px 0',
-        }}>
-          <div style={{ width: '100%', maxWidth: 420 }}>
+        <div className="flex-1 flex items-center justify-center py-10">
+          <div className="w-full max-w-[420px]">
             {mode === 'signin' ? (
               <SignInForm
                 form={form}
@@ -752,17 +636,12 @@ export default function Login() {
         </div>
 
         {/* Legal footer */}
-        <div style={{
-          fontFamily: 'var(--km-font-mono)', fontSize: 10,
-          color: 'var(--km-ink-mute)', letterSpacing: '0.05em',
-          display: 'flex', justifyContent: 'space-between',
-          paddingTop: 20, borderTop: '1px solid var(--km-line)',
-        }}>
+        <div className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.05em] flex justify-between pt-5 border-t border-km-line">
           <span>© 2026 Keyboard Market</span>
-          <div style={{ display: 'flex', gap: 18 }}>
-            <span style={{ cursor: 'pointer' }}>Terms</span>
-            <span style={{ cursor: 'pointer' }}>Privacy</span>
-            <span style={{ cursor: 'pointer' }}>Help</span>
+          <div className="flex gap-[18px]">
+            <span className="cursor-pointer">Terms</span>
+            <span className="cursor-pointer">Privacy</span>
+            <span className="cursor-pointer">Help</span>
           </div>
         </div>
       </main>

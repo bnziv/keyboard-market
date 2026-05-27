@@ -13,11 +13,11 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        neutral:  "bg-[var(--km-surface-2)] text-[var(--km-ink-dim)] border-[var(--km-line)]",
-        ok:       "bg-[color-mix(in_srgb,var(--km-ok)_20%,var(--km-surface))] text-[var(--km-ok)] border-[var(--km-ok)]",
-        accent:   "bg-[var(--km-gold-soft)] text-[var(--km-gold)] border-[var(--km-gold)]",
-        shipping: "bg-[var(--km-gold-soft)] text-[var(--km-gold)] border-[var(--km-gold)]",
-        muted:    "bg-[var(--km-surface-2)] text-[var(--km-ink-mute)] border-[var(--km-line)]",
+        neutral:  "bg-km-surface-2 text-km-ink-dim border-km-line",
+        ok:       "bg-[color-mix(in_srgb,var(--km-ok)_20%,var(--km-surface))] text-km-ok border-km-ok",
+        accent:   "bg-km-gold-soft text-km-gold border-km-gold",
+        shipping: "bg-km-gold-soft text-km-gold border-km-gold",
+        muted:    "bg-km-surface-2 text-km-ink-mute border-km-line",
       },
     },
     defaultVariants: {
@@ -40,8 +40,8 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       <Comp
         ref={ref}
         data-slot="badge"
-        className={cn(badgeVariants({ variant }), className)}
-        style={{ fontFamily: "var(--km-font-mono)", ...style }}
+        className={cn(badgeVariants({ variant }), "font-km-mono", className)}
+        style={style}
         {...props}
       />
     )

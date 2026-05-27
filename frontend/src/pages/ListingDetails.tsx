@@ -66,12 +66,10 @@ export default function ListingDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)' }}>
+            <div className="min-h-screen flex flex-col bg-km-bg">
                 <NavBar activePage="listings" />
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="text-sm" style={{ color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
-                        Loading listing…
-                    </div>
+                    <div className="font-km-mono text-sm text-km-ink-mute">Loading listing…</div>
                 </div>
             </div>
         )
@@ -80,19 +78,16 @@ export default function ListingDetailsPage() {
     const sellerInitial = (listing.seller?.username?.[0] ?? '?').toUpperCase()
 
     return (
-        <div className="min-h-screen flex flex-col" style={{ background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
+        <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
             <NavBar activePage="listings" />
             <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-6 pb-16">
                 {/* Breadcrumb */}
-                <div
-                    className="flex items-center gap-2 mb-5 text-xs"
-                    style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}
-                >
-                    <Link to="/listings" className="transition-colors hover:text-[var(--km-ink)]" style={{ color: 'var(--km-ink-mute)' }}>
+                <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
+                    <Link to="/listings" className="transition-colors hover:text-km-ink text-km-ink-mute">
                         ← Browse
                     </Link>
                     <span>/</span>
-                    <span style={{ color: 'var(--km-ink)' }}>{listing.title}</span>
+                    <span className="text-km-ink">{listing.title}</span>
                 </div>
 
                 <div className="grid gap-10" style={{ gridTemplateColumns: '1.2fr 1fr' }}>
@@ -100,13 +95,8 @@ export default function ListingDetailsPage() {
                     <div>
                         {/* Main image */}
                         <div
-                            className="rounded border overflow-hidden"
-                            style={{
-                                aspectRatio: '4/3',
-                                background: 'var(--km-bg-sub)',
-                                borderColor: 'var(--km-line)',
-                                position: 'relative',
-                            }}
+                            className="rounded border overflow-hidden relative bg-km-bg-sub border-km-line"
+                            style={{ aspectRatio: '4/3' }}
                         >
                             {listing.imageUrl ? (
                                 <>
@@ -117,10 +107,8 @@ export default function ListingDetailsPage() {
                                 </>
                             ) : (
                                 <div
-                                    className="absolute inset-0 flex items-center justify-center text-xs"
+                                    className="absolute inset-0 flex items-center justify-center text-xs font-km-mono text-km-ink-mute"
                                     style={{
-                                        fontFamily: 'var(--km-font-mono)',
-                                        color: 'var(--km-ink-mute)',
                                         backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
                                         backgroundSize: '8px 8px',
                                     }}
@@ -131,10 +119,7 @@ export default function ListingDetailsPage() {
                         </div>
 
                         {/* Tabbed info panel */}
-                        <div
-                            className="mt-5 rounded border overflow-hidden"
-                            style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-                        >
+                        <div className="mt-5 rounded border overflow-hidden bg-km-surface border-km-line">
                             <TabBar
                                 tabs={TABS.map(t => ({ key: t, label: t }))}
                                 active={tab}
@@ -142,20 +127,17 @@ export default function ListingDetailsPage() {
                             />
                             <div className="p-5">
                                 {tab === 'description' && (
-                                    <div
-                                        className="text-sm leading-relaxed whitespace-pre-line"
-                                        style={{ color: 'var(--km-ink-dim)', lineHeight: 1.65 }}
-                                    >
+                                    <div className="text-sm text-km-ink-dim whitespace-pre-line leading-[1.65]">
                                         {listing.description || 'No description provided.'}
                                     </div>
                                 )}
                                 {tab === 'shipping' && (
-                                    <div className="text-sm" style={{ color: 'var(--km-ink-dim)', lineHeight: 1.6 }}>
+                                    <div className="text-sm text-km-ink-dim leading-[1.6]">
                                         <p>Shipping details provided by the seller. Contact them for specifics.</p>
                                     </div>
                                 )}
                                 {tab === 'seller' && (
-                                    <div className="text-sm" style={{ color: 'var(--km-ink-dim)', lineHeight: 1.6 }}>
+                                    <div className="text-sm text-km-ink-dim leading-[1.6]">
                                         <p>
                                             Member since {listing.seller.dateJoined ? formatDate(listing.seller.dateJoined) : 'N/A'} ·{' '}
                                             {listing.seller.totalListings} total listings.
@@ -173,16 +155,7 @@ export default function ListingDetailsPage() {
                             {[listing.condition && titleCase(listing.condition)].filter(Boolean).map((tag, i) => (
                                 <span
                                     key={i}
-                                    className="px-2 py-0.5 text-xs rounded border"
-                                    style={{
-                                        fontFamily: 'var(--km-font-mono)',
-                                        background: 'var(--km-surface-2)',
-                                        borderColor: 'var(--km-line)',
-                                        color: 'var(--km-ink-dim)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.05em',
-                                        fontSize: '10px',
-                                    }}
+                                    className="px-2 py-0.5 text-[10px] rounded border font-km-mono bg-km-surface-2 border-km-line text-km-ink-dim uppercase tracking-[0.05em]"
                                 >
                                     {tag}
                                 </span>
@@ -190,36 +163,24 @@ export default function ListingDetailsPage() {
                         </div>
 
                         {/* Title */}
-                        <h1
-                            className="text-3xl font-semibold leading-tight"
-                            style={{ letterSpacing: '-0.02em', color: 'var(--km-ink)', lineHeight: 1.1 }}
-                        >
+                        <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
                             {listing.title}
                         </h1>
 
-                        <div
-                            className="text-xs"
-                            style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}
-                        >
+                        <div className="font-km-mono text-xs text-km-ink-mute">
                             {listing.createdOn ? `Listed ${formatDate(listing.createdOn)}` : ''}
                         </div>
 
                         {/* Price panel */}
-                        <div
-                            className="p-5 rounded border"
-                            style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-                        >
-                            <div className="mb-1 text-xs uppercase tracking-widest" style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px', letterSpacing: '0.15em' }}>
+                        <div className="p-5 rounded border bg-km-surface border-km-line">
+                            <div className="mb-1 font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute">
                                 ASK
                             </div>
-                            <div
-                                className="text-5xl font-semibold mb-1"
-                                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink)', letterSpacing: '-0.02em' }}
-                            >
+                            <div className="font-km-mono text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
                                 {listing.price ? `$${parseFloat(listing.price.toFixed(2))}` : 'Open to Offers'}
                             </div>
                             {listing.offers && listing.price > 0 && (
-                                <div className="text-xs mb-4" style={{ color: 'var(--km-gold)', fontFamily: 'var(--km-font-mono)' }}>
+                                <div className="font-km-mono text-xs mb-4 text-km-gold">
                                     or best offer
                                 </div>
                             )}
@@ -249,61 +210,39 @@ export default function ListingDetailsPage() {
                         </div>
 
                         {/* Trust row */}
-                        <div
-                            className="flex items-center gap-3 p-4 rounded border"
-                            style={{ background: 'var(--km-surface-2)', borderColor: 'var(--km-line)' }}
-                        >
-                            <Shield size={18} style={{ color: 'var(--km-gold)', flexShrink: 0 }} />
+                        <div className="flex items-center gap-3 p-4 rounded border bg-km-surface-2 border-km-line">
+                            <Shield size={18} className="text-km-gold flex-shrink-0" />
                             <div>
-                                <div className="text-xs font-medium" style={{ color: 'var(--km-ink)' }}>Protected purchase</div>
-                                <div className="text-xs mt-0.5" style={{ color: 'var(--km-ink-mute)' }}>
+                                <div className="text-xs font-medium text-km-ink">Protected purchase</div>
+                                <div className="text-xs mt-0.5 text-km-ink-mute">
                                     Full refund if item is not as described
                                 </div>
                             </div>
                         </div>
 
                         {/* Seller card */}
-                        <div
-                            className="p-4 rounded border"
-                            style={{ background: 'var(--km-surface)', borderColor: 'var(--km-line)' }}
-                        >
-                            <div
-                                className="text-xs uppercase tracking-widest mb-3"
-                                style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)', fontSize: '10px', letterSpacing: '0.15em' }}
-                            >
+                        <div className="p-4 rounded border bg-km-surface border-km-line">
+                            <div className="font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute mb-3">
                                 Seller
                             </div>
                             <div className="flex items-center gap-3">
-                                <div
-                                    className="w-11 h-11 flex items-center justify-center rounded-full text-sm font-semibold flex-shrink-0 border"
-                                    style={{
-                                        background: 'var(--km-gold-soft)',
-                                        borderColor: 'rgba(212,178,76,0.33)',
-                                        color: 'var(--km-gold)',
-                                        fontFamily: 'var(--km-font-mono)',
-                                    }}
-                                >
+                                <div className="w-11 h-11 flex items-center justify-center rounded-full text-sm font-semibold flex-shrink-0 border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
                                     {sellerInitial}
                                 </div>
                                 <div className="flex-1">
                                     <Link
                                         to={`/profile/${listing.seller.username}`}
-                                        className="font-semibold text-sm transition-colors hover:opacity-80"
-                                        style={{ color: 'var(--km-ink)' }}
+                                        className="font-semibold text-sm transition-colors hover:opacity-80 text-km-ink"
                                     >
                                         @{listing.seller.username}
                                     </Link>
-                                    <div
-                                        className="text-xs mt-0.5"
-                                        style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-ink-mute)' }}
-                                    >
+                                    <div className="font-km-mono text-xs mt-0.5 text-km-ink-mute">
                                         {listing.seller.totalListings} listings · joined {listing.seller.dateJoined ? formatDate(listing.seller.dateJoined) : 'N/A'}
                                     </div>
                                 </div>
                                 <Link
                                     to={`/profile/${listing.seller.username}`}
-                                    className="text-xs uppercase tracking-wide transition-colors hover:opacity-80"
-                                    style={{ fontFamily: 'var(--km-font-mono)', color: 'var(--km-gold)', letterSpacing: '0.05em', fontSize: '10px' }}
+                                    className="font-km-mono text-[10px] uppercase tracking-[0.05em] transition-colors hover:opacity-80 text-km-gold"
                                 >
                                     View →
                                 </Link>
