@@ -47,7 +47,7 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
   if (variant === 'featured') {
     return (
       <Link
-        to="/group-buys"
+        to={`/group-buys/${gb.id}`}
         className="block rounded border overflow-hidden transition-all duration-150 bg-km-surface border-km-line hover:border-km-ink hover:-translate-y-0.5 no-underline"
       >
         <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
