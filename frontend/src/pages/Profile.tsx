@@ -203,7 +203,7 @@ export default function Profile() {
                 <div className="font-km-mono text-sm text-km-ink-mute">No active listings.</div>
               </div>
             ) : (
-              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
                 {userListings.map(listing => (
                   <ListingCard key={listing.id} {...listing} />
                 ))}
@@ -211,7 +211,7 @@ export default function Profile() {
                   <Link
                     to="/create-listing"
                     className="flex flex-col items-center justify-center gap-2.5 rounded text-sm transition-colors hover:border-km-ink-mute font-km-mono text-[11px] text-km-ink-mute border border-dashed border-km-line-strong"
-                    style={{ minHeight: '200px', aspectRatio: '4/3' }}
+                    style={{ minHeight: '200px' }}
                   >
                     <Plus size={20} style={{ opacity: 0.5 }} />
                     List another item
@@ -238,8 +238,9 @@ export default function Profile() {
                   </div>
                 </div>
                 {/* Bar chart */}
+                <div className="overflow-x-auto">
                 <div
-                  className="grid gap-3.5 items-end"
+                  className="grid gap-3.5 items-end min-w-[320px]"
                   style={{ gridTemplateColumns: 'repeat(6, 1fr)', height: '120px' }}
                 >
                   {CHART_DATA.map((d, i) => (
@@ -253,6 +254,7 @@ export default function Profile() {
                       </div>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             )}

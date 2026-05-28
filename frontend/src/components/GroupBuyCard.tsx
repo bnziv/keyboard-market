@@ -96,7 +96,7 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
           {gb.name}
         </div>
 
-        <p className="mt-2 mb-4 text-[13px] text-km-ink-dim leading-[1.5] flex-1">
+        <p className="mt-2 mb-4 text-[13px] text-km-ink-dim leading-[1.5] flex-1 line-clamp-3">
           {gb.desc || 'No description available.'}
         </p>
 

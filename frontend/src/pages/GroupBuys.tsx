@@ -4,6 +4,8 @@ import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
 import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
+import { StatusBadge } from '@/components/StatusBadge';
+import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -213,31 +215,61 @@ export default function GroupBuys() {
             </div>
           </div>
 
-          {/* Stage tabs */}
-          <div className="flex mt-6 sm:mt-8 items-center -mb-px overflow-x-auto">
-            <div className="flex-shrink-0">
+          {/* Stage filter & sort */}
+          <div className="mt-6 sm:mt-8">
+
+            {/* Mobile: two selects side by side */}
+            <div className="flex gap-2 pb-4 sm:hidden">
+              <Select value={stage} onValueChange={v => setStage(v as StageFilter)}>
+                <SelectTrigger className="h-8 text-xs border flex-1 gap-2 bg-km-surface border-km-line text-km-ink font-km-body">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-km-surface border-km-line text-km-ink">
+                  {STAGE_TABS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value} className="font-km-body text-xs text-km-ink">
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
+                <SelectTrigger className="h-8 text-xs border flex-1 gap-2 bg-km-surface border-km-line text-km-ink font-km-body">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-km-surface border-km-line text-km-ink">
+                  {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([val, label]) => (
+                    <SelectItem key={val} value={val} className="font-km-body text-xs text-km-ink">
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Desktop: tabs + sort */}
+            <div className="hidden sm:flex items-center -mb-px">
               <TabBar
                 tabs={STAGE_TABS.map(({ value, label }) => ({ key: value, label, count: tabCount(value) }))}
                 active={stage}
                 onChange={setStage}
                 variant="body"
               />
+              <div className="flex-1" />
+              <div className="mb-2.5">
+                <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-km-surface border-km-line text-km-ink">
+                    {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([val, label]) => (
+                      <SelectItem key={val} value={val} className="font-km-body text-xs text-km-ink">
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-
-            <div className="flex-1 min-w-4" />
-
-            <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
-              <SelectTrigger className="flex-shrink-0 self-center mb-2.5 h-auto w-auto py-[7px] pl-[13px] pr-[10px] gap-3 border-none text-xs text-km-ink bg-km-surface font-km-body shadow-none">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-km-surface border border-km-line rounded text-km-ink">
-                {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([val, label]) => (
-                  <SelectItem key={val} value={val} className="font-km-body text-xs cursor-pointer">
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>
@@ -247,42 +279,24 @@ export default function GroupBuys() {
 
         {/* Closing-soon callout */}
         {closingSoonCount > 0 && (
-          <div style={{
-            padding: '20px 24px', marginBottom: 28,
-            border: '1px dashed var(--km-gold)',
-            borderRadius: 4,
-            background: 'var(--km-gold-soft)',
-            display: 'flex', alignItems: 'center', gap: 20,
-          }}>
-            <div style={{
-              fontFamily: 'var(--km-font-mono)', fontSize: 11,
-              color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase',
-              padding: '6px 10px',
-              border: '1px solid var(--km-gold)',
-              borderRadius: 4,
-              whiteSpace: 'nowrap',
-            }}>
-              ⏱ Closing soon
-            </div>
-            <div style={{ flex: 1, fontSize: 13, color: 'var(--km-ink)' }}>
+          <div
+            className="flex items-center gap-3 sm:gap-5 p-4 mb-7 border border-dashed border-km-gold rounded bg-km-gold-soft cursor-pointer sm:cursor-default"
+            onClick={() => { if (window.innerWidth < 640) setStage('live'); }}
+          >
+            <StatusBadge tone="accent">⏱ Closing soon</StatusBadge>
+            <div className="flex-1 text-[13px] text-km-ink">
               <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy' : 'buys'}</strong>{' '}
               close in the next 48 hours.
             </div>
-            <button
-              onClick={() => setStage('live')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 16px',
-                background: 'var(--km-gold)',
-                color: 'var(--km-bg)',
-                border: 'none', borderRadius: 4,
-                fontSize: 13, fontWeight: 600,
-                fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
+            <Button
+              variant="gold"
+              size="sm"
+              className="hidden sm:flex flex-shrink-0"
+              onClick={e => { e.stopPropagation(); setStage('live'); }}
             >
               View closing soon <ArrowRight size={13} />
-            </button>
+            </Button>
+            <ArrowRight size={15} className="sm:hidden text-km-gold flex-shrink-0" />
           </div>
         )}
 
@@ -295,7 +309,7 @@ export default function GroupBuys() {
             {error}
           </div>
         ) : visible.length > 0 ? (
-          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+          <div className="grid gap-5 grid-cols-2 lg:grid-cols-3">
             {visible.map(g => (
               <GroupBuyCard
                 key={g.id}

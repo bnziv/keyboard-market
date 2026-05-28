@@ -405,7 +405,7 @@ export default function GroupBuyDetails() {
             </div>
 
             {/* Price panel */}
-            <div className="font-km-mono text-5xl font-semibold text-km-ink tracking-[-0.02em]">
+            <div className="font-km-mono text-3xl sm:text-4xl lg:text-5xl font-semibold text-km-ink tracking-[-0.02em]">
               {displayPrice > 0 ? `$${displayPrice}` : "—"}
             </div>
 

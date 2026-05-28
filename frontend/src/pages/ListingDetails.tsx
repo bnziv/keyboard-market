@@ -163,7 +163,7 @@ export default function ListingDetailsPage() {
                         </div>
 
                         {/* Title */}
-                        <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
+                        <h1 className="text-2xl sm:text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
                             {listing.title}
                         </h1>
 
@@ -176,7 +176,7 @@ export default function ListingDetailsPage() {
                             <div className="mb-1 font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute">
                                 ASK
                             </div>
-                            <div className="font-km-mono text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
+                            <div className="font-km-mono text-3xl sm:text-4xl lg:text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
                                 {listing.price ? `$${parseFloat(listing.price.toFixed(2))}` : 'Open to Offers'}
                             </div>
                             {listing.offers && listing.price > 0 && (

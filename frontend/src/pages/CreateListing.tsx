@@ -124,7 +124,7 @@ export default function CreateListing() {
             {/* Form column */}
             <div>
               <FormRow label="Category">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {CATEGORIES.map(([v, l]) => (
                     <button
                       key={v}
@@ -169,7 +169,7 @@ export default function CreateListing() {
               </FormRow>
 
               <FormRow label="Condition">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {CONDITIONS.map(([v, l]) => (
                     <button
                       key={v}

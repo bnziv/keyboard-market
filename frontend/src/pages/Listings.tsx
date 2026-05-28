@@ -207,9 +207,9 @@ export default function Listings() {
                 </aside>
 
                 {/* Main content */}
-                <section className="flex-1 p-4 sm:p-8">
+                <section className="flex-1 min-w-0 p-4 sm:p-6 md:p-8">
                     {/* Header bar */}
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col gap-3 sm:items-center sm:flex-row sm:justify-between mb-6">
                         <div>
                             <div className="font-km-mono text-[11px] uppercase tracking-[0.15em] mb-1 text-km-gold">
                                 {listings.length > 0 ? `Showing ${listings.length} results` : 'All listings'}
@@ -229,7 +229,7 @@ export default function Listings() {
 
                             {/* Sort */}
                             <Select value={sortValue} onValueChange={handleSortChange}>
-                                <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body min-w-[160px]">
+                                <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-km-surface border-km-line text-km-ink">
@@ -267,7 +267,7 @@ export default function Listings() {
 
                     {/* Listings */}
                     {density === 'grid' ? (
-                        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+                        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
                             {listings.map((listing, i) => (
                                 <div key={listing.id} ref={i === listings.length - 1 ? lastListingRef : undefined}>
                                     <ListingCard {...listing} />
@@ -281,7 +281,7 @@ export default function Listings() {
                                     key={listing.id}
                                     href={`/listings/${listing.id}`}
                                     ref={i === listings.length - 1 ? (lastListingRef as any) : undefined}
-                                    className="flex items-center gap-4 px-4 py-3 border-b border-km-line bg-km-surface text-km-ink transition-colors hover:bg-km-surface-2 no-underline"
+                                    className="flex items-center gap-4 px-4 py-3 border-b border-km-line bg-km-surface text-km-ink transition-colors hover:bg-km-surface-2 no-underline min-w-0"
                                 >
                                     <div className="w-20 flex-shrink-0 rounded overflow-hidden bg-km-bg-sub" style={{ aspectRatio: '4/3' }}>
                                         {listing.imageUrl && <img src={listing.imageUrl} alt={listing.title} className="w-full h-full object-cover" />}
