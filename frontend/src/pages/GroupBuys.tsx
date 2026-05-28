@@ -4,7 +4,7 @@ import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
 import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
@@ -148,6 +148,7 @@ export default function GroupBuys() {
 
   const cards = apiData.map(toCardData);
   const liveCount = cards.filter(g => g.stage === 'live').length;
+  const closingSoonCount = cards.filter(g => g.closingSoon).length;
 
   const stageCounts = cards.reduce<Record<string, number>>((acc, g) => {
     acc[g.stage] = (acc[g.stage] ?? 0) + 1;
@@ -241,6 +242,47 @@ export default function GroupBuys() {
 
       {/* Main content */}
       <div className="max-w-[1280px] mx-auto p-8 w-full">
+
+        {/* Closing-soon callout */}
+        {closingSoonCount > 0 && (
+          <div style={{
+            padding: '20px 24px', marginBottom: 28,
+            border: '1px dashed var(--km-gold)',
+            borderRadius: 4,
+            background: 'var(--km-gold-soft)',
+            display: 'flex', alignItems: 'center', gap: 20,
+          }}>
+            <div style={{
+              fontFamily: 'var(--km-font-mono)', fontSize: 11,
+              color: 'var(--km-gold)', letterSpacing: '0.2em', textTransform: 'uppercase',
+              padding: '6px 10px',
+              border: '1px solid var(--km-gold)',
+              borderRadius: 4,
+              whiteSpace: 'nowrap',
+            }}>
+              ⏱ Closing soon
+            </div>
+            <div style={{ flex: 1, fontSize: 13, color: 'var(--km-ink)' }}>
+              <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy' : 'buys'}</strong>{' '}
+              close in the next 48 hours.
+            </div>
+            <button
+              onClick={() => setStage('live')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px',
+                background: 'var(--km-gold)',
+                color: 'var(--km-bg)',
+                border: 'none', borderRadius: 4,
+                fontSize: 13, fontWeight: 600,
+                fontFamily: 'var(--km-font-body)',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              View closing soon <ArrowRight size={13} />
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-16">
