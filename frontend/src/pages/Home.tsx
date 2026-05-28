@@ -1,84 +1,182 @@
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
 import NavBar from "@/components/NavBar";
 import { Link, useNavigate } from "react-router-dom";
-import { KeyboardIcon } from "@/components/KeyboardIcon";
 import { useAuth } from "@/utils/AuthProvider";
 import { useToast } from "@/utils/ToastProvider";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
+import { ArrowRight, Loader2 } from "lucide-react";
+import api from "@/utils/api";
+import { Button } from "@/components/ui/button";
 
-const backgrounds = [
-    "/background1.jpg",
-    "/background2.jpg",
-    "/background3.jpg",
-]
+const STATS = [
+  ['2,847', 'Active listings'],
+  ['18,204', 'Verified members'],
+  ['$1.4M', 'Traded last 30d'],
+  ['99.2%', 'Ship-on-time rate'],
+] as const;
+
+interface GroupBuy {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  basePrice: { amount: number; currency: string } | null;
+  designer: string;
+  images: string[];
+}
+
+function stagePriority(status: string): number {
+  if (status === 'GB') return 0;
+  if (status === 'IC') return 1;
+  if (status === 'shipping') return 2;
+  return 3;
+}
+
+function mapStage(status: string): CardGroupBuy['stage'] {
+  if (status === 'GB') return 'live';
+  if (status === 'IC') return 'interest';
+  if (status === 'shipping') return 'shipping';
+  return 'closed';
+}
+
+function toFeaturedCard(gb: GroupBuy): CardGroupBuy {
+  const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
+  return {
+    id: gb.id, name: gb.name, designer: gb.designer,
+    category, stage: mapStage(gb.status),
+    price: gb.basePrice?.amount ?? 0,
+    imageUrl: gb.images?.[0] ?? null,
+    images: gb.images ?? [],
+    closes: '—', closingSoon: false, eta: '—', desc: '',
+    gbStartMs: null, gbEndMs: null, gbStartIso: null, gbEndIso: null,
+    sourceUrl: '', vendors: [], discordUrl: null, items: [],
+  };
+}
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { showInfo } = useToast();
-  const [currentBackground, setCurrentBackground] = useState(0);
+  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
+  const [gbLoading, setGbLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<GroupBuy[]>('/api/groupbuys')
+      .then(res => setGroupBuys(res.data))
+      .finally(() => setGbLoading(false));
+  }, []);
+
+  const featured = [...groupBuys]
+    .sort((a, b) => stagePriority(a.status) - stagePriority(b.status))
+    .slice(0, 3);
+
+  const heroGb = featured[0] ?? null;
 
   const handleCreateListing = () => {
     if (isAuthenticated) {
-      navigate("/create-listing");
+      navigate('/create-listing');
     } else {
-      showInfo("You must be logged in to create a listing");
+      showInfo('You must be logged in to create a listing');
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBackground((prev) => (prev + 1) % backgrounds.length);
-    }, 5000); 
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <NavBar className="z-50" />
-      <main className="flex-1">
-        <div className="absolute inset-0 z-0">
-          <AnimatePresence initial={false}>
-            <motion.img
-              key={currentBackground}
-              src={backgrounds[currentBackground]}
-              alt="Keyboard background"
-              className="absolute inset-0 object-cover w-full h-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.75 }}
-            />
-          </AnimatePresence>
-        </div>
-        <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-10rem)] px-4">
-          <div className="backdrop-blur-md bg-background/70 dark:bg-background/80 rounded-xl p-12 max-w-4xl mx-auto shadow-lg">
-            <div className="flex flex-col items-center text-center space-y-8">
-              <div className="flex justify-center items-center w-full">
-                <KeyboardIcon className="w-64 text-primary" />
-              </div>
-              <div className="space-y-4">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-                  Welcome to Keyboard Market
-                </h1>
-                <p className="max-w-[700px] md:text-xl">
-                  The ultimate marketplace for keyboard enthusiasts. Buy, sell, and discover unique keyboards and parts.
-                </p>
-              </div>
-              <div className="space-x-4 py-4">
-                <Button asChild className="text-black bg-gray-200 hover:bg-gray-300 transition-colors">
-                  <Link to="/listings">Browse Listings</Link>
-                </Button>
-                <Button className="text-black bg-gray-200 hover:bg-gray-300 transition-colors" onClick={handleCreateListing}>
-                  Create a Listing
-                </Button>
-              </div>
+    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+      <NavBar activePage="home" />
+
+      {/* Hero */}
+      <div className="border-b border-km-line px-8 py-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 gap-10 items-center">
+          <div>
+            <h1
+              className="text-7xl font-bold leading-none mb-5 font-km-body"
+              style={{ letterSpacing: '-0.04em' }}
+            >
+              where the boards<br />change hands.
+            </h1>
+            <p className="text-base leading-relaxed mb-7 text-km-ink-dim" style={{ maxWidth: '480px' }}>
+              A members-only marketplace for enthusiast keyboards. No scalpers,
+              no dropshippers — just people who care about the click.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="gold" size="lg" asChild>
+                <Link to="/listings">
+                  Browse the market <ArrowRight size={14} />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleCreateListing}>
+                List an item
+              </Button>
             </div>
           </div>
+
+          {/* Hero group buy card */}
+          {gbLoading ? (
+            <div className="rounded-lg overflow-hidden border bg-km-surface border-km-line">
+              <div
+                className="flex items-center justify-center bg-km-bg-sub"
+                style={{
+                  aspectRatio: '4/3',
+                  backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
+                  backgroundSize: '8px 8px',
+                }}
+              >
+                <div className="font-km-mono text-xs tracking-widest uppercase text-km-ink-mute">
+                  [ loading ]
+                </div>
+              </div>
+            </div>
+          ) : heroGb ? (
+            <GroupBuyCard gb={toFeaturedCard(heroGb)} variant="featured" />
+          ) : null}
         </div>
-      </main>
+      </div>
+
+      {/* Group buys section */}
+      <div className="px-8 py-10 max-w-6xl mx-auto w-full">
+        <div className="flex items-baseline justify-between mb-5">
+          <div>
+            <div className="font-km-mono text-xs uppercase mb-1 text-km-gold tracking-[0.15em]">
+              Active runs
+            </div>
+            <h2 className="text-2xl font-semibold text-km-ink tracking-[-0.02em]">
+              Group buys
+            </h2>
+          </div>
+          <Link
+            to="/group-buys"
+            className="font-km-mono text-xs uppercase transition-colors hover:opacity-80 text-km-ink-mute tracking-[0.1em]"
+          >
+            All group buys →
+          </Link>
+        </div>
+
+        {gbLoading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 size={24} className="animate-spin text-km-ink-mute" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-5">
+            {featured.map(gb => (
+              <GroupBuyCard key={gb.id} gb={toFeaturedCard(gb)} variant="featured" />
+            ))}
+          </div>
+        )}
+
+        {/* Stats strip */}
+        <div className="mt-12 grid grid-cols-4 gap-8 p-7 rounded border bg-km-surface border-km-line">
+          {STATS.map(([value, label]) => (
+            <div key={label}>
+              <div className="text-3xl font-semibold font-km-body text-km-ink" style={{ letterSpacing: '-0.03em' }}>
+                {value}
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-widest font-km-mono text-km-ink-mute tracking-[0.12em]">
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

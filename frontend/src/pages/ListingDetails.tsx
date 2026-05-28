@@ -1,35 +1,34 @@
 import { useState, useEffect, useRef } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { Link } from "react-router-dom"
+import { useNavigate, useParams, Link } from "react-router-dom"
 import NavBar from "@/components/NavBar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MessageCircle, Heart, Share2 } from "lucide-react"
+import { TabBar } from "@/components/TabBar"
+import { MessageCircle, Heart, Share2, Shield } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
 import { formatDate, titleCase } from "@/utils/helpers"
-import API_URL from "@/utils/config"
 import { useAuth } from "@/utils/AuthProvider"
 import { useChat } from '@/utils/ChatProvider'
-import axios from "axios"
+import api from "@/utils/api"
+import { Button } from "@/components/ui/button"
 
 interface Listing {
-    id: string,
-    title: string,
-    price: number,
-    offers: boolean,
-    description: string,
-    condition: string,
-    imageUrl: string,
+    id: string
+    title: string
+    price: number
+    offers: boolean
+    description: string
+    condition: string
+    imageUrl: string
     seller: {
-        id: string,
-        username: string,
-        dateJoined: string,
+        id: string
+        username: string
+        dateJoined: string
         totalListings: number
-    },
-    createdOn: string,
+    }
+    createdOn: string
 }
+
+const TABS = ['description', 'shipping', 'seller'] as const;
+type Tab = typeof TABS[number];
 
 export default function ListingDetailsPage() {
     const params = useParams()
@@ -37,43 +36,27 @@ export default function ListingDetailsPage() {
     const { showInfo, showError } = useToast()
     const [listing, setListing] = useState<Listing>({} as Listing)
     const [loading, setLoading] = useState(true)
+    const [tab, setTab] = useState<Tab>('description')
     const { user, isAuthenticated } = useAuth()
     const { startChat } = useChat()
     const navigate = useNavigate()
     const isMounted = useRef(false)
 
     useEffect(() => {
-        const fetchListing = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/api/listings/details/${id}`)
-                const data = response.data
-                setListing(data)
-                setLoading(false)
-            } catch (error) {
-                console.error("Error fetching listing:", error)
+        api.get(`/api/listings/details/${id}`)
+            .then(res => { setListing(res.data); setLoading(false); })
+            .catch(() => {
                 if (!isMounted.current) showError("Listing not found")
                 isMounted.current = true
                 setLoading(false)
                 navigate("/listings")
-            }
-        }
-
-        fetchListing()
+            })
     }, [id])
-    
-    const handleContactSeller = () => {
-        if (!isAuthenticated) {
-            showError("Please login to contact the seller")
-            return
-        }
-        if (user?.id === listing.seller.id) {
-            showInfo("This is your own listing")
-            return
-        }
-        startChat(listing.seller.id, listing.seller.username)
-    }
 
-    const toggleFavorite = () => {
+    const handleContactSeller = () => {
+        if (!isAuthenticated) { showError("Please login to contact the seller"); return }
+        if (user?.id === listing.seller.id) { showInfo("This is your own listing"); return }
+        startChat(listing.seller.id, listing.seller.username)
     }
 
     const handleShare = () => {
@@ -83,144 +66,188 @@ export default function ListingDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex flex-col">
-                <NavBar />
-                <main className="flex-1 container py-12 flex items-center justify-center">
-                    <p>Loading listing details...</p>
-                </main>
+            <div className="min-h-screen flex flex-col bg-km-bg">
+                <NavBar activePage="listings" />
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="font-km-mono text-sm text-km-ink-mute">Loading listing…</div>
+                </div>
             </div>
         )
     }
 
+    const sellerInitial = (listing.seller?.username?.[0] ?? '?').toUpperCase()
+
     return (
-        <div className="min-h-screen flex flex-col scrollbar-gutter">
-            <NavBar />
-            <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 w-3/4 mx-auto">
-                <div className="mb-6">
-                    <Link to="/listings" className="text-primary hover:underline">
-                        &larr; Listings
+        <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+            <NavBar activePage="listings" />
+            <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-6 pb-16">
+                {/* Breadcrumb */}
+                <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
+                    <Link to="/listings" className="transition-colors hover:text-km-ink text-km-ink-mute">
+                        ← Browse
                     </Link>
+                    <span>/</span>
+                    <span className="text-km-ink">{listing.title}</span>
                 </div>
 
-                <div className="grid gap-8 lg:grid-cols-2">
-                    {/* Left column - Images */}
-                    <div className="space-y-4">
-                    {listing.imageUrl && (
-                        <div className="rounded-lg overflow-hidden border bg-background">
-                            <div className="relative w-full">
-                                <div className="absolute inset-0 overflow-hidden items">
-                                    <img
-                                        src={listing.imageUrl}
-                                        className="object-cover blur-md scale-110 opacity-50 w-full h-full"
-                                    />
+                <div className="grid gap-10" style={{ gridTemplateColumns: '1.2fr 1fr' }}>
+                    {/* Left — image + tabs */}
+                    <div>
+                        {/* Main image */}
+                        <div
+                            className="rounded border overflow-hidden relative bg-km-bg-sub border-km-line"
+                            style={{ aspectRatio: '4/3' }}
+                        >
+                            {listing.imageUrl ? (
+                                <>
+                                    <div className="absolute inset-0 overflow-hidden">
+                                        <img src={listing.imageUrl} className="object-cover blur-md scale-110 opacity-30 w-full h-full" />
+                                    </div>
+                                    <img src={listing.imageUrl} alt={listing.title} className="relative w-full h-full object-contain" />
+                                </>
+                            ) : (
+                                <div
+                                    className="absolute inset-0 flex items-center justify-center text-xs font-km-mono text-km-ink-mute"
+                                    style={{
+                                        backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
+                                        backgroundSize: '8px 8px',
+                                    }}
+                                >
+                                    [ no photo ]
                                 </div>
-                                <div className="relative w-full">
-                                    <img
-                                        src={listing.imageUrl}
-                                        alt={listing.title}
-                                        className="object-contain w-full h-full max-h-[550px]"
-                                    />
-                                </div>
+                            )}
+                        </div>
+
+                        {/* Tabbed info panel */}
+                        <div className="mt-5 rounded border overflow-hidden bg-km-surface border-km-line">
+                            <TabBar
+                                tabs={TABS.map(t => ({ key: t, label: t }))}
+                                active={tab}
+                                onChange={setTab}
+                            />
+                            <div className="p-5">
+                                {tab === 'description' && (
+                                    <div className="text-sm text-km-ink-dim whitespace-pre-line leading-[1.65]">
+                                        {listing.description || 'No description provided.'}
+                                    </div>
+                                )}
+                                {tab === 'shipping' && (
+                                    <div className="text-sm text-km-ink-dim leading-[1.6]">
+                                        <p>Shipping details provided by the seller. Contact them for specifics.</p>
+                                    </div>
+                                )}
+                                {tab === 'seller' && (
+                                    <div className="text-sm text-km-ink-dim leading-[1.6]">
+                                        <p>
+                                            Member since {listing.seller.dateJoined ? formatDate(listing.seller.dateJoined) : 'N/A'} ·{' '}
+                                            {listing.seller.totalListings} total listings.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    )}
-                        <Card>
-                            <CardContent className="pt-6">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-10 w-10">
-                                        <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${listing.seller.username}&backgroundType=gradientLinear`} />
-                                        <AvatarFallback>{listing.seller.username[0]}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <Link to={`/profile/${listing.seller.username}`} className="hover:underline">
-                                            <p className="font-medium text-lg">{listing.seller.username}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {listing.seller.dateJoined && `Joined ${formatDate(listing.seller.dateJoined)}`}
-                                        </p>
-                                        </Link>
-                                    </div>
-                                    <Button 
-                                className="ml-auto bg-blue-500 hover:bg-blue-600" 
-                                size="lg"
-                                onClick={handleContactSeller}
-                                    >
-                                <MessageCircle className="h-5 w-5" />
-                                Message
-                            </Button>
-                                    </div>
-
-                                <div className="mt-4 grid grid-cols-2 gap-4">
-                                    {/* <div>
-                                        <p className="text-sm text-muted-foreground">Rating</p>
-                                        <p className="font-medium">{listing.seller.rating} / 5</p>
-                                    </div> */}
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Total Listings</p>
-                                        <p className="font-medium">{listing.seller.totalListings}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
                     </div>
 
-                    {/* Right column - Details */}
-                    <div className="space-y-6">
-                        <div>
-                            <h1 className="text-3xl font-bold">{listing.title}</h1>
-                            <div className="flex items-center flex-wrap gap-2 mt-2">
-                                <Badge variant="secondary">{titleCase(listing.condition)}</Badge>
-                                <span className="text-muted-foreground text-sm">
-                                    {listing.createdOn && `Listed on ${formatDate(listing.createdOn)}`}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <div>
-                                {listing.price ? (
-                                    <p className="text-3xl font-bold">${parseFloat(listing.price.toFixed(2))}</p>
-                                ) : (
-                                    <p className="text-3xl font-bold">Open to Offers</p>
-                                )}
-                                {listing.price && listing.offers && <p className="text-muted-foreground text-md">or Best Offer</p>}
-                            </div>
-
-                            <div className="flex space-x-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={toggleFavorite}
-                                    className={true ? "text-red-500" : ""}
+                    {/* Right — purchase panel */}
+                    <div className="flex flex-col gap-4" style={{ position: 'sticky', top: '72px', alignSelf: 'start' }}>
+                        {/* Badges */}
+                        <div className="flex gap-2 flex-wrap">
+                            {[listing.condition && titleCase(listing.condition)].filter(Boolean).map((tag, i) => (
+                                <span
+                                    key={i}
+                                    className="px-2 py-0.5 text-[10px] rounded border font-km-mono bg-km-surface-2 border-km-line text-km-ink-dim uppercase tracking-[0.05em]"
                                 >
-                                    <Heart className={true ? "fill-current" : ""} />
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Title */}
+                        <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
+                            {listing.title}
+                        </h1>
+
+                        <div className="font-km-mono text-xs text-km-ink-mute">
+                            {listing.createdOn ? `Listed ${formatDate(listing.createdOn)}` : ''}
+                        </div>
+
+                        {/* Price panel */}
+                        <div className="p-5 rounded border bg-km-surface border-km-line">
+                            <div className="mb-1 font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute">
+                                ASK
+                            </div>
+                            <div className="font-km-mono text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
+                                {listing.price ? `$${parseFloat(listing.price.toFixed(2))}` : 'Open to Offers'}
+                            </div>
+                            {listing.offers && listing.price > 0 && (
+                                <div className="font-km-mono text-xs mb-4 text-km-gold">
+                                    or best offer
+                                </div>
+                            )}
+
+                            <div className="flex gap-2 mt-4">
+                                <Button variant="solid" className="flex-1 py-2.5">
+                                    {listing.price ? `Buy for $${parseFloat(listing.price.toFixed(2))}` : 'Make an offer'}
                                 </Button>
-                                <Button variant="outline" size="icon" onClick={handleShare}>
-                                    <Share2 />
+                                {listing.offers && listing.price > 0 && (
+                                    <Button variant="outline" className="flex-1 py-2.5">
+                                        Make an offer
+                                    </Button>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 mt-2">
+                                <Button variant="surface" size="sm" className="flex-1" onClick={handleContactSeller}>
+                                    <MessageCircle size={13} /> Message seller
+                                </Button>
+                                <Button variant="surface" size="sm" className="w-9 px-0 flex-shrink-0" onClick={handleShare}>
+                                    <Share2 size={13} />
+                                </Button>
+                                <Button variant="surface" size="sm" className="w-9 px-0 flex-shrink-0">
+                                    <Heart size={13} />
                                 </Button>
                             </div>
                         </div>
 
-
-                        <Card className="w-full">
-                            <CardHeader>
-                                <CardTitle>Description</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="whitespace-pre-line">{listing.description}</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Details</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="text-muted-foreground">Condition</div>
-                                    <div>{titleCase(listing.condition)}</div>
+                        {/* Trust row */}
+                        <div className="flex items-center gap-3 p-4 rounded border bg-km-surface-2 border-km-line">
+                            <Shield size={18} className="text-km-gold flex-shrink-0" />
+                            <div>
+                                <div className="text-xs font-medium text-km-ink">Protected purchase</div>
+                                <div className="text-xs mt-0.5 text-km-ink-mute">
+                                    Full refund if item is not as described
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
+
+                        {/* Seller card */}
+                        <div className="p-4 rounded border bg-km-surface border-km-line">
+                            <div className="font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute mb-3">
+                                Seller
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 flex items-center justify-center rounded-full text-sm font-semibold flex-shrink-0 border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
+                                    {sellerInitial}
+                                </div>
+                                <div className="flex-1">
+                                    <Link
+                                        to={`/profile/${listing.seller.username}`}
+                                        className="font-semibold text-sm transition-colors hover:opacity-80 text-km-ink"
+                                    >
+                                        @{listing.seller.username}
+                                    </Link>
+                                    <div className="font-km-mono text-xs mt-0.5 text-km-ink-mute">
+                                        {listing.seller.totalListings} listings · joined {listing.seller.dateJoined ? formatDate(listing.seller.dateJoined) : 'N/A'}
+                                    </div>
+                                </div>
+                                <Link
+                                    to={`/profile/${listing.seller.username}`}
+                                    className="font-km-mono text-[10px] uppercase tracking-[0.05em] transition-colors hover:opacity-80 text-km-gold"
+                                >
+                                    View →
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

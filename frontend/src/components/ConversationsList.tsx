@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import axios from 'axios';
-import API_URL from '@/utils/config';
-import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import api from '@/utils/api';
 
 interface Conversation {
   userId: string;
@@ -27,7 +22,7 @@ export function ConversationsList({ currentUserId, onSelectConversation, onClose
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/chat/conversations/${currentUserId}`);
+        const response = await api.get(`/api/chat/conversations/${currentUserId}`);
         setConversations(response.data);
       } catch (error) {
         console.error('Failed to load conversations:', error);
@@ -35,59 +30,65 @@ export function ConversationsList({ currentUserId, onSelectConversation, onClose
         setLoading(false);
       }
     };
-
     fetchConversations();
   }, [currentUserId]);
 
   return (
-    <>
-        <Card className="fixed flex flex-col h-[600px] w-[300px] shadow-lg z-50 right-5 bottom-5">
-            <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold">Messages</h2>
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
-      <ScrollArea className="flex-1">
+    <div className="fixed flex flex-col w-[300px] h-[520px] right-5 bottom-5 rounded border z-50 bg-km-surface border-km-line shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-km-line flex-shrink-0">
+        <span className="font-km-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-km-ink-mute">
+          Messages
+        </span>
+        <button
+          onClick={onClose}
+          className="w-7 h-7 flex items-center justify-center rounded text-km-ink-mute hover:text-km-ink transition-colors bg-transparent border-none cursor-pointer"
+        >
+          <X size={15} />
+        </button>
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <span>Loading conversations...</span>
+            <span className="font-km-mono text-xs text-km-ink-mute">Loading…</span>
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex justify-center items-center h-full text-muted-foreground">
-            <span>No conversations yet</span>
+          <div className="flex justify-center items-center h-full">
+            <span className="font-km-mono text-xs text-km-ink-mute">No conversations yet</span>
           </div>
         ) : (
-          <div className="p-4 space-y-4">
-            {conversations.map((conversation) => (
-              <div
-                key={conversation.userId}
-                className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg cursor-pointer"
-                onClick={() => onSelectConversation(conversation.userId, conversation.username)}
+          <div className="py-2">
+            {conversations.map(c => (
+              <button
+                key={c.userId}
+                onClick={() => onSelectConversation(c.userId, c.username)}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left bg-transparent border-none cursor-pointer hover:bg-km-surface-2 transition-colors"
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${conversation.username}&backgroundType=gradientLinear`} />
-                  <AvatarFallback>{conversation.username[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden">
-                  <p className="font-medium">{conversation.username}</p>
-                  {conversation.lastMessage && (
-                    <p className="text-sm text-muted-foreground truncate">
-                      {conversation.lastMessage}
-                    </p>
+                <div className="w-9 h-9 flex items-center justify-center rounded-full flex-shrink-0 text-xs font-semibold border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
+                  {c.username[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div className="flex-1 overflow-hidden text-left">
+                  <div className="text-sm font-medium truncate text-km-ink">
+                    {c.username}
+                  </div>
+                  {c.lastMessage && (
+                    <div className="text-xs truncate mt-0.5 text-km-ink-mute">
+                      {c.lastMessage}
+                    </div>
                   )}
                 </div>
-                {conversation.timestamp && (
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(conversation.timestamp).toLocaleDateString()}
+                {c.timestamp && (
+                  <span className="flex-shrink-0 font-km-mono text-[10px] text-km-ink-mute">
+                    {new Date(c.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                   </span>
                 )}
-              </div>
+              </button>
             ))}
-            </div>
-          )}
-        </ScrollArea>
-        </Card>
-    </>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

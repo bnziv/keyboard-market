@@ -9,24 +9,33 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | null>(null)
 
+const BASE: React.CSSProperties = {
+  background: 'var(--km-surface)',
+  border: '1px solid var(--km-line)',
+  color: 'var(--km-ink)',
+  fontFamily: 'var(--km-font-body)',
+  fontSize: '14px',
+  borderRadius: '4px',
+}
+
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-  
+
   const showSuccess = (message: string) => {
-    toast.success(message,
-      { style: { background: "green", color: "white", border: "1px solid green", fontSize: "16px" } }
-    )
+    toast.success(message, {
+      style: { ...BASE, borderLeft: '2px solid var(--km-ok)' },
+    })
   }
 
   const showError = (message: string) => {
-    toast.error(message,
-      { style: { background: "red", color: "white", border: "1px solid red", fontSize: "16px" } }
-    )
+    toast.error(message, {
+      style: { ...BASE, borderLeft: '2px solid var(--km-error)' },
+    })
   }
 
   const showInfo = (message: string) => {
-    toast.info(message,
-      { style: { background: "skyblue", color: "black", border: "1px solid skyblue", fontSize: "16px" } }
-    )
+    toast(message, {
+      style: { ...BASE, borderLeft: '2px solid var(--km-gold)' },
+    })
   }
 
   return (

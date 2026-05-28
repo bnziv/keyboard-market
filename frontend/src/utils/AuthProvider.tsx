@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import axios from "axios"
+import { useNavigate } from "react-router-dom"
+import api from "@/utils/api"
 import { useToast } from "@/utils/ToastProvider";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -21,7 +21,6 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const location = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -30,16 +29,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     validateAuth()
   }, [])
-  
+
   useEffect(() => {
-    if (user) {
-      validateAuth()
-    }
-  }, [location.pathname])
+    const interceptor = api.interceptors.response.use(
+      res => res,
+      (err: any) => {
+        if (err.response?.status === 401 && !err.config?.url?.includes("/auth/login")) {
+          setIsAuthenticated(false)
+          setUser(null)
+          navigate("/login")
+        }
+        return Promise.reject(err)
+      }
+    )
+    return () => api.interceptors.response.eject(interceptor)
+  }, [navigate])
   
   const validateAuth = async () => {
     try {
-      const response = await axios.get(`/api/auth/me`, { withCredentials: true })
+      const response = await api.get(`/api/auth/me`)
       setIsAuthenticated(true)
       setUser(response.data)
     } catch (error) {
@@ -57,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`/api/auth/logout`, {}, { withCredentials: true })
+      await api.post(`/api/auth/logout`)
     } finally {
       setIsAuthenticated(false)
       setUser(null)

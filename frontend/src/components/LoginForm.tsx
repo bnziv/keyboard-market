@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/utils/ToastProvider"
 import { useAuth } from "@/utils/AuthProvider"
-import axios from "axios"
+import api from "@/utils/api"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { VisuallyHidden } from "radix-ui"
 
@@ -72,13 +72,10 @@ export default function LoginForm() {
 
     if (activeTab === "login") {
       try {
-        const response = await axios.post(`/api/auth/login`, 
-          {
-            identifier: formData.identifier,
-            password: formData.password
-          },
-          { withCredentials: true }
-        )
+        const response = await api.post(`/api/auth/login`, {
+          identifier: formData.identifier,
+          password: formData.password,
+        })
 
         if (response.status === 200) {
           login(response.data)
@@ -93,14 +90,11 @@ export default function LoginForm() {
       }
     } else {
       try {
-        const response = await axios.post(`/api/auth/register`, 
-            {
-              email: formData.email,
-              username: formData.username,
-              password: formData.password
-            },
-            { withCredentials: true }
-          )
+        const response = await api.post(`/api/auth/register`, {
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+        })
   
           if (response.status === 200) {
             login(response.data)
