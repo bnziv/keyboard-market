@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom';
 import { GroupBuyImage } from '@/components/GroupBuyImage';
-import { StatusBadge } from '@/components/StatusBadge';
-import { BadgeTone } from '@/utils/badgeTones';
+import { Badge, STAGE_BADGE_META } from '@/components/ui/badge';
+
+export function mapStatus(status: string): 'interest' | 'live' | 'closed' {
+  switch (status) {
+    case 'IC': return 'interest';
+    case 'GB': return 'live';
+    default:   return 'closed';
+  }
+}
 
 export interface CardGroupBuy {
   id: string;
   name: string;
   designer: string;
   category: string;
-  stage: 'interest' | 'live' | 'closed' | 'shipping';
+  stage: 'interest' | 'live' | 'closed';
   price: number;
   closes: string;
   gbStartMs: number | null;
@@ -26,12 +33,6 @@ export interface CardGroupBuy {
   items: { name: string; price: number; currency: string }[];
 }
 
-const STAGE_BADGE_META: Record<CardGroupBuy['stage'], { label: string; tone: BadgeTone }> = {
-  interest: { label: 'Interest check', tone: 'neutral' },
-  live:     { label: 'Live',           tone: 'ok' },
-  closed:   { label: 'In production',  tone: 'accent' },
-  shipping: { label: 'Shipping',       tone: 'accent' },
-};
 
 type GroupBuyCardVariant = 'card' | 'featured';
 
@@ -53,7 +54,7 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
         <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
           <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
           <div className="absolute top-2.5 left-2.5">
-            <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+            <Badge variant={meta.tone}>{meta.label}</Badge>
           </div>
         </div>
         <div className="px-4 py-3 border-t border-km-line">
@@ -78,8 +79,8 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
       <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
         <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
         <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
-          <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-          {gb.closingSoon && <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>}
+          <Badge variant={meta.tone}>{meta.label}</Badge>
+          {gb.closingSoon && <Badge variant="accent">⏱ {gb.closes} left</Badge>}
         </div>
         <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-black/65 text-white rounded font-km-mono text-[11px] tracking-[0.05em]">
           {gb.eta}
@@ -96,7 +97,7 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
           {gb.name}
         </div>
 
-        <p className="mt-2 mb-4 text-[13px] text-km-ink-dim leading-[1.5] flex-1">
+        <p className="mt-2 mb-4 text-[13px] text-km-ink-dim leading-[1.5] flex-1 line-clamp-3">
           {gb.desc || 'No description available.'}
         </p>
 

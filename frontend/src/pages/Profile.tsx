@@ -96,7 +96,7 @@ export default function Profile() {
       <NavBar activePage="profile" />
 
       {/* Banner */}
-      <div className="border-b border-km-line px-8 pt-9 pb-0 bg-km-bg-sub">
+      <div className="border-b border-km-line px-4 sm:px-8 pt-6 sm:pt-9 pb-0 bg-km-bg-sub">
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumb */}
           <div className="font-km-mono text-xs mb-5 text-km-ink-mute">
@@ -108,7 +108,7 @@ export default function Profile() {
           </div>
 
           {/* Profile header */}
-          <div className="flex items-end gap-6">
+          <div className="flex flex-wrap items-end gap-4 sm:gap-6">
             {/* Avatar */}
             <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-semibold flex-shrink-0 border bg-km-gold-soft border-km-gold/33 text-km-gold font-km-mono">
               {initial}
@@ -152,10 +152,7 @@ export default function Profile() {
           </div>
 
           {/* Stats bar */}
-          <div
-            className="grid mt-7 border-t border-b border-km-line"
-            style={{ gridTemplateColumns: `repeat(${STATS.length}, 1fr)` }}
-          >
+          <div className="grid mt-6 sm:mt-7 border-t border-b border-km-line grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {STATS.map(([value, label], i) => (
               <div
                 key={label}
@@ -184,7 +181,7 @@ export default function Profile() {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto w-full px-8 py-8 pb-16">
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-8 pb-16">
         {tab === 'listings' && (
           <div>
             <div className="flex items-center justify-between mb-5">
@@ -206,7 +203,7 @@ export default function Profile() {
                 <div className="font-km-mono text-sm text-km-ink-mute">No active listings.</div>
               </div>
             ) : (
-              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
                 {userListings.map(listing => (
                   <ListingCard key={listing.id} {...listing} />
                 ))}
@@ -214,7 +211,7 @@ export default function Profile() {
                   <Link
                     to="/create-listing"
                     className="flex flex-col items-center justify-center gap-2.5 rounded text-sm transition-colors hover:border-km-ink-mute font-km-mono text-[11px] text-km-ink-mute border border-dashed border-km-line-strong"
-                    style={{ minHeight: '200px', aspectRatio: '4/3' }}
+                    style={{ minHeight: '200px' }}
                   >
                     <Plus size={20} style={{ opacity: 0.5 }} />
                     List another item
@@ -241,8 +238,9 @@ export default function Profile() {
                   </div>
                 </div>
                 {/* Bar chart */}
+                <div className="overflow-x-auto">
                 <div
-                  className="grid gap-3.5 items-end"
+                  className="grid gap-3.5 items-end min-w-[320px]"
                   style={{ gridTemplateColumns: 'repeat(6, 1fr)', height: '120px' }}
                 >
                   {CHART_DATA.map((d, i) => (
@@ -256,6 +254,7 @@ export default function Profile() {
                       </div>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             )}

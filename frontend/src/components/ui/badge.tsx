@@ -13,11 +13,10 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        neutral:  "bg-km-surface-2 text-km-ink-dim border-km-line",
-        ok:       "bg-[color-mix(in_srgb,var(--km-ok)_20%,var(--km-surface))] text-km-ok border-km-ok",
-        accent:   "bg-km-gold-soft text-km-gold border-km-gold",
-        shipping: "bg-km-gold-soft text-km-gold border-km-gold",
-        muted:    "bg-km-surface-2 text-km-ink-mute border-km-line",
+        neutral: "bg-km-surface-2 text-km-ink-dim border-km-line",
+        ok:      "bg-[color-mix(in_srgb,var(--km-ok)_20%,var(--km-surface))] text-km-ok border-km-ok",
+        accent:  "bg-km-gold-soft text-km-gold border-km-gold",
+        muted:   "bg-km-surface-2 text-km-ink-mute border-km-line",
       },
     },
     defaultVariants: {
@@ -25,6 +24,14 @@ const badgeVariants = cva(
     },
   }
 )
+
+export type BadgeTone = NonNullable<VariantProps<typeof badgeVariants>["variant"]>
+
+export const STAGE_BADGE_META: Record<string, { label: string; tone: BadgeTone }> = {
+  interest: { label: "Interest check", tone: "neutral" },
+  live:     { label: "Live",           tone: "ok" },
+  closed:   { label: "Closed",         tone: "accent" },
+}
 
 export interface BadgeProps
   extends React.ComponentProps<"span">,

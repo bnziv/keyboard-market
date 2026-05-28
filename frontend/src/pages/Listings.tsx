@@ -4,10 +4,11 @@ import ListingCard, { ListingCardProps } from "@/components/ListingCard";
 import NavBar from "@/components/NavBar";
 import { Slider } from "@/components/ui/slider";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Loader2, LayoutGrid, List } from "lucide-react";
+import { Loader2, LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface FilterState {
     minPrice: number;
@@ -58,6 +59,76 @@ function CheckLine({ label, checked, onChange }: { label: string; checked: boole
     );
 }
 
+function FilterContent({
+    filters,
+    setFilters,
+}: {
+    filters: FilterState;
+    setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+}) {
+    return (
+        <>
+            <FilterSection label="Search">
+                <input
+                    type="text"
+                    placeholder="title, brand, model…"
+                    value={filters.title}
+                    onChange={e => setFilters(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-1.5 rounded border text-xs outline-none bg-km-bg border-km-line text-km-ink font-km-mono"
+                />
+            </FilterSection>
+
+            <FilterSection label="Price">
+                <div className="flex gap-2 mb-3">
+                    <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
+                        ${filters.minPrice}
+                    </div>
+                    <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
+                        ${filters.maxPrice}
+                    </div>
+                </div>
+                <Slider
+                    min={0}
+                    max={1000}
+                    step={10}
+                    value={[filters.minPrice, filters.maxPrice]}
+                    onValueChange={([min, max]) => setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))}
+                    className="[&_[role=slider]]:bg-km-ink [&_.range]:bg-km-gold"
+                />
+            </FilterSection>
+
+            <FilterSection label="Condition">
+                {CONDITIONS.map(c => (
+                    <CheckLine
+                        key={c}
+                        label={c}
+                        checked={filters.condition === c.toLowerCase()}
+                        onChange={() => setFilters(prev => ({
+                            ...prev,
+                            condition: prev.condition === c.toLowerCase() ? null : c.toLowerCase(),
+                        }))}
+                    />
+                ))}
+            </FilterSection>
+
+            <FilterSection label="Seller">
+                <CheckLine
+                    label="Accepts offers"
+                    checked={filters.offers === true}
+                    onChange={() => setFilters(prev => ({ ...prev, offers: prev.offers === true ? null : true }))}
+                />
+            </FilterSection>
+
+            <button
+                onClick={() => setFilters({ minPrice: 0, maxPrice: 1000, offers: null, condition: null, title: '', sortBy: 'createdOn', sortDirection: 'desc' })}
+                className="w-full mt-2 py-2 text-xs rounded border text-center transition-colors hover:opacity-80 font-km-mono text-km-gold border-km-line bg-transparent cursor-pointer tracking-[0.05em]"
+            >
+                Clear all filters
+            </button>
+        </>
+    );
+}
+
 export default function Listings() {
     const [searchParams] = useSearchParams();
     const [listings, setListings] = useState<ListingCardProps[]>([]);
@@ -65,6 +136,7 @@ export default function Listings() {
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
     const [density, setDensity] = useState<'grid' | 'list'>('grid');
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>({
         minPrice: 0,
         maxPrice: 1000,
@@ -127,74 +199,17 @@ export default function Listings() {
             <NavBar activePage="listings" />
 
             <div className="flex flex-1" style={{ minHeight: 'calc(100vh - 56px)' }}>
-                {/* Sidebar */}
+                {/* Desktop sidebar */}
                 <aside
-                    className="w-64 flex-shrink-0 sticky top-14 p-6 border-r overflow-y-auto bg-km-bg-sub border-km-line text-xs"
-                    style={{ height: 'calc(100vh - 56px)' }}
+                    className="hidden md:block w-64 flex-shrink-0 h-[100vh] self-start sticky top-0 p-6 border-r overflow-y-auto bg-km-bg-sub border-km-line text-xs"
                 >
-                    <FilterSection label="Search">
-                        <input
-                            type="text"
-                            placeholder="title, brand, model…"
-                            value={filters.title}
-                            onChange={e => setFilters(prev => ({ ...prev, title: e.target.value }))}
-                            className="w-full px-3 py-1.5 rounded border text-xs outline-none bg-km-bg border-km-line text-km-ink font-km-mono"
-                        />
-                    </FilterSection>
-
-                    <FilterSection label="Price">
-                        <div className="flex gap-2 mb-3">
-                            <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
-                                ${filters.minPrice}
-                            </div>
-                            <div className="flex-1 px-2.5 py-1.5 rounded border text-xs bg-km-bg border-km-line text-km-ink font-km-mono">
-                                ${filters.maxPrice}
-                            </div>
-                        </div>
-                        <Slider
-                            min={0}
-                            max={1000}
-                            step={10}
-                            value={[filters.minPrice, filters.maxPrice]}
-                            onValueChange={([min, max]) => setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))}
-                            className="[&_[role=slider]]:bg-km-ink [&_.range]:bg-km-gold"
-                        />
-                    </FilterSection>
-
-                    <FilterSection label="Condition">
-                        {CONDITIONS.map(c => (
-                            <CheckLine
-                                key={c}
-                                label={c}
-                                checked={filters.condition === c.toLowerCase()}
-                                onChange={() => setFilters(prev => ({
-                                    ...prev,
-                                    condition: prev.condition === c.toLowerCase() ? null : c.toLowerCase(),
-                                }))}
-                            />
-                        ))}
-                    </FilterSection>
-
-                    <FilterSection label="Seller">
-                        <CheckLine
-                            label="Accepts offers"
-                            checked={filters.offers === true}
-                            onChange={() => setFilters(prev => ({ ...prev, offers: prev.offers === true ? null : true }))}
-                        />
-                    </FilterSection>
-
-                    <button
-                        onClick={() => setFilters({ minPrice: 0, maxPrice: 1000, offers: null, condition: null, title: '', sortBy: 'createdOn', sortDirection: 'desc' })}
-                        className="w-full mt-2 py-2 text-xs rounded border text-center transition-colors hover:opacity-80 font-km-mono text-km-gold border-km-line bg-transparent cursor-pointer tracking-[0.05em]"
-                    >
-                        Clear all filters
-                    </button>
+                    <FilterContent filters={filters} setFilters={setFilters} />
                 </aside>
 
                 {/* Main content */}
-                <section className="flex-1 p-8">
+                <section className="flex-1 min-w-0 p-4 sm:p-6 md:p-8">
                     {/* Header bar */}
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col gap-3 sm:items-center sm:flex-row sm:justify-between mb-6">
                         <div>
                             <div className="font-km-mono text-[11px] uppercase tracking-[0.15em] mb-1 text-km-gold">
                                 {listings.length > 0 ? `Showing ${listings.length} results` : 'All listings'}
@@ -204,9 +219,17 @@ export default function Listings() {
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
+                            {/* Filters button — mobile only */}
+                            <button
+                                onClick={() => setFiltersOpen(true)}
+                                className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded border-km-line bg-km-surface text-km-ink font-km-mono cursor-pointer"
+                            >
+                                <SlidersHorizontal size={12} /> Filters
+                            </button>
+
                             {/* Sort */}
                             <Select value={sortValue} onValueChange={handleSortChange}>
-                                <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body min-w-[160px]">
+                                <SelectTrigger className="h-8 text-xs border gap-2 bg-km-surface border-km-line text-km-ink font-km-body">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-km-surface border-km-line text-km-ink">
@@ -244,7 +267,7 @@ export default function Listings() {
 
                     {/* Listings */}
                     {density === 'grid' ? (
-                        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+                        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
                             {listings.map((listing, i) => (
                                 <div key={listing.id} ref={i === listings.length - 1 ? lastListingRef : undefined}>
                                     <ListingCard {...listing} />
@@ -258,7 +281,7 @@ export default function Listings() {
                                     key={listing.id}
                                     href={`/listings/${listing.id}`}
                                     ref={i === listings.length - 1 ? (lastListingRef as any) : undefined}
-                                    className="flex items-center gap-4 px-4 py-3 border-b border-km-line bg-km-surface text-km-ink transition-colors hover:bg-km-surface-2 no-underline"
+                                    className="flex items-center gap-4 px-4 py-3 border-b border-km-line bg-km-surface text-km-ink transition-colors hover:bg-km-surface-2 no-underline min-w-0"
                                 >
                                     <div className="w-20 flex-shrink-0 rounded overflow-hidden bg-km-bg-sub" style={{ aspectRatio: '4/3' }}>
                                         {listing.imageUrl && <img src={listing.imageUrl} alt={listing.title} className="w-full h-full object-cover" />}
@@ -302,6 +325,56 @@ export default function Listings() {
                     )}
                 </section>
             </div>
+
+            {/* Mobile bottom sheet */}
+            <AnimatePresence>
+                {filtersOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            key="backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+                            onClick={() => setFiltersOpen(false)}
+                        />
+
+                        {/* Sheet */}
+                        <motion.div
+                            key="sheet"
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+                            className="fixed bottom-0 left-0 right-0 z-50 bg-km-bg-sub rounded-t-2xl md:hidden flex flex-col"
+                            style={{ maxHeight: '82dvh' }}
+                        >
+                            {/* Drag handle */}
+                            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                                <div className="w-9 h-1 rounded-full bg-km-line-strong" />
+                            </div>
+
+                            {/* Sheet header */}
+                            <div className="flex items-center justify-between px-5 py-3 border-b border-km-line flex-shrink-0">
+                                <span className="font-km-mono text-[11px] uppercase tracking-[0.15em] text-km-ink">Filters</span>
+                                <button
+                                    onClick={() => setFiltersOpen(false)}
+                                    className="w-7 h-7 flex items-center justify-center rounded border border-km-line text-km-ink-dim bg-transparent cursor-pointer"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+
+                            {/* Scrollable filter content */}
+                            <div className="overflow-y-auto p-5 text-xs">
+                                <FilterContent filters={filters} setFilters={setFilters} />
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

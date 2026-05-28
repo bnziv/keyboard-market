@@ -80,7 +80,7 @@ export default function ListingDetailsPage() {
     return (
         <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
             <NavBar activePage="listings" />
-            <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-6 pb-16">
+            <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 pb-16">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
                     <Link to="/listings" className="transition-colors hover:text-km-ink text-km-ink-mute">
@@ -90,7 +90,7 @@ export default function ListingDetailsPage() {
                     <span className="text-km-ink">{listing.title}</span>
                 </div>
 
-                <div className="grid gap-10" style={{ gridTemplateColumns: '1.2fr 1fr' }}>
+                <div className="grid gap-8 lg:gap-10 grid-cols-1 lg:grid-cols-[1.2fr_1fr]">
                     {/* Left — image + tabs */}
                     <div>
                         {/* Main image */}
@@ -163,7 +163,7 @@ export default function ListingDetailsPage() {
                         </div>
 
                         {/* Title */}
-                        <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
+                        <h1 className="text-2xl sm:text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
                             {listing.title}
                         </h1>
 
@@ -176,7 +176,7 @@ export default function ListingDetailsPage() {
                             <div className="mb-1 font-km-mono text-[10px] uppercase tracking-[0.15em] text-km-ink-mute">
                                 ASK
                             </div>
-                            <div className="font-km-mono text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
+                            <div className="font-km-mono text-3xl sm:text-4xl lg:text-5xl font-semibold mb-1 text-km-ink tracking-[-0.02em]">
                                 {listing.price ? `$${parseFloat(listing.price.toFixed(2))}` : 'Open to Offers'}
                             </div>
                             {listing.offers && listing.price > 0 && (

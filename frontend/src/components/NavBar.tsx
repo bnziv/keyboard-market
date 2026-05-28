@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
-import { Search, MessageSquare, User, LogOut, Plus, Sun, Moon } from 'lucide-react';
+import { Search, MessageSquare, User, LogOut, Plus, Sun, Moon, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useState } from 'react';
@@ -20,6 +20,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
   const { toggleConversations } = useChat();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleCreateListing = () => {
     if (isAuthenticated) {
@@ -37,7 +38,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
   };
 
   return (
-    <header className={cn('sticky top-0 z-50 flex items-center gap-4 px-6 h-14 border-b bg-km-bg border-km-line', className)}>
+    <header className={cn('sticky top-0 z-50 relative flex items-center gap-4 px-6 h-14 border-b bg-km-bg border-km-line', className)}>
       {/* Brand */}
       <Link
         to="/"
@@ -47,8 +48,8 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         <span style={{ letterSpacing: '-0.02em' }}>KBMARKET</span>
       </Link>
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-sm ml-4">
+      {/* Search — hidden on mobile */}
+      <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm ml-4">
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-text bg-km-surface-2 border-km-line text-km-ink-mute font-km-mono"
           onClick={() => document.getElementById('nav-search')?.focus()}
@@ -66,7 +67,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
         </div>
       </form>
 
-      {/* Nav links */}
+      {/* Nav links — hidden on mobile */}
       <nav className="ml-auto flex items-center gap-1">
         {[
           { id: 'listings' as const, label: 'Browse', href: '/listings' },
@@ -78,7 +79,7 @@ export default function NavBar({ className, activePage }: NavBarProps) {
             to={link.href}
             onClick={link.id === 'create' ? (e) => { e.preventDefault(); handleCreateListing(); } : undefined}
             className={cn(
-              'relative px-3 py-2 text-sm font-medium transition-colors',
+              'relative hidden md:inline-flex px-3 py-2 text-sm font-medium transition-colors',
               activePage === link.id ? 'text-km-ink' : 'text-km-ink-dim',
             )}
           >
@@ -142,7 +143,57 @@ export default function NavBar({ className, activePage }: NavBarProps) {
             Login
           </button>
         )}
+
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={() => setMobileOpen(v => !v)}
+          className="ml-1 md:hidden w-8 h-8 flex items-center justify-center rounded-full border border-km-line text-km-ink-dim bg-transparent cursor-pointer"
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X size={14} /> : <Menu size={14} />}
+        </button>
       </nav>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="absolute top-14 left-0 right-0 z-40 bg-km-bg border-b border-km-line p-4 flex flex-col gap-1 md:hidden shadow-md">
+          <form onSubmit={(e) => { handleSearch(e); setMobileOpen(false); }} className="mb-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-km-surface-2 border-km-line text-km-ink-mute font-km-mono">
+              <Search size={12} className="text-km-ink-mute flex-shrink-0" />
+              <input
+                type="text"
+                value={searchValue}
+                onChange={e => setSearchValue(e.target.value)}
+                placeholder="search keycaps, switches, PCBs…"
+                className="flex-1 bg-transparent outline-none text-km-ink-dim font-km-mono text-[11px]"
+                autoFocus
+              />
+            </div>
+          </form>
+          {[
+            { id: 'listings' as const, label: 'Browse', href: '/listings' },
+            { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' },
+            { id: 'create' as const, label: 'Sell', href: '/create-listing' },
+          ].map(link => (
+            <Link
+              key={link.id}
+              to={link.href}
+              onClick={(e) => {
+                if (link.id === 'create') { e.preventDefault(); handleCreateListing(); }
+                setMobileOpen(false);
+              }}
+              className={cn(
+                'px-3 py-2.5 text-sm font-medium rounded-md transition-colors',
+                activePage === link.id
+                  ? 'bg-km-surface-2 text-km-ink'
+                  : 'text-km-ink-dim hover:bg-km-surface-2',
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      )}
     </header>
   );
 }

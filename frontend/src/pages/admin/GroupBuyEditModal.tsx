@@ -284,7 +284,6 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
                       <option value="">— Select —</option>
                       <option value="IC">IC</option>
                       <option value="GB">GB</option>
-                      <option value="shipping">Shipping</option>
                       <option value="closed">Closed</option>
                       <option value="fulfilled">Fulfilled</option>
                     </select>
