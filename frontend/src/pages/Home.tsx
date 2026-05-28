@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/AuthProvider";
 import { useToast } from "@/utils/ToastProvider";
-import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
+import { GroupBuyCard, CardGroupBuy, mapStatus } from "@/components/GroupBuyCard";
 import { ArrowRight, Loader2 } from "lucide-react";
 import api from "@/utils/api";
 import { Button } from "@/components/ui/button";
@@ -32,18 +32,11 @@ function stagePriority(status: string): number {
   return 3;
 }
 
-function mapStage(status: string): CardGroupBuy['stage'] {
-  if (status === 'GB') return 'live';
-  if (status === 'IC') return 'interest';
-  if (status === 'shipping') return 'shipping';
-  return 'closed';
-}
-
 function toFeaturedCard(gb: GroupBuy): CardGroupBuy {
   const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
   return {
     id: gb.id, name: gb.name, designer: gb.designer,
-    category, stage: mapStage(gb.status),
+    category, stage: mapStatus(gb.status),
     price: gb.basePrice?.amount ?? 0,
     imageUrl: gb.images?.[0] ?? null,
     images: gb.images ?? [],
