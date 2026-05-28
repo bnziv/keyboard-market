@@ -19,15 +19,20 @@ export class GroupBuysController {
     return this.groupBuysService.findAllAdmin(status);
   }
 
-  @Get(':id')
+  @Get('admin/:id')
   @UseGuards(JwtAuthGuard, AdminGuard)
-  findOne(@Param('id') id: string) {
-    return this.groupBuysService.findOne(id);
+  findOneAdmin(@Param('id') id: string) {
+    return this.groupBuysService.findOneAdmin(id);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
   @UseGuards(JwtAuthGuard, AdminGuard)
   update(@Param('id') id: string, @Body() dto: UpdateGroupBuyDto) {
     return this.groupBuysService.update(id, dto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.groupBuysService.findOne(id);
   }
 }
