@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
-import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
+import { GroupBuyCard, CardGroupBuy, mapStatus } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
-import { StatusBadge } from '@/components/StatusBadge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,17 +29,6 @@ interface ApiGroupBuy {
   items: { name: string; price: number; currency: string }[];
 }
 
-function mapStatus(status: string): CardGroupBuy['stage'] {
-  switch (status) {
-    case 'IC': return 'interest';
-    case 'GB': return 'live';
-    case 'shipping': return 'shipping';
-    case 'closed':
-    case 'fulfilled':
-    default:
-      return 'closed';
-  }
-}
 
 function capitalizeType(type: string): string {
   if (!type) return 'Keyboard';
@@ -135,7 +124,7 @@ const STAGE_TABS: { value: StageFilter; label: string }[] = [
 
 export default function GroupBuys() {
   const navigate = useNavigate();
-  const [stage, setStage] = useState<StageFilter>('all');
+  const [stage, setStage] = useState<StageFilter>('live');
   const [sortBy, setSortBy] = useState<SortOption>('closing-soon');
   const [apiData, setApiData] = useState<ApiGroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,14 +148,14 @@ export default function GroupBuys() {
 
   const tabCount = (v: StageFilter) => {
     if (v === 'all') return cards.length;
-    if (v === 'closed') return (stageCounts['closed'] ?? 0) + (stageCounts['shipping'] ?? 0);
+    if (v === 'closed') return stageCounts['closed'] ?? 0;
     return stageCounts[v] ?? 0;
   };
 
   const visible = sortCards(
     cards.filter(g =>
       stage === 'all' ||
-      (stage === 'closed' ? g.stage === 'closed' || g.stage === 'shipping' : g.stage === stage)
+      g.stage === stage
     ),
     sortBy,
   );
@@ -283,10 +272,10 @@ export default function GroupBuys() {
             className="flex items-center gap-3 sm:gap-5 p-4 mb-7 border border-dashed border-km-gold rounded bg-km-gold-soft cursor-pointer sm:cursor-default"
             onClick={() => { if (window.innerWidth < 640) setStage('live'); }}
           >
-            <StatusBadge tone="accent">⏱ Closing soon</StatusBadge>
+            <Badge className="hidden sm:flex" variant="accent">⏱ Closing soon</Badge>
             <div className="flex-1 text-[13px] text-km-ink">
-              <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy' : 'buys'}</strong>{' '}
-              close in the next 48 hours.
+              <strong>{closingSoonCount} group {closingSoonCount === 1 ? 'buy closes' : 'buys close'}</strong>{' '}
+              in the next 48 hours.
             </div>
             <Button
               variant="gold"

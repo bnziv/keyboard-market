@@ -2,11 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import api from "@/utils/api";
 import NavBar from "@/components/NavBar";
-import { CardGroupBuy } from "@/components/GroupBuyCard";
+import { CardGroupBuy, mapStatus } from "@/components/GroupBuyCard";
 import { CATEGORY_PALETTES } from "@/components/GroupBuyImage";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Badge, STAGE_BADGE_META } from "@/components/ui/badge";
 import { TabBar } from "@/components/TabBar";
-import { BadgeTone } from "@/utils/badgeTones";
 import {
   ArrowLeft,
   ArrowRight,
@@ -40,20 +39,6 @@ interface ApiGroupBuy {
   items: { name: string; price: number; currency: string }[];
 }
 
-function mapStatus(status: string): CardGroupBuy["stage"] {
-  switch (status) {
-    case "IC":
-      return "interest";
-    case "GB":
-      return "live";
-    case "shipping":
-      return "shipping";
-    case "closed":
-    case "fulfilled":
-    default:
-      return "closed";
-  }
-}
 
 function capitalizeType(type: string): string {
   if (!type) return "Keyboard";
@@ -300,13 +285,6 @@ export default function GroupBuyDetails() {
       .catch(() => {});
   }, [id, isAdmin]);
 
-  const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
-    interest: { label: "Interest check", tone: "neutral" },
-    live: { label: "Live", tone: "ok" },
-    closed: { label: "In production", tone: "accent" },
-    shipping: { label: "Shipping", tone: "accent" },
-  };
-
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     showInfo("Link copied to clipboard");
@@ -343,7 +321,7 @@ export default function GroupBuyDetails() {
     );
   }
 
-  const meta = stageMeta[gb.stage];
+  const meta = STAGE_BADGE_META[gb.stage];
 
   const selectedKit = gb.items[selectedKitIdx] ?? null;
   const displayPrice =
@@ -390,10 +368,10 @@ export default function GroupBuyDetails() {
             {/* Header */}
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 flex-wrap">
-                <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-                <StatusBadge tone="neutral">{gb.category}</StatusBadge>
+                <Badge variant={meta.tone}>{meta.label}</Badge>
+                <Badge variant="neutral">{gb.category}</Badge>
                 {gb.closingSoon && (
-                  <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>
+                  <Badge variant="accent">⏱ {gb.closes} left</Badge>
                 )}
               </div>
               <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
