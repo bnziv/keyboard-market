@@ -9,8 +9,13 @@ export class GroupBuysController {
   constructor(private readonly groupBuysService: GroupBuysService) {}
 
   @Get()
-  findAll(@Query('status') status?: string) {
-    return this.groupBuysService.findAll(status);
+  findAll(@Query('stage') stage?: string) {
+    return this.groupBuysService.findAll(stage);
+  }
+
+  @Get('counts')
+  getCounts() {
+    return this.groupBuysService.getCounts();
   }
 
   @Get('admin/all')

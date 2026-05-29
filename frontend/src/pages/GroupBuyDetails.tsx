@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import api from "@/utils/api";
 import NavBar from "@/components/NavBar";
-import { CardGroupBuy, mapStatus } from "@/components/GroupBuyCard";
+import { CardGroupBuy } from "@/components/GroupBuyCard";
 import { CATEGORY_PALETTES } from "@/components/GroupBuyImage";
 import { Badge, STAGE_BADGE_META } from "@/components/ui/badge";
 import { TabBar } from "@/components/TabBar";
@@ -69,7 +69,7 @@ function formatDate(iso: string | null): string {
 
 function toCardData(gb: ApiGroupBuy): CardGroupBuy {
   const { label: closes, soon: closingSoon } = computeCloses(gb.gbEnd);
-  const stage = closes === "Closed" ? "closed" : mapStatus(gb.status);
+  const stage = gb.status as 'IC' | 'GB' | 'closed';
   return {
     id: gb.id,
     name: gb.name,

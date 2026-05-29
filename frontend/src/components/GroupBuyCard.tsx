@@ -2,20 +2,12 @@ import { Link } from 'react-router-dom';
 import { GroupBuyImage } from '@/components/GroupBuyImage';
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge';
 
-export function mapStatus(status: string): 'interest' | 'live' | 'closed' {
-  switch (status) {
-    case 'IC': return 'interest';
-    case 'GB': return 'live';
-    default:   return 'closed';
-  }
-}
-
 export interface CardGroupBuy {
   id: string;
   name: string;
   designer: string;
   category: string;
-  stage: 'interest' | 'live' | 'closed';
+  stage: 'IC' | 'GB' | 'closed';
   price: number;
   closes: string;
   gbStartMs: number | null;

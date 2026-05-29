@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/utils/api';
 import NavBar from '@/components/NavBar';
-import { GroupBuyCard, CardGroupBuy, mapStatus } from '@/components/GroupBuyCard';
+import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,13 @@ interface ApiGroupBuy {
   items: { name: string; price: number; currency: string }[];
 }
 
+interface GbCounts {
+  IC: number;
+  GB: number;
+  closed: number;
+  total: number;
+  closingSoon: number;
+}
 
 function capitalizeType(type: string): string {
   if (!type) return 'Keyboard';
@@ -50,7 +57,7 @@ function computeCloses(gbEnd: string | null): { label: string; soon: boolean } {
 
 function toCardData(gb: ApiGroupBuy): CardGroupBuy {
   const { label: closes, soon: closingSoon } = computeCloses(gb.gbEnd);
-  const stage = closes === 'Closed' ? 'closed' : mapStatus(gb.status);
+  const stage = gb.status as 'IC' | 'GB' | 'closed';
   return {
     id: gb.id,
     name: gb.name,
@@ -75,7 +82,7 @@ function toCardData(gb: ApiGroupBuy): CardGroupBuy {
   };
 }
 
-type StageFilter = 'all' | 'interest' | 'live' | 'closed';
+type StageFilter = 'all' | 'IC' | 'GB' | 'closed';
 type SortOption = 'closing-soon' | 'price-asc' | 'price-desc' | 'newest';
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -116,49 +123,47 @@ function sortCards(cards: CardGroupBuy[], sortBy: SortOption): CardGroupBuy[] {
 }
 
 const STAGE_TABS: { value: StageFilter; label: string }[] = [
-  { value: 'all',      label: 'All stages' },
-  { value: 'interest', label: 'Interest check' },
-  { value: 'live',     label: 'Live' },
-  { value: 'closed',   label: 'Closed' },
+  { value: 'all',    label: 'All stages' },
+  { value: 'IC',     label: 'Interest check' },
+  { value: 'GB',     label: 'Live' },
+  { value: 'closed', label: 'Closed' },
 ];
 
 export default function GroupBuys() {
   const navigate = useNavigate();
-  const [stage, setStage] = useState<StageFilter>('live');
+  const [stage, setStage] = useState<StageFilter>('GB');
   const [sortBy, setSortBy] = useState<SortOption>('closing-soon');
-  const [apiData, setApiData] = useState<ApiGroupBuy[]>([]);
+  const [cards, setCards] = useState<CardGroupBuy[]>([]);
+  const [counts, setCounts] = useState<GbCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get<ApiGroupBuy[]>('/api/groupbuys')
-      .then(res => setApiData(res.data))
-      .catch(() => setError('Failed to load group buys.'))
-      .finally(() => setLoading(false));
+    api.get<GbCounts>('/api/groupbuys/counts')
+      .then(res => setCounts(res.data))
+      .catch(() => {});
   }, []);
 
-  const cards = apiData.map(toCardData);
-  const liveCount = cards.filter(g => g.stage === 'live').length;
-  const closingSoonCount = cards.filter(g => g.closingSoon).length;
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    const url = stage !== 'all' ? `/api/groupbuys?stage=${stage}` : '/api/groupbuys';
+    api.get<ApiGroupBuy[]>(url)
+      .then(res => setCards(res.data.map(toCardData)))
+      .catch(() => setError('Failed to load group buys.'))
+      .finally(() => setLoading(false));
+  }, [stage]);
 
-  const stageCounts = cards.reduce<Record<string, number>>((acc, g) => {
-    acc[g.stage] = (acc[g.stage] ?? 0) + 1;
-    return acc;
-  }, {});
+  const visible = sortCards(cards, sortBy);
 
-  const tabCount = (v: StageFilter) => {
-    if (v === 'all') return cards.length;
-    if (v === 'closed') return stageCounts['closed'] ?? 0;
-    return stageCounts[v] ?? 0;
+  const liveCount = counts?.GB ?? 0;
+  const closingSoonCount = counts?.closingSoon ?? 0;
+
+  const tabCount = (v: StageFilter): number | undefined => {
+    if (!counts) return undefined;
+    if (v === 'all') return counts.total;
+    return counts[v];
   };
-
-  const visible = sortCards(
-    cards.filter(g =>
-      stage === 'all' ||
-      g.stage === stage
-    ),
-    sortBy,
-  );
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
@@ -187,7 +192,7 @@ export default function GroupBuys() {
             <div className="flex border border-km-line rounded bg-km-surface overflow-hidden">
               {([
                 [String(liveCount), 'live now'],
-                [String(cards.length), 'tracked'],
+                [String(counts?.total ?? '—'), 'tracked'],
               ] as const).map(([v, l], i) => (
                 <div
                   key={l}
@@ -270,7 +275,7 @@ export default function GroupBuys() {
         {closingSoonCount > 0 && (
           <div
             className="flex items-center gap-3 sm:gap-5 p-4 mb-7 border border-dashed border-km-gold rounded bg-km-gold-soft cursor-pointer sm:cursor-default"
-            onClick={() => { if (window.innerWidth < 640) setStage('live'); }}
+            onClick={() => { if (window.innerWidth < 640) setStage('GB'); }}
           >
             <Badge className="hidden sm:flex" variant="accent">⏱ Closing soon</Badge>
             <div className="flex-1 text-[13px] text-km-ink">
@@ -281,7 +286,7 @@ export default function GroupBuys() {
               variant="gold"
               size="sm"
               className="hidden sm:flex flex-shrink-0"
-              onClick={e => { e.stopPropagation(); setStage('live'); }}
+              onClick={e => { e.stopPropagation(); setStage('GB'); }}
             >
               View closing soon <ArrowRight size={13} />
             </Button>
