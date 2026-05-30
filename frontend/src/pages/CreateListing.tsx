@@ -42,6 +42,7 @@ export default function CreateListing() {
   const navigate = useNavigate()
 
   const [step] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
   const [category, setCategory] = useState('keyboard')
   const [condition, setCondition] = useState('like new')
   const [title, setTitle] = useState('')
@@ -65,11 +66,15 @@ export default function CreateListing() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
+    setIsLoading(true)
     try {
-      const res = await api.post('/api/listings', { title, description, price, condition, imageUrl, offers })
+      const priceInCents = price ? Math.round(parseFloat(price) * 100) : undefined
+      const res = await api.post('/api/listings', { title, description, price: priceInCents, condition, imageUrl, offers })
       if (res.status === 201) { showSuccess('Listing created!'); navigate('/listings') }
     } catch {
       showError('Failed to create listing')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -255,8 +260,8 @@ export default function CreateListing() {
                   <Button type="button" variant="surface">
                     Save draft
                   </Button>
-                  <Button type="submit" variant="solid" size="lg">
-                    Publish listing →
+                  <Button type="submit" variant="solid" size="lg" disabled={isLoading}>
+                    {isLoading ? 'Publishing…' : 'Publish listing →'}
                   </Button>
                 </div>
               </div>

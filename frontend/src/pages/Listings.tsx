@@ -175,8 +175,15 @@ export default function Listings() {
         try {
             setLoading(true);
             const currentPage = reset ? 0 : page;
+            const { minPrice, maxPrice, ...rest } = debouncedFilters;
             const response = await api.get(`/api/listings/filtered`, {
-                params: { ...debouncedFilters, page: currentPage, size: 12 },
+                params: {
+                    ...rest,
+                    minPrice: minPrice * 100,
+                    maxPrice: maxPrice * 100,
+                    page: currentPage,
+                    size: 12,
+                },
             });
             const { listings: newListings, totalPages } = response.data;
             setListings(prev => reset ? newListings : [...prev, ...newListings]);

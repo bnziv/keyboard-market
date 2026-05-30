@@ -51,14 +51,18 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).exec();
+    return this.userModel.findById(id).select('-password').exec();
   }
 
   async findByUsername(username: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } }).exec();
+    return this.userModel.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } }).select('-password').exec();
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    return this.userModel.findOne({ email: email.toLowerCase() }).select('-password').exec();
+  }
+
+  async findByIds(ids: string[]): Promise<UserDocument[]> {
+    return this.userModel.find({ _id: { $in: ids } }).select('username').exec();
   }
 }

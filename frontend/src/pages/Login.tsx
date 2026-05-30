@@ -65,18 +65,20 @@ function OAuthBtn({ icon, label }: { icon: React.ReactNode; label: string }) {
   )
 }
 
-function PrimaryBtn({ children, onClick, type = 'button', className }: {
+function PrimaryBtn({ children, onClick, type = 'button', className, disabled }: {
   children: React.ReactNode
   onClick?: () => void
   type?: 'button' | 'submit'
   className?: string
+  disabled?: boolean
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "w-full flex items-center justify-center gap-2 py-[13px] border border-km-ink rounded-[6px] bg-km-ink text-km-bg text-sm font-semibold cursor-pointer font-km-body transition-all duration-[120ms]",
+        "w-full flex items-center justify-center gap-2 py-[13px] border border-km-ink rounded-[6px] bg-km-ink text-km-bg text-sm font-semibold cursor-pointer font-km-body transition-all duration-[120ms] disabled:opacity-60 disabled:cursor-not-allowed",
         className
       )}
     >
@@ -148,11 +150,12 @@ function PasswordStrengthBar({ strength }: { strength: number }) {
   )
 }
 
-function SignInForm({ form, setForm, onSubmit, switchMode }: {
+function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
   form: FormState
   setForm: React.Dispatch<React.SetStateAction<FormState>>
   onSubmit: (e: React.FormEvent) => void
   switchMode: (m: Mode) => void
+  isLoading: boolean
 }) {
   const [showPw, setShowPw] = useState(false)
 
@@ -222,8 +225,8 @@ function SignInForm({ form, setForm, onSubmit, switchMode }: {
         />
       </div>
 
-      <PrimaryBtn type="submit">
-        Sign in <ArrowRight size={14} />
+      <PrimaryBtn type="submit" disabled={isLoading}>
+        {isLoading ? 'Signing in…' : <><span>Sign in</span> <ArrowRight size={14} /></>}
       </PrimaryBtn>
 
       <div className="mt-6 text-center text-[13px] text-km-ink-dim">
@@ -360,11 +363,12 @@ const INTERESTS = [
   'Clicky switches', 'PCBs / cases', 'Artisans', 'Cables', 'Group buys',
 ]
 
-function SignUpStep2({ form, setForm, onBack, onFinish }: {
+function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
   form: FormState
   setForm: React.Dispatch<React.SetStateAction<FormState>>
   onBack: () => void
   onFinish: () => void
+  isLoading: boolean
 }) {
   const toggle = (o: string) => setForm(f => ({
     ...f,
@@ -435,8 +439,8 @@ function SignUpStep2({ form, setForm, onBack, onFinish }: {
         <GhostBtn onClick={onBack}>
           <ArrowLeft size={14} /> Back
         </GhostBtn>
-        <PrimaryBtn onClick={onFinish} className="flex-1">
-          Finish &amp; enter market <ArrowRight size={14} />
+        <PrimaryBtn onClick={onFinish} className="flex-1" disabled={isLoading}>
+          {isLoading ? 'Creating account…' : <><span>Finish &amp; enter market</span> <ArrowRight size={14} /></>}
         </PrimaryBtn>
       </div>
     </div>
@@ -450,6 +454,7 @@ export default function Login() {
 
   const [mode, setMode] = useState<Mode>('signin')
   const [step, setStep] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
   const [form, setForm] = useState<FormState>({
     identifier: '',
     email: '',
@@ -467,6 +472,7 @@ export default function Login() {
     e.preventDefault()
     if (!form.identifier.trim()) { showError("Email or username cannot be empty"); return }
     if (!form.password.trim()) { showError("Password cannot be empty"); return }
+    setIsLoading(true)
     try {
       const res = await api.post('/api/auth/login', {
         identifier: form.identifier,
@@ -479,10 +485,13 @@ export default function Login() {
       }
     } catch (err: any) {
       showError(err.response?.data?.error ?? "Failed to sign in")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleRegister = async () => {
+    setIsLoading(true)
     try {
       const res = await api.post('/api/auth/register', {
         email: form.email,
@@ -496,6 +505,8 @@ export default function Login() {
       }
     } catch (err: any) {
       showError(err.response?.data?.error ?? "Failed to register")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -612,6 +623,7 @@ export default function Login() {
                 setForm={setForm}
                 onSubmit={handleSignIn}
                 switchMode={switchMode}
+                isLoading={isLoading}
               />
             ) : step === 1 ? (
               <SignUpStep1
@@ -627,6 +639,7 @@ export default function Login() {
                 setForm={setForm}
                 onBack={() => setStep(1)}
                 onFinish={handleRegister}
+                isLoading={isLoading}
               />
             )}
           </div>
