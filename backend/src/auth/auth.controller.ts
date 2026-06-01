@@ -32,9 +32,9 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const token = await this.usersService.register(dto);
+    const { token, id, username } = await this.usersService.register(dto);
     res.cookie('jwt', token, COOKIE_OPTIONS);
-    return { message: 'Registration successful' };
+    return { id, username };
   }
 
   @Post('login')

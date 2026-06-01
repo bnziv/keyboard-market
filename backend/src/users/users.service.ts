@@ -18,7 +18,9 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<string> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ token: string; id: string; username: string }> {
     const emailTaken = await this.userModel.exists({
       email: dto.email.toLowerCase(),
     });
@@ -36,7 +38,8 @@ export class UsersService {
       password: hashed,
     });
 
-    return this.jwtService.sign({ sub: user._id.toString() });
+    const token = this.jwtService.sign({ sub: user._id.toString() });
+    return { token, id: user._id.toString(), username: user.username };
   }
 
   async login(

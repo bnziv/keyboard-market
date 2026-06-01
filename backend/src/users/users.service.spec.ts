@@ -52,18 +52,18 @@ describe('UsersService', () => {
   });
 
   describe('register', () => {
-    it('creates a user and returns a JWT', async () => {
+    it('creates a user and returns token, id, and username', async () => {
       userModel.exists.mockResolvedValueOnce(null);
       userModel.exists.mockResolvedValueOnce(null);
-      userModel.create.mockResolvedValue({ _id: { toString: () => 'uid1' } });
+      userModel.create.mockResolvedValue({ _id: { toString: () => 'uid1' }, username: 'tester' });
 
-      const token = await service.register({
+      const result = await service.register({
         email: 'test@example.com',
         username: 'tester',
         password: 'pass1234',
       });
 
-      expect(token).toBe('signed-token');
+      expect(result).toEqual({ token: 'signed-token', id: 'uid1', username: 'tester' });
       expect(userModel.create).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'test@example.com', password: 'hashed-password' }),
       );
@@ -71,7 +71,7 @@ describe('UsersService', () => {
 
     it('lowercases the email before storing', async () => {
       userModel.exists.mockResolvedValue(null);
-      userModel.create.mockResolvedValue({ _id: { toString: () => 'uid2' } });
+      userModel.create.mockResolvedValue({ _id: { toString: () => 'uid2' }, username: 'user' });
 
       await service.register({ email: 'Upper@Example.COM', username: 'user', password: 'pass1234' });
 
