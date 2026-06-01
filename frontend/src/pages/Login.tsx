@@ -21,7 +21,7 @@ interface FormState {
 }
 
 const inputCls =
-  'w-full px-[14px] py-[11px] border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-sm font-km-body outline-none box-border';
+  'w-full px-[14px] py-[11px] border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-base font-km-body outline-none box-border';
 
 function FieldLabel({
   label,
