@@ -104,6 +104,7 @@ function SortableImageItem({
         src={url}
         alt={`Image ${index + 1}`}
         draggable={false}
+        loading="lazy"
         className="w-full aspect-video object-cover block"
       />
       <span className="absolute bottom-1.5 left-1.5 font-km-mono text-[9px] bg-black/55 text-white/70 px-1.5 py-[2px] rounded-[3px] pointer-events-none">
@@ -149,6 +150,7 @@ function ExcludedImageItem({
         src={url}
         alt="Excluded image"
         draggable={false}
+        loading="lazy"
         className="w-full aspect-video object-cover block opacity-25"
       />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -286,6 +288,7 @@ export function GroupBuyEditModal({
       name: it.name,
       price: parseFloat(it.price) || 0,
       currency: it.currency,
+      ...(it.imageUrl ? { imageUrl: it.imageUrl } : {}),
     })),
     vendors,
     discordUrl: discordUrl || null,
@@ -321,6 +324,7 @@ export function GroupBuyEditModal({
           name: it.name,
           price: parseFloat(it.price) || 0,
           currency: it.currency,
+          ...(it.imageUrl ? { imageUrl: it.imageUrl } : {}),
         })),
         vendors,
         discordUrl: discordUrl || undefined,
@@ -511,39 +515,74 @@ export function GroupBuyEditModal({
                   {items.length === 0 && emptyNote('No items')}
                   <div className="flex flex-col gap-2">
                     {items.map((item, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <input
-                          className={cn(inputCls, 'flex-1')}
-                          value={item.name}
-                          onChange={(e) =>
-                            updateItem(i, 'name', e.target.value)
-                          }
-                          placeholder="Name"
-                        />
-                        <input
-                          type="number"
-                          className={cn(inputCls, 'w-[90px]')}
-                          value={item.price}
-                          onChange={(e) =>
-                            updateItem(i, 'price', e.target.value)
-                          }
-                          placeholder="Price"
-                        />
-                        <input
-                          className={cn(inputCls, 'w-[65px]')}
-                          value={item.currency}
-                          onChange={(e) =>
-                            updateItem(i, 'currency', e.target.value)
-                          }
-                          placeholder="USD"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeItem(i)}
-                          className="bg-transparent border-none cursor-pointer text-km-ink-mute p-1 flex"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <div key={i} className="flex flex-col gap-1.5">
+                        <div className="flex gap-2 items-center">
+                          <input
+                            className={cn(inputCls, 'flex-1')}
+                            value={item.name}
+                            onChange={(e) =>
+                              updateItem(i, 'name', e.target.value)
+                            }
+                            placeholder="Name"
+                          />
+                          <input
+                            type="number"
+                            className={cn(inputCls, 'w-[90px]')}
+                            value={item.price}
+                            onChange={(e) =>
+                              updateItem(i, 'price', e.target.value)
+                            }
+                            placeholder="Price"
+                          />
+                          <input
+                            className={cn(inputCls, 'w-[65px]')}
+                            value={item.currency}
+                            onChange={(e) =>
+                              updateItem(i, 'currency', e.target.value)
+                            }
+                            placeholder="USD"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeItem(i)}
+                            className="bg-transparent border-none cursor-pointer text-km-ink-mute p-1 flex"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        {images.length > 0 && (
+                          <div
+                            className="flex gap-1.5 overflow-x-auto pb-1"
+                            style={{ scrollbarWidth: 'none' }}
+                          >
+                            {images.map((url) => (
+                              <button
+                                key={url}
+                                type="button"
+                                onClick={() =>
+                                  updateItem(
+                                    i,
+                                    'imageUrl',
+                                    item.imageUrl === url ? '' : url,
+                                  )
+                                }
+                                className={cn(
+                                  'flex-shrink-0 rounded overflow-hidden border-2 transition-[border-color,opacity] duration-[120ms] p-0 bg-transparent cursor-pointer',
+                                  item.imageUrl === url
+                                    ? 'border-km-gold opacity-100'
+                                    : 'border-km-line opacity-40 hover:opacity-70',
+                                )}
+                                style={{ width: 48, height: 36 }}
+                              >
+                                <img
+                                  src={url}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover block"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

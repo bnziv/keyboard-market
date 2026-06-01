@@ -34,6 +34,10 @@ class ItemDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
 
 class VendorDto {

@@ -7,6 +7,7 @@ export interface Item {
   name: string;
   price: number;
   currency: string;
+  imageUrl?: string;
 }
 
 export interface Vendor {
