@@ -5,17 +5,19 @@ import NavBar from '@/components/NavBar'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { TabBar } from '@/components/TabBar'
+import { cn } from '@/lib/utils'
 
 const STATUS_FILTERS = ['All', 'IC', 'GB', 'closed'] as const
 type StatusFilter = (typeof STATUS_FILTERS)[number]
 
-const STATUS_LABELS: Record<string, string> = {
-  All: 'All',
-  IC: 'Interest Check',
-  GB: 'Live GB',
-  closed: 'Closed',
-}
-
+const STATUS_TABS = [
+  { key: 'All' as StatusFilter, label: 'All' },
+  { key: 'IC' as StatusFilter, label: 'Interest Check' },
+  { key: 'GB' as StatusFilter, label: 'Live GB' },
+  { key: 'closed' as StatusFilter, label: 'Closed' },
+]
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
@@ -23,22 +25,16 @@ function formatDate(iso: string | null): string {
 }
 
 function TableRow({ gb, isLast, onEdit, onToggleHidden }: { gb: AdminGroupBuy; isLast: boolean; onEdit: () => void; onToggleHidden: () => void }) {
-  const [hovered, setHovered] = useState(false)
-  const [btnHovered, setBtnHovered] = useState(false)
-  const [hideHovered, setHideHovered] = useState(false)
-
   return (
     <tr
+      className="transition-[background] duration-[120ms] hover:bg-km-bg-sub"
       style={{
         borderBottom: isLast ? 'none' : '1px solid var(--km-line)',
-        background: gb.hidden
-          ? 'color-mix(in srgb, var(--km-surface-2) 60%, var(--km-bg))'
-          : hovered ? 'var(--km-bg-sub)' : 'var(--km-bg)',
-        transition: 'background 120ms',
-        opacity: gb.hidden ? 0.6 : 1,
+        ...(gb.hidden && {
+          background: 'color-mix(in srgb, var(--km-surface-2) 60%, var(--km-bg))',
+          opacity: 0.6,
+        }),
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <td style={{ padding: '12px 16px', fontWeight: 500, color: 'var(--km-ink)', maxWidth: 220 }}>
         <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={gb.name}>
@@ -70,42 +66,18 @@ function TableRow({ gb, isLast, onEdit, onToggleHidden }: { gb: AdminGroupBuy; i
       </td>
       <td style={{ padding: '12px 16px' }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={onToggleHidden}
-            onMouseEnter={() => setHideHovered(true)}
-            onMouseLeave={() => setHideHovered(false)}
             title={gb.hidden ? 'Restore visibility' : 'Hide from public'}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: 30, height: 30,
-              background: 'transparent',
-              border: `1px solid ${gb.hidden ? 'var(--km-gold)' : hideHovered ? 'var(--km-ink)' : 'var(--km-line-strong)'}`,
-              borderRadius: 4,
-              color: gb.hidden ? 'var(--km-gold)' : hideHovered ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-              cursor: 'pointer',
-              transition: 'border-color 120ms, color 120ms',
-            }}
+            className={cn('w-[30px] h-[30px]', gb.hidden && 'border-km-gold text-km-gold')}
           >
             {gb.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
-          </button>
-          <button
-            onClick={onEdit}
-            onMouseEnter={() => setBtnHovered(true)}
-            onMouseLeave={() => setBtnHovered(false)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 12px',
-              background: 'transparent',
-              border: `1px solid ${btnHovered ? 'var(--km-ink)' : 'var(--km-line-strong)'}`,
-              borderRadius: 4,
-              color: btnHovered ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-              fontSize: 12, fontFamily: 'var(--km-font-body)',
-              cursor: 'pointer', whiteSpace: 'nowrap',
-              transition: 'border-color 120ms, color 120ms',
-            }}
-          >
+          </Button>
+          <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil size={12} /> Edit
-          </button>
+          </Button>
         </div>
       </td>
     </tr>
@@ -138,7 +110,7 @@ export default function GroupBuysAdmin() {
 
   const handleToggleHidden = (gb: AdminGroupBuy) => {
     const next = !gb.hidden
-    api.patch(`/api/groupbuys/${gb.id}`, { hidden: next })
+    api.patch(`/api/groupbuys/admin/${gb.id}`, { hidden: next })
       .then(res => setGroupBuys(prev => prev.map(g => g.id === gb.id ? res.data : g)))
       .catch(() => {})
   }
@@ -176,46 +148,19 @@ export default function GroupBuysAdmin() {
                 </p>
               )}
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/admin/scraper')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 14px',
-                background: 'transparent',
-                border: '1px solid var(--km-gold)',
-                borderRadius: 4,
-                color: 'var(--km-gold)',
-                fontSize: 12, fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer', whiteSpace: 'nowrap',
-                flexShrink: 0, marginTop: 4,
-              }}
+              className="border-km-gold text-km-gold shrink-0 mt-1"
             >
               <Play size={11} /> Run Scraper
-            </button>
+            </Button>
           </div>
 
           {/* Status filter tabs */}
-          <div style={{ display: 'flex', gap: 2, marginTop: 24, marginBottom: -1 }}>
-            {STATUS_FILTERS.map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: 13,
-                  fontWeight: statusFilter === s ? 600 : 400,
-                  color: statusFilter === s ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-                  background: 'none', border: 'none', outline: 'none',
-                  borderBottom: `2px solid ${statusFilter === s ? 'var(--km-gold)' : 'transparent'}`,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--km-font-body)',
-                  whiteSpace: 'nowrap',
-                  transition: 'color 150ms',
-                }}
-              >
-                {STATUS_LABELS[s] ?? s}
-              </button>
-            ))}
+          <div style={{ marginTop: 24, marginBottom: -1 }}>
+            <TabBar tabs={STATUS_TABS} active={statusFilter} onChange={setStatusFilter} variant="body" />
           </div>
         </div>
       </div>

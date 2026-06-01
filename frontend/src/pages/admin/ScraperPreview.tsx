@@ -7,6 +7,7 @@ import api from '@/utils/api'
 import { GroupBuyEditModal } from './GroupBuyEditModal'
 import type { AdminGroupBuy } from '@/types/groupBuy'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 interface PreviewItem {
   localId: string
@@ -27,19 +28,13 @@ function PreviewRow({
   onToggle: () => void
   onEdit: () => void
 }) {
-  const [hovered, setHovered] = useState(false)
-  const [editHovered, setEditHovered] = useState(false)
-
   return (
     <tr
+      className="transition-[background] duration-[120ms] hover:bg-km-bg-sub"
       style={{
         borderBottom: isLast ? 'none' : '1px solid var(--km-line)',
-        background: hovered ? 'var(--km-bg-sub)' : 'var(--km-bg)',
-        transition: 'background 120ms',
         opacity: item.hasError ? 0.5 : 1,
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <td style={{ padding: '12px 16px' }}>
         <input
@@ -79,24 +74,9 @@ function PreviewRow({
       </td>
       <td style={{ padding: '12px 16px' }}>
         {!item.hasError && (
-          <button
-            onClick={onEdit}
-            onMouseEnter={() => setEditHovered(true)}
-            onMouseLeave={() => setEditHovered(false)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 12px',
-              background: 'transparent',
-              border: `1px solid ${editHovered ? 'var(--km-ink)' : 'var(--km-line-strong)'}`,
-              borderRadius: 4,
-              color: editHovered ? 'var(--km-ink)' : 'var(--km-ink-dim)',
-              fontSize: 12, fontFamily: 'var(--km-font-body)',
-              cursor: 'pointer', whiteSpace: 'nowrap',
-              transition: 'border-color 120ms, color 120ms',
-            }}
-          >
+          <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil size={12} /> Edit
-          </button>
+          </Button>
         )}
       </td>
     </tr>
@@ -235,21 +215,14 @@ export default function ScraperPreview() {
                 </p>
               )}
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/admin')}
-              style={{
-                padding: '8px 14px',
-                background: 'transparent',
-                border: '1px solid var(--km-line-strong)',
-                borderRadius: 4,
-                color: 'var(--km-ink-dim)',
-                fontSize: 12, fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer', whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
+              style={{ flexShrink: 0 }}
             >
               ← Back to admin
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -284,20 +257,9 @@ export default function ScraperPreview() {
                 </pre>
               </div>
             )}
-            <button
-              onClick={runScraper}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '12px 24px',
-                background: 'var(--km-gold)',
-                border: 'none', borderRadius: 4,
-                color: 'var(--km-bg)',
-                fontSize: 13, fontWeight: 600, fontFamily: 'var(--km-font-body)',
-                cursor: 'pointer',
-              }}
-            >
+            <Button variant="gold" size="lg" onClick={runScraper}>
               <Play size={14} /> Run Scraper
-            </button>
+            </Button>
             <p style={{ fontSize: 12, color: 'var(--km-ink-mute)', fontFamily: 'var(--km-font-mono)' }}>
               Scrapes new Geekhack group buys · may take 30–60 seconds
             </p>
@@ -416,20 +378,9 @@ export default function ScraperPreview() {
 
             {/* Action bar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <button
-                onClick={runScraper}
-                style={{
-                  padding: '8px 14px',
-                  background: 'transparent',
-                  border: '1px solid var(--km-line-strong)',
-                  borderRadius: 4,
-                  color: 'var(--km-ink-dim)',
-                  fontSize: 12, fontFamily: 'var(--km-font-body)',
-                  cursor: 'pointer',
-                }}
-              >
+              <Button variant="outline" size="sm" onClick={runScraper}>
                 Run again
-              </button>
+              </Button>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 {selectedCount > 0 && (
@@ -437,23 +388,15 @@ export default function ScraperPreview() {
                     {selectedCount} selected
                   </span>
                 )}
-                <button
+                <Button
+                  variant="gold"
+                  size="md"
                   onClick={handleImport}
                   disabled={selectedCount === 0 || importing}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 18px',
-                    background: selectedCount > 0 && !importing ? 'var(--km-gold)' : 'var(--km-surface-2)',
-                    border: 'none', borderRadius: 4,
-                    color: selectedCount > 0 && !importing ? 'var(--km-bg)' : 'var(--km-ink-mute)',
-                    fontSize: 13, fontWeight: 600, fontFamily: 'var(--km-font-body)',
-                    cursor: selectedCount > 0 && !importing ? 'pointer' : 'not-allowed',
-                    transition: 'background 150ms, color 150ms',
-                  }}
                 >
                   {importing && <Loader2 size={12} className="animate-spin" />}
                   Import selected
-                </button>
+                </Button>
               </div>
             </div>
           </>

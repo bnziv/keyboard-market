@@ -8,6 +8,7 @@ import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react'
 import api from '@/utils/api'
 import * as Dialog from '@radix-ui/react-dialog'
 import { TabBar } from '@/components/TabBar'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { AdminGroupBuy } from '@/types/groupBuy'
 
@@ -461,21 +462,13 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved, onPreviewSave }:
               : <span />
             }
             <div className="flex gap-2">
-              <Dialog.Close
-                disabled={saving}
-                className="px-[18px] py-[9px] border border-km-line-strong rounded bg-transparent text-km-ink-dim text-[13px] font-medium font-km-body cursor-pointer disabled:cursor-default"
-              >
-                Cancel
-              </Dialog.Close>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-[18px] py-[9px] border border-km-ink rounded bg-km-ink text-km-bg text-[13px] font-semibold font-km-body cursor-pointer transition-opacity duration-[120ms] disabled:opacity-70 disabled:cursor-default"
-              >
+              <Button variant="outline" size="md" disabled={saving} asChild>
+                <Dialog.Close>Cancel</Dialog.Close>
+              </Button>
+              <Button variant="solid" size="md" onClick={handleSave} disabled={saving}>
                 {saving && <Loader2 size={13} className="animate-spin" />}
                 Save changes
-              </button>
+              </Button>
             </div>
           </div>
         </Dialog.Content>
