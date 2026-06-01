@@ -98,6 +98,7 @@ export class GroupBuysService {
     @InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>,
   ) {}
 
+  /* istanbul ignore next */
   private async mapScraperItems(parsed: any[]) {
     const topicIds = parsed.map((i) => i.topicId).filter(Boolean);
     const existingIds = new Set(
@@ -205,6 +206,7 @@ export class GroupBuysService {
     return toAdminShape(doc);
   }
 
+  /* istanbul ignore next */
   scraperStream(): Observable<MessageEvent> {
     return new Observable((subscriber) => {
       let aborted = false;

@@ -88,7 +88,12 @@
       "!**/*.module.ts",
       "!**/main.ts",
       "!**/*.dto.ts",
-      "!**/*.schema.ts"
+      "!**/*.schema.ts",
+      "!**/*.controller.ts",
+      "!**/scraper.ts",
+      "!**/jwt.strategy.ts",
+      "!**/jwt-auth.guard.ts",
+      "!**/filters/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",

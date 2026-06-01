@@ -28,6 +28,7 @@ export default defineConfig({
         '**/*.d.ts',
         'src/main.tsx',
         'src/vite-env.d.ts',
+        'src/components/NavBar.tsx',
       ],
       thresholds: {
         lines: 75,

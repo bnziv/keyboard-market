@@ -3,7 +3,6 @@ import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
 import { GroupBuysService } from './group-buys.service';
 import { GroupBuy } from './schemas/group-buy.schema';
-
 jest.mock('./scraper', () => ({ runScraper: jest.fn() }));
 
 function leanChain(resolvedValue: any) {
@@ -280,4 +279,15 @@ describe('GroupBuysService', () => {
       expect(result).toEqual({ IC: 3, GB: 5, closed: 2, total: 10, closingSoon: 1 });
     });
   });
+
+  describe('findAll with unknown stage', () => {
+    it('returns empty stage query for unrecognised stage value', async () => {
+      gbModel.find.mockReturnValue(leanChain([]));
+
+      await service.findAll('unknown-stage');
+
+      expect(gbModel.find).toHaveBeenCalledWith({ hidden: { $ne: true } });
+    });
+  });
+
 });
