@@ -18,6 +18,7 @@ export function GroupBuyImage({
       <img
         src={imageUrl}
         alt={category}
+        loading="lazy"
         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';

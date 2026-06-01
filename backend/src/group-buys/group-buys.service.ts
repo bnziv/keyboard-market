@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, MessageEvent, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
@@ -6,6 +6,7 @@ import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
 import { ImportGroupBuyDto } from './dto/import-group-buy.dto';
 import { runScraper } from './scraper';
+import { R2Service } from './r2.service';
 
 export interface PublicGroupBuyShape {
   id: string;
@@ -94,8 +95,11 @@ function buildStageQuery(stage: string, now: string): Record<string, any> {
 
 @Injectable()
 export class GroupBuysService {
+  private readonly logger = new Logger(GroupBuysService.name);
+
   constructor(
     @InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>,
+    private readonly r2: R2Service,
   ) {}
 
   private async mapScraperItems(parsed: any[]) {
@@ -246,9 +250,49 @@ export class GroupBuysService {
     });
   }
 
+  private async migrateDocImages(
+    doc: ImportGroupBuyDto,
+  ): Promise<ImportGroupBuyDto> {
+    const topicId = doc.topicId ?? 'unknown';
+    const migrateUrl = async (url: string): Promise<string> => {
+      if (this.r2.isR2Url(url) || !this.r2.isImageUrl(url)) return url;
+      try {
+        return await this.r2.uploadFromUrl(url, this.r2.buildKey(topicId, url));
+      } catch {
+        return url;
+      }
+    };
+    const [images, poster] = await Promise.all([
+      doc.images ? Promise.all(doc.images.map(migrateUrl)) : Promise.resolve(undefined),
+      doc.poster ? migrateUrl(doc.poster) : Promise.resolve(undefined),
+    ]);
+    return {
+      ...doc,
+      ...(images !== undefined ? { images } : {}),
+      ...(poster !== undefined ? { poster } : {}),
+    };
+  }
+
+  private async migrateDocsInBatches(
+    docs: ImportGroupBuyDto[],
+    batchSize = 3,
+  ): Promise<ImportGroupBuyDto[]> {
+    const results: ImportGroupBuyDto[] = [];
+    for (let i = 0; i < docs.length; i += batchSize) {
+      const batch = await Promise.all(
+        docs.slice(i, i + batchSize).map((d) => this.migrateDocImages(d)),
+      );
+      results.push(...batch);
+    }
+    return results;
+  }
+
   async bulkImport(items: ImportGroupBuyDto[]): Promise<{ imported: number }> {
     if (!items.length) return { imported: 0 };
-    const ops = items.map((item) =>
+    const migrated = this.r2.isConfigured()
+      ? await this.migrateDocsInBatches(items)
+      : items;
+    const ops = migrated.map((item) =>
       item.topicId
         ? {
             updateOne: {
@@ -262,4 +306,5 @@ export class GroupBuysService {
     await this.groupBuyModel.bulkWrite(ops as any);
     return { imported: items.length };
   }
+
 }

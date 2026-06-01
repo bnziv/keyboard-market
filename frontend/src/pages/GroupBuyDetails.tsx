@@ -170,6 +170,7 @@ function Carousel({
               <img
                 src={src}
                 alt={`view ${i + 1}`}
+                loading="lazy"
                 className="w-full h-full object-cover block"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.opacity = '0.3';
