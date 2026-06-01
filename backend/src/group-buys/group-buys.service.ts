@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
 import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
+import { ImportGroupBuyDto } from './dto/import-group-buy.dto';
 import { runScraper } from './scraper';
 
 export interface PublicGroupBuyShape {
@@ -27,34 +28,32 @@ export interface PublicGroupBuyShape {
 }
 
 export interface AdminGroupBuyShape extends PublicGroupBuyShape {
-  status: string;
   poster: string | null;
   excludedImages: string[];
   hidden: boolean;
 }
 
-function toPublicShape(doc: any): PublicGroupBuyShape {
-  const now = new Date().toISOString();
-  const status = doc.status === 'GB' && doc.gb_end && doc.gb_end <= now ? 'closed' : doc.status;
+function toPublicShape(doc: any, now = new Date().toISOString()): PublicGroupBuyShape {
+  const status = doc.status === 'GB' && doc.gbEnd && doc.gbEnd <= now ? 'closed' : doc.status;
 
   return {
     id: doc._id?.toString(),
-    topicId: doc.topic_id,
+    topicId: doc.topicId,
     name: doc.name,
     type: doc.type,
     status,
     designer: doc.designer,
     overview: doc.overview,
-    gbStart: doc.gb_start ?? null,
-    gbEnd: doc.gb_end ?? null,
-    estimatedFulfillment: doc.estimated_fulfillment ?? null,
-    basePrice: doc.base_price ?? null,
+    gbStart: doc.gbStart ?? null,
+    gbEnd: doc.gbEnd ?? null,
+    estimatedFulfillment: doc.estimatedFulfillment ?? null,
+    basePrice: doc.basePrice ?? null,
     items: doc.items ?? [],
     vendors: doc.vendors ?? [],
-    discordUrl: doc.discord_url ?? null,
-    sourceUrl: doc.source_url ?? null,
+    discordUrl: doc.discordUrl ?? null,
+    sourceUrl: doc.sourceUrl ?? null,
     images: doc.images ?? [],
-    scrapedAt: doc.scraped_at ?? null,
+    scrapedAt: doc.scrapedAt ?? null,
   };
 }
 
@@ -73,14 +72,14 @@ function buildStageQuery(stage: string, now: string): Record<string, any> {
   if (stage === 'GB') {
     return {
       status: 'GB',
-      $or: [{ gb_end: null }, { gb_end: { $gt: now } }],
+      $or: [{ gbEnd: null }, { gbEnd: { $gt: now } }],
     };
   }
   if (stage === 'closed') {
     return {
       $or: [
         { status: 'closed' },
-        { status: 'GB', gb_end: { $ne: null, $lte: now } },
+        { status: 'GB', gbEnd: { $ne: null, $lte: now } },
       ],
     };
   }
@@ -92,16 +91,16 @@ export class GroupBuysService {
   constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {}
 
   private async mapScraperItems(parsed: any[]) {
-    const topicIds = parsed.map(i => i.topic_id).filter(Boolean);
+    const topicIds = parsed.map(i => i.topicId).filter(Boolean);
     const existingIds = new Set(
-      (await this.groupBuyModel.find({ topic_id: { $in: topicIds } }, { topic_id: 1 }).lean().exec() as any[])
-        .map(d => d.topic_id as string),
+      (await this.groupBuyModel.find({ topicId: { $in: topicIds } }, { topicId: 1 }).lean().exec() as any[])
+        .map(d => d.topicId as string),
     );
     return parsed.map(item => ({
       data: toAdminShape(item),
-      alreadyExists: item.topic_id ? existingIds.has(item.topic_id) : false,
-      hasError: !!item.parse_error,
-      errorMessage: item.parse_error as string | undefined,
+      alreadyExists: item.topicId ? existingIds.has(item.topicId) : false,
+      hasError: !!item.parseError,
+      errorMessage: item.parseError as string | undefined,
     }));
   }
 
@@ -112,7 +111,7 @@ export class GroupBuysService {
       ...(stage ? buildStageQuery(stage, now) : {}),
     };
     const docs = await this.groupBuyModel.find(query).lean().exec();
-    return docs.map(toPublicShape);
+    return docs.map(doc => toPublicShape(doc, now));
   }
 
   async getCounts() {
@@ -128,8 +127,8 @@ export class GroupBuysService {
               $cond: {
                 if: { $and: [
                   { $eq: ['$status', 'GB'] },
-                  { $ne: ['$gb_end', null] },
-                  { $lte: ['$gb_end', now] },
+                  { $ne: ['$gbEnd', null] },
+                  { $lte: ['$gbEnd', now] },
                 ]},
                 then: 'closed',
                 else: '$status',
@@ -142,7 +141,7 @@ export class GroupBuysService {
       this.groupBuyModel.countDocuments({
         hidden: { $ne: true },
         status: 'GB',
-        gb_end: { $ne: null, $gt: now, $lte: in48h },
+        gbEnd: { $ne: null, $gt: now, $lte: in48h },
       }).exec(),
     ]);
 
@@ -166,17 +165,14 @@ export class GroupBuysService {
     return docs.map(toAdminShape);
   }
 
-  async findOne(id: string) {
+  private async fetchDoc(id: string) {
     const doc = await this.groupBuyModel.findById(id).lean().exec() as any;
     if (!doc) throw new NotFoundException('Group buy not found');
-    return toPublicShape(doc);
+    return doc;
   }
 
-  async findOneAdmin(id: string) {
-    const doc = await this.groupBuyModel.findById(id).lean().exec() as any;
-    if (!doc) throw new NotFoundException('Group buy not found');
-    return toAdminShape(doc);
-  }
+  async findOne(id: string) { return toPublicShape(await this.fetchDoc(id)); }
+  async findOneAdmin(id: string) { return toAdminShape(await this.fetchDoc(id)); }
 
   async update(id: string, dto: UpdateGroupBuyDto) {
     const doc = await this.groupBuyModel
@@ -223,11 +219,11 @@ export class GroupBuysService {
     });
   }
 
-  async bulkImport(items: UpdateGroupBuyDto[]): Promise<{ imported: number }> {
+  async bulkImport(items: ImportGroupBuyDto[]): Promise<{ imported: number }> {
     if (!items.length) return { imported: 0 };
     const ops = items.map(item =>
-      item.topic_id
-        ? { updateOne: { filter: { topic_id: item.topic_id }, update: { $set: item }, upsert: true } }
+      item.topicId
+        ? { updateOne: { filter: { topicId: item.topicId }, update: { $set: item }, upsert: true } }
         : { insertOne: { document: item } },
     );
     await this.groupBuyModel.bulkWrite(ops as any);

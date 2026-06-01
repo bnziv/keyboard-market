@@ -15,43 +15,33 @@ export interface Vendor {
   url: string;
 }
 
-export interface ApiGroupBuy {
-  id: string;
-  topicId: string;
+interface GroupBuyBase {
   name: string;
   type: string;
   status: string;
+  designer: string;
+  overview: string | null;
   gbStart: string | null;
   gbEnd: string | null;
   estimatedFulfillment: string | null;
   basePrice: BasePrice | null;
-  designer: string;
-  overview: string | null;
-  images: string[];
-  sourceUrl: string;
+  items: Item[];
   vendors: Vendor[];
   discordUrl: string | null;
-  items: Item[];
+  images: string[];
 }
 
-export interface AdminGroupBuy {
+export interface ApiGroupBuy extends GroupBuyBase {
+  id: string;
+  topicId: string;
+  sourceUrl: string;
+}
+
+export interface AdminGroupBuy extends GroupBuyBase {
   id?: string;
   topicId?: string;
-  name: string;
-  type: string;
-  status: string;
-  designer: string;
-  overview: string | null;
-  poster: string | null;
-  gbStart: string | null;
-  gbEnd: string | null;
-  estimatedFulfillment: string | null;
-  basePrice: BasePrice | null;
-  items: Item[];
-  vendors: Vendor[];
-  discordUrl: string | null;
   sourceUrl: string | null;
-  images: string[];
+  poster: string | null;
   excludedImages: string[];
   hidden: boolean;
 }

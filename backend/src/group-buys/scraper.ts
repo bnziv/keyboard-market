@@ -19,25 +19,25 @@ function geminiClient(): GoogleGenAI {
 }
 
 export interface ScrapedItem {
-  topic_id?: string;
+  topicId?: string;
   name?: string;
   type?: string;
   status?: string;
-  gb_start?: string | null;
-  gb_end?: string | null;
-  estimated_fulfillment?: string | null;
-  base_price?: { amount: number | null; currency: string | null } | null;
+  gbStart?: string | null;
+  gbEnd?: string | null;
+  estimatedFulfillment?: string | null;
+  basePrice?: { amount: number | null; currency: string | null } | null;
   items?: { name: string; price: number; currency: string }[];
   vendors?: { region: string; name: string; url: string }[];
-  discord_url?: string | null;
+  discordUrl?: string | null;
   designer?: string;
   overview?: string | null;
   poster?: string;
-  source_url?: string;
+  sourceUrl?: string;
   images?: string[];
-  scraped_at?: string;
-  post_date?: string | null;
-  parse_error?: string;
+  scrapedAt?: string;
+  postDate?: string | null;
+  parseError?: string;
 }
 
 export interface RunScraperOptions {
@@ -227,10 +227,10 @@ Otherwise, extract the following and return ONLY valid JSON with no markdown, no
   "name": "Name of the keycap set or keyboard — strip any [GB]/[IC] prefix",
   "type": "keyboard | keycaps | switches | accessories",
   "status": "IC | GB | closed",
-  "gb_start": "YYYY-MM-DD or null",
-  "gb_end": "YYYY-MM-DD or null",
-  "estimated_fulfillment": "free text like 'early Q4 2026' or null",
-  "base_price": {
+  "gbStart": "YYYY-MM-DD or null",
+  "gbEnd": "YYYY-MM-DD or null",
+  "estimatedFulfillment": "free text like 'early Q4 2026' or null",
+  "basePrice": {
     "amount": number or null,
     "currency": "EUR | USD | GBP | etc or null",
   },
@@ -240,7 +240,7 @@ Otherwise, extract the following and return ONLY valid JSON with no markdown, no
   "vendors": [
     {"region": "US", "name": "NovelKeys", "url": "https://..."}
   ],
-  "discord_url": "discord.gg url or null",
+  "discordUrl": "discord.gg url or null",
   "designer": "designer username — use '${poster}' if no other designer is mentioned",
   "overview": "one sentence summary of the main product and its style, or null if not enough information"
 }
@@ -249,9 +249,9 @@ Rules:
 - name must not include [GB], [IC], [CLOSED] or similar prefixes
 - status: infer from title prefix ([GB] → GB, [IC] → IC) when not stated in the text
 - dates in the title or text like "May 15th - June 12th" with no year → use the post date's year as the default; if the date range would fall after the fulfillment date, try the prior year instead
-- base_price: price of the main product only (base kit / case); null if not explicitly stated — do not estimate or infer
+- basePrice: price of the main product only (base kit / case); null if not explicitly stated — do not estimate or infer
 - vendors: all regional vendors with their direct store URLs
-- discord_url: only discord.gg links
+- discordUrl: only discord.gg links
 - designer: prefer an explicitly named designer over the poster; fall back to '${poster}'
 - Use null for any field that cannot be determined
 
@@ -319,19 +319,19 @@ async function parseWithGemini(
 
     if (!parsed.designer && post.poster) parsed.designer = post.poster;
     parsed.poster = post.poster;
-    parsed.source_url = threadUrl;
+    parsed.sourceUrl = threadUrl;
     parsed.images = post.images;
-    parsed.scraped_at = new Date().toISOString();
-    parsed.post_date = post.post_date ? safeParseDate(post.post_date) : null;
+    parsed.scrapedAt = new Date().toISOString();
+    parsed.postDate = post.post_date ? safeParseDate(post.post_date) : null;
 
     return parsed;
   } catch (e: any) {
     const errorType = e instanceof SyntaxError ? 'JSON parse' : 'Gemini';
     onLog(`  ⚠ ${errorType} error: ${e.message}`);
     return {
-      source_url: threadUrl,
-      parse_error: e.message,
-      scraped_at: new Date().toISOString(),
+      sourceUrl: threadUrl,
+      parseError: e.message,
+      scrapedAt: new Date().toISOString(),
     };
   }
 }
@@ -341,8 +341,8 @@ export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]
 
   const existingIds = groupBuyModel
     ? new Set<string>(
-        (await groupBuyModel.find({ topic_id: { $exists: true } }, { topic_id: 1 }).lean().exec() as any[])
-          .map((d: any) => d.topic_id as string),
+        (await groupBuyModel.find({ topicId: { $exists: true } }, { topicId: 1 }).lean().exec() as any[])
+          .map((d: any) => d.topicId as string),
       )
     : new Set<string>();
   if (groupBuyModel) onLog(`Loaded ${existingIds.size} topic IDs already in the database — will skip these.`);
@@ -384,7 +384,7 @@ export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]
           onLog(`  ↳ Post ${attempt + 1} rejected by Gemini — trying next`);
           continue;
         }
-        if (result.parse_error) {
+        if (result.parseError) {
           onLog(`  ↳ Post ${attempt + 1} Gemini error — trying next`);
           hadError = true;
           continue;
@@ -401,7 +401,7 @@ export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]
         continue;
       }
 
-      extracted.topic_id = topic.topic_id;
+      extracted.topicId = topic.topic_id;
       results.push(extracted);
       onLog(`  ✓ Parsed: ${extracted.name ?? 'unknown'}`);
     } catch (e: any) {

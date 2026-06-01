@@ -1,4 +1,4 @@
-import type { ApiGroupBuy, AdminGroupBuy } from '@/types/groupBuy';
+import type { ApiGroupBuy } from '@/types/groupBuy';
 import type { CardGroupBuy } from '@/components/GroupBuyCard';
 
 export function capitalizeType(type: string): string {
@@ -72,24 +72,3 @@ export function toFeaturedCard(gb: ApiGroupBuy): CardGroupBuy {
   };
 }
 
-export function toImportPayload(item: AdminGroupBuy) {
-  return {
-    topic_id: item.topicId || undefined,
-    name: item.name || undefined,
-    type: item.type || undefined,
-    status: item.status || undefined,
-    designer: item.designer || undefined,
-    overview: item.overview || undefined,
-    poster: item.poster || undefined,
-    gb_start: item.gbStart || undefined,
-    gb_end: item.gbEnd || undefined,
-    estimated_fulfillment: item.estimatedFulfillment || undefined,
-    base_price: item.basePrice || undefined,
-    items: item.items,
-    vendors: item.vendors,
-    discord_url: item.discordUrl || undefined,
-    source_url: item.sourceUrl || undefined,
-    images: item.images,
-    excludedImages: item.excludedImages,
-  };
-}

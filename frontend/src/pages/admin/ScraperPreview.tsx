@@ -6,7 +6,6 @@ import { useToast } from '@/utils/ToastProvider'
 import api from '@/utils/api'
 import { GroupBuyEditModal } from './GroupBuyEditModal'
 import type { AdminGroupBuy } from '@/types/groupBuy'
-import { toImportPayload } from '@/utils/groupBuyTransforms'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
 
 interface PreviewItem {
@@ -188,7 +187,7 @@ export default function ScraperPreview() {
     setImporting(true)
     try {
       const res = await api.post<{ imported: number }>('/api/groupbuys/admin/import', {
-        items: toImport.map(it => toImportPayload(it.data)),
+        items: toImport.map(it => it.data),
       })
       showSuccess(`Imported ${res.data.imported} group buy(s)`)
       navigate('/admin')

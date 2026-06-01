@@ -214,16 +214,16 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved, onPreviewSave }:
         designer: designer || undefined,
         overview: overview || undefined,
         poster: poster || undefined,
-        gb_start: gbStart || undefined,
-        gb_end: gbEnd || undefined,
-        estimated_fulfillment: estimatedFulfillment || undefined,
-        base_price: basePriceAmount
+        gbStart: gbStart || undefined,
+        gbEnd: gbEnd || undefined,
+        estimatedFulfillment: estimatedFulfillment || undefined,
+        basePrice: basePriceAmount
           ? { amount: parseFloat(basePriceAmount), currency: basePriceCurrency }
           : undefined,
         items: items.map(it => ({ name: it.name, price: parseFloat(it.price) || 0, currency: it.currency })),
         vendors,
-        discord_url: discordUrl || undefined,
-        source_url: sourceUrl || undefined,
+        discordUrl: discordUrl || undefined,
+        sourceUrl: sourceUrl || undefined,
         images,
         excludedImages,
       }

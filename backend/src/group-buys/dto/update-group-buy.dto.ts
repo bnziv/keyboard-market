@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -7,6 +7,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+
+const trimEmpty = Transform(({ value }) => value === '' ? undefined : value);
 
 class BasePriceDto {
   @IsOptional()
@@ -50,49 +52,59 @@ class VendorDto {
 
 export class UpdateGroupBuyDto {
   @IsOptional()
+  @trimEmpty
   @IsString()
-  topic_id?: string;
+  topicId?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   name?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   type?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   status?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   designer?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   overview?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
   poster?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
-  gb_start?: string;
+  gbStart?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
-  gb_end?: string;
+  gbEnd?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
-  estimated_fulfillment?: string;
+  estimatedFulfillment?: string;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => BasePriceDto)
-  base_price?: BasePriceDto;
+  basePrice?: BasePriceDto;
 
   @IsOptional()
   @IsArray()
@@ -107,12 +119,14 @@ export class UpdateGroupBuyDto {
   vendors?: VendorDto[];
 
   @IsOptional()
+  @trimEmpty
   @IsString()
-  discord_url?: string;
+  discordUrl?: string;
 
   @IsOptional()
+  @trimEmpty
   @IsString()
-  source_url?: string;
+  sourceUrl?: string;
 
   @IsOptional()
   @IsArray()
