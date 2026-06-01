@@ -592,11 +592,9 @@ export default function Login() {
         identifier: form.identifier,
         password: form.password,
       });
-      if (res.status === 200) {
-        login(res.data);
-        showSuccess('Welcome back!');
-        setTimeout(() => navigate('/listings'), 1500);
-      }
+      login(res.data);
+      showSuccess('Welcome back!');
+      setTimeout(() => navigate('/listings'), 1500);
     } catch (err: any) {
       showError(err.response?.data?.error ?? 'Failed to sign in');
     } finally {
@@ -612,11 +610,9 @@ export default function Login() {
         username: form.username,
         password: form.password,
       });
-      if (res.status === 200) {
-        login(res.data);
-        showSuccess('Welcome to KBMARKET!');
-        setTimeout(() => navigate('/listings'), 1500);
-      }
+      login(res.data);
+      showSuccess('Welcome to KBMARKET!');
+      setTimeout(() => navigate('/listings'), 1500);
     } catch (err: any) {
       showError(err.response?.data?.error ?? 'Failed to register');
     } finally {
