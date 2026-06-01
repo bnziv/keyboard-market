@@ -295,7 +295,7 @@ export default function GroupBuys() {
             {error}
           </div>
         ) : visible.length > 0 ? (
-          <div className="grid gap-5 grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((g) => (
               <GroupBuyCard
                 key={g.id}
