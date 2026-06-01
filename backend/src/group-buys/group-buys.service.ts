@@ -6,7 +6,34 @@ import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
 import { runScraper } from './scraper';
 
-function toPublicShape(doc: any) {
+export interface PublicGroupBuyShape {
+  id: string;
+  topicId: string | undefined;
+  name: string | undefined;
+  type: string | undefined;
+  status: string;
+  designer: string | undefined;
+  overview: string | undefined;
+  gbStart: string | null;
+  gbEnd: string | null;
+  estimatedFulfillment: string | null;
+  basePrice: { amount: number; currency: string } | null;
+  items: { name: string; price: number; currency: string }[];
+  vendors: { region: string; name: string; url: string }[];
+  discordUrl: string | null;
+  sourceUrl: string | null;
+  images: string[];
+  scrapedAt: Date | null;
+}
+
+export interface AdminGroupBuyShape extends PublicGroupBuyShape {
+  status: string;
+  poster: string | null;
+  excludedImages: string[];
+  hidden: boolean;
+}
+
+function toPublicShape(doc: any): PublicGroupBuyShape {
   const now = new Date().toISOString();
   const status = doc.status === 'GB' && doc.gb_end && doc.gb_end <= now ? 'closed' : doc.status;
 
@@ -31,7 +58,7 @@ function toPublicShape(doc: any) {
   };
 }
 
-function toAdminShape(doc: any) {
+function toAdminShape(doc: any): AdminGroupBuyShape {
   return {
     ...toPublicShape(doc),
     status: doc.status,  // raw status so admin edit form reflects DB value

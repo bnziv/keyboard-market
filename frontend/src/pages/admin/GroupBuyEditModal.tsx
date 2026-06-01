@@ -9,27 +9,9 @@ import api from '@/utils/api'
 import * as Dialog from '@radix-ui/react-dialog'
 import { TabBar } from '@/components/TabBar'
 import { cn } from '@/lib/utils'
+import type { AdminGroupBuy } from '@/types/groupBuy'
 
-export interface AdminGroupBuy {
-  id?: string
-  name: string
-  type: string
-  status: string
-  designer: string
-  overview: string | null
-  poster: string | null
-  gbStart: string | null
-  gbEnd: string | null
-  estimatedFulfillment: string | null
-  basePrice: { amount: number; currency: string } | null
-  items: { name: string; price: number; currency: string }[]
-  vendors: { region: string; name: string; url: string }[]
-  discordUrl: string | null
-  sourceUrl: string | null
-  images: string[]
-  excludedImages: string[]
-  hidden: boolean
-}
+export type { AdminGroupBuy }
 
 type Tab = 'details' | 'dates' | 'pricing' | 'vendors' | 'images'
 

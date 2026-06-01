@@ -4,7 +4,9 @@ import { Loader2, Pencil, Play } from 'lucide-react'
 import NavBar from '@/components/NavBar'
 import { useToast } from '@/utils/ToastProvider'
 import api from '@/utils/api'
-import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
+import { GroupBuyEditModal } from './GroupBuyEditModal'
+import type { AdminGroupBuy } from '@/types/groupBuy'
+import { toImportPayload } from '@/utils/groupBuyTransforms'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
 
 interface PreviewItem {
@@ -17,28 +19,6 @@ interface PreviewItem {
 }
 
 type PageState = 'idle' | 'loading' | 'results'
-
-function toImportPayload(item: AdminGroupBuy) {
-  return {
-    topic_id: item.topicId || undefined,
-    name: item.name || undefined,
-    type: item.type || undefined,
-    status: item.status || undefined,
-    designer: item.designer || undefined,
-    overview: item.overview || undefined,
-    poster: item.poster || undefined,
-    gb_start: item.gbStart || undefined,
-    gb_end: item.gbEnd || undefined,
-    estimated_fulfillment: item.estimatedFulfillment || undefined,
-    base_price: item.basePrice || undefined,
-    items: item.items,
-    vendors: item.vendors,
-    discord_url: item.discordUrl || undefined,
-    source_url: item.sourceUrl || undefined,
-    images: item.images,
-    excludedImages: item.excludedImages,
-  }
-}
 
 function PreviewRow({
   item, isLast, onToggle, onEdit,
@@ -80,7 +60,7 @@ function PreviewRow({
         </span>
       </td>
       <td style={{ padding: '12px 16px' }}>
-        <Badge variant={(item.data.status && STAGE_BADGE_META[item.data.status]?.tone) ?? 'neutral'}>
+        <Badge variant={STAGE_BADGE_META[item.data.status]?.tone ?? 'neutral'}>
           {item.data.status ?? '—'}
         </Badge>
       </td>

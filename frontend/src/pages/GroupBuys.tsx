@@ -9,25 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-
-interface ApiGroupBuy {
-  id: string;
-  topicId: string;
-  name: string;
-  type: string;
-  status: string;
-  gbStart: string | null;
-  gbEnd: string | null;
-  estimatedFulfillment: string | null;
-  basePrice: { amount: number; currency: string } | null;
-  designer: string;
-  overview: string | null;
-  images: string[];
-  sourceUrl: string;
-  vendors: { region: string; name: string; url: string }[];
-  discordUrl: string | null;
-  items: { name: string; price: number; currency: string }[];
-}
+import type { ApiGroupBuy } from '@/types/groupBuy';
+import { toCardData } from '@/utils/groupBuyTransforms';
 
 interface GbCounts {
   IC: number;
@@ -35,51 +18,6 @@ interface GbCounts {
   closed: number;
   total: number;
   closingSoon: number;
-}
-
-function capitalizeType(type: string): string {
-  if (!type) return 'Keyboard';
-  return type.charAt(0).toUpperCase() + type.slice(1);
-}
-
-function computeCloses(gbEnd: string | null): { label: string; soon: boolean } {
-  if (!gbEnd) return { label: '—', soon: false };
-  const end = new Date(gbEnd);
-  const now = new Date();
-  const diffMs = end.getTime() - now.getTime();
-  if (diffMs <= 0) return { label: 'Closed', soon: false };
-  const diffHours = diffMs / (1000 * 60 * 60);
-  const days = Math.floor(diffHours / 24);
-  const hours = Math.floor(diffHours % 24);
-  const label = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-  return { label, soon: diffHours <= 48 };
-}
-
-function toCardData(gb: ApiGroupBuy): CardGroupBuy {
-  const { label: closes, soon: closingSoon } = computeCloses(gb.gbEnd);
-  const stage = gb.status as 'IC' | 'GB' | 'closed';
-  return {
-    id: gb.id,
-    name: gb.name,
-    designer: gb.designer ?? '—',
-    category: capitalizeType(gb.type),
-    stage,
-    price: gb.basePrice?.amount ?? 0,
-    closes,
-    gbStartMs: gb.gbStart ? new Date(gb.gbStart).getTime() : null,
-    gbEndMs: gb.gbEnd ? new Date(gb.gbEnd).getTime() : null,
-    gbStartIso: gb.gbStart,
-    gbEndIso: gb.gbEnd,
-    closingSoon,
-    eta: gb.estimatedFulfillment ?? '—',
-    desc: gb.overview ?? '',
-    sourceUrl: gb.sourceUrl,
-    imageUrl: gb.images?.[0] ?? null,
-    images: gb.images ?? [],
-    vendors: gb.vendors ?? [],
-    discordUrl: gb.discordUrl ?? null,
-    items: gb.items ?? [],
-  };
 }
 
 type StageFilter = 'all' | 'IC' | 'GB' | 'closed';
