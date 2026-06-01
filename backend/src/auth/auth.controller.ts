@@ -7,6 +7,8 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { UsersService } from '../users/users.service';
@@ -36,6 +38,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -46,6 +49,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   logout(@Res({ passthrough: true }) res: Response) {
     res.cookie('jwt', '', { ...COOKIE_OPTIONS, maxAge: 0 });
     return { message: 'Logged out' };

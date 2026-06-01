@@ -592,7 +592,7 @@ export default function Login() {
         identifier: form.identifier,
         password: form.password,
       });
-      if (res.status === 201) {
+      if (res.status === 200) {
         login(res.data);
         showSuccess('Welcome back!');
         setTimeout(() => navigate('/listings'), 1500);
@@ -612,7 +612,7 @@ export default function Login() {
         username: form.username,
         password: form.password,
       });
-      if (res.status === 201) {
+      if (res.status === 200) {
         login(res.data);
         showSuccess('Welcome to KBMARKET!');
         setTimeout(() => navigate('/listings'), 1500);

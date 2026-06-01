@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/bnziv/keyboard-market#readme",
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "concurrently": "^9.2.1"
   }
 }
