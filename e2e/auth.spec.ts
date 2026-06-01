@@ -28,10 +28,12 @@ test.describe('Auth flow', () => {
     // Step 2: interests (optional) — just finish
     await page.getByRole('button', { name: /finish/i }).click();
 
-    // Username initial should appear in the nav
+    // Registration redirects to /listings after 1.5s — wait for that first
+    // (/login is outside <Layout> so <header> only exists on other pages)
+    await expect(page).toHaveURL(/\/listings/, { timeout: 10000 });
     await expect(page.locator('header')).toContainText(
       TEST_USERNAME[0].toUpperCase(),
-      { timeout: 10000 },
+      { timeout: 5000 },
     );
 
     // Log out via nav dropdown
@@ -74,7 +76,7 @@ test.describe('Auth flow', () => {
     await page.locator('button[type="submit"]').click();
 
     await expect(
-      page.getByText(/invalid|incorrect|error|failed/i),
+      page.getByText(/invalid|incorrect|unauthorized|error|failed/i),
     ).toBeVisible({ timeout: 5000 });
   });
 });
