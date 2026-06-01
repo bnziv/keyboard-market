@@ -3,10 +3,12 @@ import NavBar from "@/components/NavBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/AuthProvider";
 import { useToast } from "@/utils/ToastProvider";
-import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
+import { GroupBuyCard } from "@/components/GroupBuyCard";
 import { ArrowRight, Loader2 } from "lucide-react";
 import api from "@/utils/api";
 import { Button } from "@/components/ui/button";
+import type { ApiGroupBuy } from "@/types/groupBuy";
+import { toFeaturedCard } from "@/utils/groupBuyTransforms";
 
 const STATS = [
   ['2,847', 'Active listings'],
@@ -15,16 +17,6 @@ const STATS = [
   ['99.2%', 'Ship-on-time rate'],
 ] as const;
 
-interface GroupBuy {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  basePrice: { amount: number; currency: string } | null;
-  designer: string;
-  images: string[];
-}
-
 function stagePriority(status: string): number {
   if (status === 'GB') return 0;
   if (status === 'IC') return 1;
@@ -32,29 +24,15 @@ function stagePriority(status: string): number {
   return 3;
 }
 
-function toFeaturedCard(gb: GroupBuy): CardGroupBuy {
-  const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
-  return {
-    id: gb.id, name: gb.name, designer: gb.designer,
-    category, stage: gb.status as 'GB' | 'IC' | 'closed',
-    price: gb.basePrice?.amount ?? 0,
-    imageUrl: gb.images?.[0] ?? null,
-    images: gb.images ?? [],
-    closes: '—', closingSoon: false, eta: '—', desc: '',
-    gbStartMs: null, gbEndMs: null, gbStartIso: null, gbEndIso: null,
-    sourceUrl: '', vendors: [], discordUrl: null, items: [],
-  };
-}
-
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { showInfo } = useToast();
-  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
+  const [groupBuys, setGroupBuys] = useState<ApiGroupBuy[]>([]);
   const [gbLoading, setGbLoading] = useState(true);
 
   useEffect(() => {
-    api.get<GroupBuy[]>('/api/groupbuys')
+    api.get<ApiGroupBuy[]>('/api/groupbuys')
       .then(res => setGroupBuys(res.data))
       .finally(() => setGbLoading(false));
   }, []);

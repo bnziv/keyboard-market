@@ -8,28 +8,11 @@ import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react'
 import api from '@/utils/api'
 import * as Dialog from '@radix-ui/react-dialog'
 import { TabBar } from '@/components/TabBar'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import type { AdminGroupBuy } from '@/types/groupBuy'
 
-export interface AdminGroupBuy {
-  id: string
-  name: string
-  type: string
-  status: string
-  designer: string
-  overview: string | null
-  poster: string | null
-  gbStart: string | null
-  gbEnd: string | null
-  estimatedFulfillment: string | null
-  basePrice: { amount: number; currency: string } | null
-  items: { name: string; price: number; currency: string }[]
-  vendors: { region: string; name: string; url: string }[]
-  discordUrl: string | null
-  sourceUrl: string | null
-  images: string[]
-  excludedImages: string[]
-  hidden: boolean
-}
+export type { AdminGroupBuy }
 
 type Tab = 'details' | 'dates' | 'pricing' | 'vendors' | 'images'
 
@@ -136,9 +119,10 @@ interface Props {
   groupBuy: AdminGroupBuy
   onClose: () => void
   onSaved: (updated: AdminGroupBuy) => void
+  onPreviewSave?: (updated: AdminGroupBuy) => void
 }
 
-export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
+export function GroupBuyEditModal({ groupBuy, onClose, onSaved, onPreviewSave }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('details')
   const [name, setName] = useState(groupBuy.name ?? '')
   const [type, setType] = useState(groupBuy.type ?? '')
@@ -194,7 +178,33 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
   const updateVendor = (i: number, field: string, value: string) =>
     setVendors(prev => prev.map((v, idx) => idx === i ? { ...v, [field]: value } : v))
 
+  const buildDraft = (): AdminGroupBuy => ({
+    ...groupBuy,
+    name,
+    type,
+    status,
+    designer,
+    overview: overview || null,
+    poster: poster || null,
+    gbStart: gbStart || null,
+    gbEnd: gbEnd || null,
+    estimatedFulfillment: estimatedFulfillment || null,
+    basePrice: basePriceAmount ? { amount: parseFloat(basePriceAmount), currency: basePriceCurrency } : null,
+    items: items.map(it => ({ name: it.name, price: parseFloat(it.price) || 0, currency: it.currency })),
+    vendors,
+    discordUrl: discordUrl || null,
+    sourceUrl: sourceUrl || null,
+    images,
+    excludedImages,
+  })
+
   const handleSave = async () => {
+    if (onPreviewSave) {
+      onPreviewSave(buildDraft())
+      onClose()
+      return
+    }
+
     setSaving(true)
     setError(null)
     try {
@@ -205,16 +215,16 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
         designer: designer || undefined,
         overview: overview || undefined,
         poster: poster || undefined,
-        gb_start: gbStart || undefined,
-        gb_end: gbEnd || undefined,
-        estimated_fulfillment: estimatedFulfillment || undefined,
-        base_price: basePriceAmount
+        gbStart: gbStart || undefined,
+        gbEnd: gbEnd || undefined,
+        estimatedFulfillment: estimatedFulfillment || undefined,
+        basePrice: basePriceAmount
           ? { amount: parseFloat(basePriceAmount), currency: basePriceCurrency }
           : undefined,
         items: items.map(it => ({ name: it.name, price: parseFloat(it.price) || 0, currency: it.currency })),
         vendors,
-        discord_url: discordUrl || undefined,
-        source_url: sourceUrl || undefined,
+        discordUrl: discordUrl || undefined,
+        sourceUrl: sourceUrl || undefined,
         images,
         excludedImages,
       }
@@ -452,21 +462,13 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
               : <span />
             }
             <div className="flex gap-2">
-              <Dialog.Close
-                disabled={saving}
-                className="px-[18px] py-[9px] border border-km-line-strong rounded bg-transparent text-km-ink-dim text-[13px] font-medium font-km-body cursor-pointer disabled:cursor-default"
-              >
-                Cancel
-              </Dialog.Close>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-[18px] py-[9px] border border-km-ink rounded bg-km-ink text-km-bg text-[13px] font-semibold font-km-body cursor-pointer transition-opacity duration-[120ms] disabled:opacity-70 disabled:cursor-default"
-              >
+              <Button variant="outline" size="md" disabled={saving} asChild>
+                <Dialog.Close>Cancel</Dialog.Close>
+              </Button>
+              <Button variant="solid" size="md" onClick={handleSave} disabled={saving}>
                 {saving && <Loader2 size={13} className="animate-spin" />}
                 Save changes
-              </button>
+              </Button>
             </div>
           </div>
         </Dialog.Content>

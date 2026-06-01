@@ -16,6 +16,7 @@ import GroupBuys from '@/pages/GroupBuys'
 import GroupBuyDetails from '@/pages/GroupBuyDetails'
 import AdminRoute from '@/routes/AdminRoute'
 import GroupBuysAdmin from '@/pages/admin/GroupBuysAdmin'
+import ScraperPreview from '@/pages/admin/ScraperPreview'
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="/group-buys/:id" element={<GroupBuyDetails />} />
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<GroupBuysAdmin />} />
+                <Route path="/admin/scraper" element={<ScraperPreview />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" />} />
