@@ -20,8 +20,8 @@ test.describe('Auth flow', () => {
     await page.getByPlaceholder('you@example.com').fill(TEST_EMAIL);
     await page.locator('input[type="password"]').first().fill(TEST_PASSWORD);
 
-    // Terms agreement is required — click the outer checkbox div
-    await page.locator('.cursor-pointer').filter({ hasText: /I agree to the/ }).first().click();
+    // Terms checkbox: onClick is on the small square div, sibling of the label span
+    await page.locator('div:has(> span:has-text("I agree"))').locator('div').first().click();
 
     await page.getByRole('button', { name: /continue/i }).click();
 
@@ -71,7 +71,7 @@ test.describe('Auth flow', () => {
     await page.goto('/login');
     await page.getByPlaceholder('you@example.com').fill('nobody@nowhere.com');
     await page.locator('input[type="password"]').first().fill('wrongpassword');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.locator('button[type="submit"]').click();
 
     await expect(
       page.getByText(/invalid|incorrect|error|failed/i),
