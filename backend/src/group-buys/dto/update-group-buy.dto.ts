@@ -51,6 +51,10 @@ class VendorDto {
 export class UpdateGroupBuyDto {
   @IsOptional()
   @IsString()
+  topic_id?: string;
+
+  @IsOptional()
+  @IsString()
   name?: string;
 
   @IsOptional()

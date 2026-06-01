@@ -1,5 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { spawn } from 'child_process';
+import * as path from 'path';
+import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
 import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
@@ -60,7 +63,27 @@ function buildStageQuery(stage: string, now: string): Record<string, any> {
 
 @Injectable()
 export class GroupBuysService {
-  constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {}
+  private readonly scraperPath: string | undefined;
+  private readonly pythonCmd: string;
+
+  constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {
+    this.scraperPath = process.env.SCRAPER_PATH;
+    this.pythonCmd = process.env.PYTHON_CMD ?? 'python';
+  }
+
+  private async mapScraperItems(parsed: any[]) {
+    const topicIds = parsed.map(i => i.topic_id).filter(Boolean);
+    const existingIds = new Set(
+      (await this.groupBuyModel.find({ topic_id: { $in: topicIds } }, { topic_id: 1 }).lean().exec() as any[])
+        .map(d => d.topic_id as string),
+    );
+    return parsed.map(item => ({
+      data: toAdminShape(item),
+      alreadyExists: item.topic_id ? existingIds.has(item.topic_id) : false,
+      hasError: !!item.parse_error,
+      errorMessage: item.parse_error as string | undefined,
+    }));
+  }
 
   async findAll(stage?: string) {
     const now = new Date().toISOString();
@@ -142,5 +165,77 @@ export class GroupBuysService {
       .exec() as any;
     if (!doc) throw new NotFoundException('Group buy not found');
     return toAdminShape(doc);
+  }
+
+  scraperStream(): Observable<MessageEvent> {
+    return new Observable((subscriber) => {
+      if (!this.scraperPath) {
+        subscriber.next({ data: { type: 'error', message: 'SCRAPER_PATH is not configured' } });
+        subscriber.complete();
+        return;
+      }
+
+      const scraperDir = path.dirname(this.scraperPath);
+      const proc = spawn(this.pythonCmd, [this.scraperPath, '--preview', '--max-topics', '10'], {
+        cwd: scraperDir,
+        shell: true,
+      });
+
+      let stdout = '';
+
+      proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
+
+      proc.stderr.on('data', (chunk: Buffer) => {
+        for (const line of chunk.toString().split('\n')) {
+          if (line.trim()) {
+            subscriber.next({ data: { type: 'log', message: line } });
+          }
+        }
+      });
+
+      const timeout = setTimeout(() => {
+        proc.kill();
+        subscriber.next({ data: { type: 'error', message: 'Scraper timed out after 120 seconds' } });
+        subscriber.complete();
+      }, 120_000);
+
+      proc.on('error', (err) => {
+        clearTimeout(timeout);
+        subscriber.next({ data: { type: 'error', message: `Failed to launch scraper: ${err.message}` } });
+        subscriber.complete();
+      });
+
+      proc.on('close', async (code) => {
+        clearTimeout(timeout);
+        if (code !== 0 && !stdout.trim()) {
+          subscriber.next({ data: { type: 'error', message: `Scraper exited with code ${code}` } });
+          subscriber.complete();
+          return;
+        }
+        try {
+          const items = await this.mapScraperItems(JSON.parse(stdout.trim()));
+          subscriber.next({ data: { type: 'result', items } });
+        } catch {
+          subscriber.next({ data: { type: 'error', message: 'Failed to process scraper results' } });
+        }
+        subscriber.complete();
+      });
+
+      return () => {
+        clearTimeout(timeout);
+        proc.kill();
+      };
+    });
+  }
+
+  async bulkImport(items: UpdateGroupBuyDto[]): Promise<{ imported: number }> {
+    if (!items.length) return { imported: 0 };
+    const ops = items.map(item =>
+      item.topic_id
+        ? { updateOne: { filter: { topic_id: item.topic_id }, update: { $set: item }, upsert: true } }
+        : { insertOne: { document: item } },
+    );
+    await this.groupBuyModel.bulkWrite(ops as any);
+    return { imported: items.length };
   }
 }

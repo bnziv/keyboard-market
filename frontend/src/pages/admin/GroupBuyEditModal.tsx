@@ -11,7 +11,7 @@ import { TabBar } from '@/components/TabBar'
 import { cn } from '@/lib/utils'
 
 export interface AdminGroupBuy {
-  id: string
+  id?: string
   name: string
   type: string
   status: string
@@ -136,9 +136,10 @@ interface Props {
   groupBuy: AdminGroupBuy
   onClose: () => void
   onSaved: (updated: AdminGroupBuy) => void
+  onPreviewSave?: (updated: AdminGroupBuy) => void
 }
 
-export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
+export function GroupBuyEditModal({ groupBuy, onClose, onSaved, onPreviewSave }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('details')
   const [name, setName] = useState(groupBuy.name ?? '')
   const [type, setType] = useState(groupBuy.type ?? '')
@@ -194,7 +195,33 @@ export function GroupBuyEditModal({ groupBuy, onClose, onSaved }: Props) {
   const updateVendor = (i: number, field: string, value: string) =>
     setVendors(prev => prev.map((v, idx) => idx === i ? { ...v, [field]: value } : v))
 
+  const buildDraft = (): AdminGroupBuy => ({
+    ...groupBuy,
+    name,
+    type,
+    status,
+    designer,
+    overview: overview || null,
+    poster: poster || null,
+    gbStart: gbStart || null,
+    gbEnd: gbEnd || null,
+    estimatedFulfillment: estimatedFulfillment || null,
+    basePrice: basePriceAmount ? { amount: parseFloat(basePriceAmount), currency: basePriceCurrency } : null,
+    items: items.map(it => ({ name: it.name, price: parseFloat(it.price) || 0, currency: it.currency })),
+    vendors,
+    discordUrl: discordUrl || null,
+    sourceUrl: sourceUrl || null,
+    images,
+    excludedImages,
+  })
+
   const handleSave = async () => {
+    if (onPreviewSave) {
+      onPreviewSave(buildDraft())
+      onClose()
+      return
+    }
+
     setSaving(true)
     setError(null)
     try {

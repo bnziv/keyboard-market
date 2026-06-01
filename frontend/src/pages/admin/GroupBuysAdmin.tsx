@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Eye, EyeOff, Loader2, Pencil } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Pencil, Play } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import NavBar from '@/components/NavBar'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
@@ -117,6 +118,7 @@ export default function GroupBuysAdmin() {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All')
   const [editing, setEditing] = useState<AdminGroupBuy | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     setLoading(true)
@@ -159,18 +161,38 @@ export default function GroupBuysAdmin() {
           }}>
             · Internal tool ·
           </div>
-          <h1 style={{
-            margin: 0,
-            fontFamily: 'var(--km-font-body)', fontSize: 32, fontWeight: 700,
-            letterSpacing: '-0.025em', color: 'var(--km-ink)',
-          }}>
-            Group buys
-          </h1>
-          {!loading && (
-            <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--km-ink-dim)' }}>
-              {groupBuys.length} entries
-            </p>
-          )}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <h1 style={{
+                margin: 0,
+                fontFamily: 'var(--km-font-body)', fontSize: 32, fontWeight: 700,
+                letterSpacing: '-0.025em', color: 'var(--km-ink)',
+              }}>
+                Group buys
+              </h1>
+              {!loading && (
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--km-ink-dim)' }}>
+                  {groupBuys.length} entries
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => navigate('/admin/scraper')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px',
+                background: 'transparent',
+                border: '1px solid var(--km-gold)',
+                borderRadius: 4,
+                color: 'var(--km-gold)',
+                fontSize: 12, fontFamily: 'var(--km-font-body)',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+                flexShrink: 0, marginTop: 4,
+              }}
+            >
+              <Play size={11} /> Run Scraper
+            </button>
+          </div>
 
           {/* Status filter tabs */}
           <div style={{ display: 'flex', gap: 2, marginTop: 24, marginBottom: -1 }}>
