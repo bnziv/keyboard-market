@@ -92,9 +92,6 @@ jobs:
         working-directory: frontend
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      - name: Start backend
-        run: npm run start:dev &
-        working-directory: backend
       - name: Run E2E tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4
