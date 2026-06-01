@@ -1,11 +1,10 @@
 import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { spawn } from 'child_process';
-import * as path from 'path';
 import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
 import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
+import { runScraper } from './scraper';
 
 function toPublicShape(doc: any) {
   const now = new Date().toISOString();
@@ -63,13 +62,7 @@ function buildStageQuery(stage: string, now: string): Record<string, any> {
 
 @Injectable()
 export class GroupBuysService {
-  private readonly scraperPath: string | undefined;
-  private readonly pythonCmd: string;
-
-  constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {
-    this.scraperPath = process.env.SCRAPER_PATH;
-    this.pythonCmd = process.env.PYTHON_CMD ?? 'python';
-  }
+  constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {}
 
   private async mapScraperItems(parsed: any[]) {
     const topicIds = parsed.map(i => i.topic_id).filter(Boolean);
@@ -169,61 +162,36 @@ export class GroupBuysService {
 
   scraperStream(): Observable<MessageEvent> {
     return new Observable((subscriber) => {
-      if (!this.scraperPath) {
-        subscriber.next({ data: { type: 'error', message: 'SCRAPER_PATH is not configured' } });
-        subscriber.complete();
-        return;
-      }
+      let aborted = false;
 
-      const scraperDir = path.dirname(this.scraperPath);
-      const proc = spawn(this.pythonCmd, [this.scraperPath, '--preview', '--max-topics', '10'], {
-        cwd: scraperDir,
-        shell: true,
-      });
-
-      let stdout = '';
-
-      proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
-
-      proc.stderr.on('data', (chunk: Buffer) => {
-        for (const line of chunk.toString().split('\n')) {
-          if (line.trim()) {
-            subscriber.next({ data: { type: 'log', message: line } });
-          }
-        }
-      });
-
-      const timeout = setTimeout(() => {
-        proc.kill();
+      const timeoutId = setTimeout(() => {
+        aborted = true;
         subscriber.next({ data: { type: 'error', message: 'Scraper timed out after 120 seconds' } });
         subscriber.complete();
       }, 120_000);
 
-      proc.on('error', (err) => {
-        clearTimeout(timeout);
-        subscriber.next({ data: { type: 'error', message: `Failed to launch scraper: ${err.message}` } });
-        subscriber.complete();
-      });
+      const onLog = (msg: string) => {
+        if (!aborted) subscriber.next({ data: { type: 'log', message: msg } });
+      };
 
-      proc.on('close', async (code) => {
-        clearTimeout(timeout);
-        if (code !== 0 && !stdout.trim()) {
-          subscriber.next({ data: { type: 'error', message: `Scraper exited with code ${code}` } });
-          subscriber.complete();
-          return;
-        }
-        try {
-          const items = await this.mapScraperItems(JSON.parse(stdout.trim()));
+      runScraper({ maxTopics: 10, onLog, groupBuyModel: this.groupBuyModel })
+        .then(async (scraped) => {
+          if (aborted) return;
+          clearTimeout(timeoutId);
+          const items = await this.mapScraperItems(scraped);
           subscriber.next({ data: { type: 'result', items } });
-        } catch {
-          subscriber.next({ data: { type: 'error', message: 'Failed to process scraper results' } });
-        }
-        subscriber.complete();
-      });
+          subscriber.complete();
+        })
+        .catch((err: Error) => {
+          if (aborted) return;
+          clearTimeout(timeoutId);
+          subscriber.next({ data: { type: 'error', message: err.message } });
+          subscriber.complete();
+        });
 
       return () => {
-        clearTimeout(timeout);
-        proc.kill();
+        aborted = true;
+        clearTimeout(timeoutId);
       };
     });
   }
