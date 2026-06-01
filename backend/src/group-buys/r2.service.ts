@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -66,6 +66,13 @@ export class R2Service {
       // unparseable URL — default to jpg
     }
     return `group-buys/${topicId}/${hash}.${ext}`;
+  }
+
+  async deleteObject(url: string): Promise<void> {
+    const key = url.slice(this.publicUrl.length + 1);
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 
   async uploadFromUrl(sourceUrl: string, key: string): Promise<string> {

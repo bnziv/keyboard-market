@@ -22,8 +22,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AdminGroupBuy } from '@/types/groupBuy';
 
-export type { AdminGroupBuy };
-
 type Tab = 'details' | 'dates' | 'pricing' | 'vendors' | 'images';
 
 const inputCls =
@@ -73,10 +71,12 @@ function SortableImageItem({
   url,
   index,
   onExclude,
+  onDelete,
 }: {
   url: string;
   index: number;
   onExclude: () => void;
+  onDelete: () => void;
 }) {
   const {
     attributes,
@@ -109,15 +109,27 @@ function SortableImageItem({
       <span className="absolute bottom-1.5 left-1.5 font-km-mono text-[9px] bg-black/55 text-white/70 px-1.5 py-[2px] rounded-[3px] pointer-events-none">
         {index + 1}
       </span>
-      <button
-        type="button"
+      <div
+        className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={onExclude}
-        className="absolute top-1.5 right-1.5 w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-[#e07070] opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
-        title="Exclude image"
       >
-        <EyeOff size={12} />
-      </button>
+        <button
+          type="button"
+          onClick={onExclude}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-[#e07070]"
+          title="Exclude image"
+        >
+          <EyeOff size={12} />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-red-400 hover:text-red-300"
+          title="Delete image"
+        >
+          <Trash2 size={12} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -125,9 +137,11 @@ function SortableImageItem({
 function ExcludedImageItem({
   url,
   onRestore,
+  onDelete,
 }: {
   url: string;
   onRestore: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div className="group relative rounded overflow-hidden border border-km-line bg-km-bg-sub">
@@ -142,14 +156,24 @@ function ExcludedImageItem({
           Excluded
         </span>
       </div>
-      <button
-        type="button"
-        onClick={onRestore}
-        className="absolute top-1.5 right-1.5 w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-km-ok opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
-        title="Restore image"
-      >
-        <Eye size={12} />
-      </button>
+      <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+        <button
+          type="button"
+          onClick={onRestore}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-km-ok"
+          title="Restore image"
+        >
+          <Eye size={12} />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-red-400 hover:text-red-300"
+          title="Delete image"
+        >
+          <Trash2 size={12} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -220,6 +244,10 @@ export function GroupBuyEditModal({
   const restoreImage = (url: string) => {
     setExcludedImages((prev) => prev.filter((u) => u !== url));
     setImages((prev) => [...prev, url]);
+  };
+  const deleteImage = (url: string) => {
+    setImages((prev) => prev.filter((u) => u !== url));
+    setExcludedImages((prev) => prev.filter((u) => u !== url));
   };
 
   const addItem = () =>
@@ -618,6 +646,7 @@ export function GroupBuyEditModal({
                               url={url}
                               index={i}
                               onExclude={() => excludeImage(url)}
+                              onDelete={() => deleteImage(url)}
                             />
                           ))}
                         </div>
@@ -634,6 +663,7 @@ export function GroupBuyEditModal({
                           key={url}
                           url={url}
                           onRestore={() => restoreImage(url)}
+                          onDelete={() => deleteImage(url)}
                         />
                       ))}
                     </div>

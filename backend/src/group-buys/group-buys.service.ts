@@ -201,6 +201,26 @@ export class GroupBuysService {
   }
 
   async update(id: string, dto: UpdateGroupBuyDto) {
+    const existing = await this.fetchDoc(id);
+    const oldUrls = new Set([
+      ...(existing.images ?? []),
+      ...(existing.excludedImages ?? []),
+    ]);
+    const newUrls = new Set([
+      ...(dto.images ?? []),
+      ...(dto.excludedImages ?? []),
+    ]);
+    const toDelete = [...oldUrls].filter(
+      (u) => this.r2.isR2Url(u) && !newUrls.has(u),
+    );
+    await Promise.all(
+      toDelete.map((u) =>
+        this.r2.deleteObject(u).catch((err: any) =>
+          this.logger.warn(`R2 delete failed for ${u}: ${err.message}`),
+        ),
+      ),
+    );
+
     const doc = (await this.groupBuyModel
       .findByIdAndUpdate(id, { $set: dto }, { new: true })
       .lean()
