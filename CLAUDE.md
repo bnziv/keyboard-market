@@ -51,7 +51,7 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 - **Admin guard:** `AdminGuard` compares `req.user.userId` to `ADMIN_USER_ID` env var; throws `ForbiddenException` if mismatch; applied alongside `JwtAuthGuard` on admin endpoints
 - **WebSocket:** Socket.io gateway (`ChatGateway`); clients join a room named by their userId on connect; `chat.send` event saves message to DB and emits `chat.message` to both sender and receiver rooms
 - **Database:** MongoDB Atlas via Mongoose; `DB_URL` env var; `_id` → `id` transform applied globally; `group-buys` collection uses `strict: false` to accommodate arbitrary scraped fields
-- **Scraper integration:** `GroupBuysService.scraperStream()` spawns Python script at `SCRAPER_PATH` with `--preview --max-topics 10`; captures stdout (JSON) and stderr (logs); returns an RxJS Observable that emits `MessageEvent` objects for SSE streaming; 120s timeout
+- **Scraper integration:** `GroupBuysService.scraperStream()` runs `runScraper()` from `backend/src/group-buys/scraper.ts` (TypeScript, no subprocess); scraper paginates Geekhack RSS board 70, fetches thread HTML, parses posts with Cheerio, and calls Google Gemini (`GEMINI_API_KEY`) to extract structured GB data; returns an RxJS Observable of SSE `MessageEvent`s; 120s timeout; 2s delay between topic fetches
 
 ### API Endpoints
 
@@ -93,7 +93,8 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 - `JWT_SECRET` — EC private key for JWT signing
 - `CORS_ORIGINS` — Comma-separated allowed origins (defaults to `http://localhost:5173`)
 - `ADMIN_USER_ID` — MongoDB `_id` of the admin user; checked by `AdminGuard`
-- `SCRAPER_PATH` — Absolute path to the Python scraper script (e.g. sibling repo `geekhack-gb-poc/scraper.py`)
+- `GEMINI_API_KEY` — Google Gemini API key; required for the scraper to run
+- `GEMINI_MODEL` — Gemini model ID (optional; defaults to `gemini-3.1-flash-lite`)
 
 **Frontend** (`frontend/.env`):
 - `VITE_API_URL` — Backend URL (leave empty in dev; proxy handles it)

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Eye, EyeOff, Loader2, Pencil, Play } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import NavBar from '@/components/NavBar'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
@@ -117,8 +116,6 @@ export default function GroupBuysAdmin() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
-      <NavBar />
-
       {/* Page header */}
       <div style={{
         borderBottom: '1px solid var(--km-line)',

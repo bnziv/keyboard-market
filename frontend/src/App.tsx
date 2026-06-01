@@ -17,6 +17,7 @@ import GroupBuyDetails from '@/pages/GroupBuyDetails'
 import AdminRoute from '@/routes/AdminRoute'
 import GroupBuysAdmin from '@/pages/admin/GroupBuysAdmin'
 import ScraperPreview from '@/pages/admin/ScraperPreview'
+import Layout from '@/routes/Layout'
 
 export default function App() {
   return (
@@ -28,22 +29,23 @@ export default function App() {
             <Toaster duration={3000} position="top-center"/>
             <ChatManager />
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/listings" element={<Listings />} />
-              <Route path="/listings/:id" element={<ListingDetails />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/create-listing" element={<CreateListing />} />
-              </Route>
               <Route path="/login" element={<Login />} />
-              <Route path="/profile/:username" element={<Profile />} />
-              <Route path="/group-buys" element={<GroupBuys />} />
-              <Route path="/group-buys/:id" element={<GroupBuyDetails />} />
-              <Route element={<AdminRoute />}>
-                <Route path="/admin" element={<GroupBuysAdmin />} />
-                <Route path="/admin/scraper" element={<ScraperPreview />} />
+              <Route element={<Layout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/:id" element={<ListingDetails />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/create-listing" element={<CreateListing />} />
+                </Route>
+                <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/group-buys" element={<GroupBuys />} />
+                <Route path="/group-buys/:id" element={<GroupBuyDetails />} />
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<GroupBuysAdmin />} />
+                  <Route path="/admin/scraper" element={<ScraperPreview />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" />} />
               </Route>
-
-              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </ChatProvider>
         </AuthProvider>

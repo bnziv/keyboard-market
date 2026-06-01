@@ -1,4 +1,3 @@
-import NavBar from "@/components/NavBar"
 import { useState } from "react"
 import api from "@/utils/api"
 import { useNavigate } from "react-router-dom"
@@ -89,7 +88,6 @@ export default function CreateListing() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="create" />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-8 py-8 pb-16">
         {/* Header */}
         <div className="font-km-mono text-[11px] uppercase text-km-gold tracking-[0.15em] mb-2">

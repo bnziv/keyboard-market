@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/utils/api';
-import NavBar from '@/components/NavBar';
 import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
 import { Badge } from '@/components/ui/badge';
@@ -105,8 +104,6 @@ export default function GroupBuys() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="groupbuys" />
-
       {/* Page header */}
       <div className="border-b border-km-line bg-km-surface px-4 sm:px-8 pt-8 sm:pt-10 pb-0">
         <div className="max-w-[1280px] mx-auto">

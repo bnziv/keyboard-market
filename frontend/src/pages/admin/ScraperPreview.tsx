@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, Pencil, Play } from 'lucide-react'
-import NavBar from '@/components/NavBar'
 import { useToast } from '@/utils/ToastProvider'
 import api from '@/utils/api'
 import { GroupBuyEditModal } from './GroupBuyEditModal'
@@ -184,8 +183,6 @@ export default function ScraperPreview() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--km-bg)', color: 'var(--km-ink)' }}>
-      <NavBar />
-
       {/* Header */}
       <div style={{
         borderBottom: '1px solid var(--km-line)',

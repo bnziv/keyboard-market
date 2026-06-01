@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import api from "@/utils/api";
 import ListingCard, { ListingCardProps } from "@/components/ListingCard";
-import NavBar from "@/components/NavBar";
 import { Slider } from "@/components/ui/slider";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2, LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
@@ -203,7 +202,6 @@ export default function Listings() {
 
     return (
         <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-            <NavBar activePage="listings" />
 
             <div className="flex flex-1" style={{ minHeight: 'calc(100vh - 56px)' }}>
                 {/* Desktop sidebar */}

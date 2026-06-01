@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams, Link } from "react-router-dom"
-import NavBar from "@/components/NavBar"
 import { TabBar } from "@/components/TabBar"
 import { MessageCircle, Heart, Share2, Shield } from "lucide-react"
 import { useToast } from "@/utils/ToastProvider"
@@ -67,7 +66,6 @@ export default function ListingDetailsPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col bg-km-bg">
-                <NavBar activePage="listings" />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="font-km-mono text-sm text-km-ink-mute">Loading listing…</div>
                 </div>
@@ -79,7 +77,6 @@ export default function ListingDetailsPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-            <NavBar activePage="listings" />
             <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 pb-16">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">

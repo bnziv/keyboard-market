@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react"
-import NavBar from "@/components/NavBar"
 import { TabBar } from "@/components/TabBar"
 import ListingCard, { ListingCardProps } from "@/components/ListingCard"
 import { MessageCircle, Plus } from "lucide-react"
@@ -83,7 +82,6 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-km-bg">
-        <NavBar activePage="profile" />
         <div className="flex-1 flex items-center justify-center">
           <div className="font-km-mono text-sm text-km-ink-mute">Loading profile…</div>
         </div>
@@ -93,8 +91,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="profile" />
-
       {/* Banner */}
       <div className="border-b border-km-line px-4 sm:px-8 pt-6 sm:pt-9 pb-0 bg-km-bg-sub">
         <div className="max-w-6xl mx-auto">

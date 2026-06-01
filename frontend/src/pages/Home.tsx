@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import NavBar from "@/components/NavBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/AuthProvider";
 import { useToast } from "@/utils/ToastProvider";
@@ -53,8 +52,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="home" />
-
       {/* Hero */}
       <div className="border-b border-km-line px-4 sm:px-8 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">

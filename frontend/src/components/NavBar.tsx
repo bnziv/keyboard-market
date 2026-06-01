@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
 import { Search, MessageSquare, User, LogOut, Plus, Sun, Moon, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,10 +10,17 @@ import { useChat } from '@/utils/ChatProvider';
 
 interface NavBarProps {
   className?: string;
-  activePage?: 'home' | 'listings' | 'create' | 'messages' | 'profile' | 'groupbuys';
 }
 
-export default function NavBar({ className, activePage }: NavBarProps) {
+export default function NavBar({ className }: NavBarProps) {
+  const { pathname } = useLocation();
+  const activePage = pathname === '/' ? 'home'
+    : pathname.startsWith('/listings') ? 'listings'
+    : pathname.startsWith('/create-listing') ? 'create'
+    : pathname.startsWith('/group-buys') ? 'groupbuys'
+    : pathname.startsWith('/profile') ? 'profile'
+    : undefined;
+
   const { isAuthenticated, user, logout } = useAuth();
   const { showInfo } = useToast();
   const { theme, toggle } = useTheme();

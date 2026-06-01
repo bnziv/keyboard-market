@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import api from "@/utils/api";
-import NavBar from "@/components/NavBar";
 import { CardGroupBuy } from "@/components/GroupBuyCard";
 import { CATEGORY_PALETTES } from "@/components/GroupBuyImage";
 import { Badge, STAGE_BADGE_META } from "@/components/ui/badge";
@@ -230,7 +229,6 @@ export default function GroupBuyDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-km-bg">
-        <NavBar activePage="groupbuys" />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 size={24} className="animate-spin text-km-ink-mute" />
         </div>
@@ -241,7 +239,6 @@ export default function GroupBuyDetails() {
   if (error || !gb) {
     return (
       <div className="min-h-screen flex flex-col bg-km-bg">
-        <NavBar activePage="groupbuys" />
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <div className="font-km-mono text-sm text-km-ink-mute">
             {error ?? "Not found."}
@@ -279,8 +276,6 @@ export default function GroupBuyDetails() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="groupbuys" />
-
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-8 py-6 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
