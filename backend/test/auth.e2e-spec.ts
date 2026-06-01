@@ -22,7 +22,8 @@ describe('Auth (e2e)', () => {
         .send({ email: 'alice@example.com', username: 'alice', password: 'Pass1234!' });
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual({ message: 'Registration successful' });
+      expect(res.body).toHaveProperty('id');
+      expect(res.body).toHaveProperty('username', 'alice');
 
       const cookies = res.headers['set-cookie'];
       expect(Array.isArray(cookies) ? cookies.join('') : cookies).toMatch(/jwt=/);
