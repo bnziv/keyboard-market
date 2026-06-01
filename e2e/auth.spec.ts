@@ -20,8 +20,8 @@ test.describe('Auth flow', () => {
     await page.getByPlaceholder('you@example.com').fill(TEST_EMAIL);
     await page.locator('input[type="password"]').first().fill(TEST_PASSWORD);
 
-    // Terms agreement is required
-    await page.getByText(/I agree to the/).click();
+    // Terms agreement is required — click the outer checkbox div
+    await page.locator('.cursor-pointer').filter({ hasText: /I agree to the/ }).first().click();
 
     await page.getByRole('button', { name: /continue/i }).click();
 
@@ -59,7 +59,7 @@ test.describe('Auth flow', () => {
     await page.goto('/login');
     await page.getByPlaceholder('you@example.com').fill(`login_${timestamp}@test.com`);
     await page.locator('input[type="password"]').first().fill(TEST_PASSWORD);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.locator('button[type="submit"]').click();
 
     await expect(page.locator('header')).toContainText(
       'L',

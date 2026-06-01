@@ -26,7 +26,7 @@ test.describe('Listings public flow', () => {
 
   test('listings page renders content area', async ({ page }) => {
     await page.goto('/listings');
-    await expect(page.locator('section').first()).toBeVisible();
+    await expect(page.locator('section:not([aria-live])').first()).toBeVisible();
   });
 });
 
