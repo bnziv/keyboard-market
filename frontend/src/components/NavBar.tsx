@@ -231,7 +231,6 @@ export default function NavBar({ className }: NavBarProps) {
                 onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="search keycaps, switches, PCBs…"
                 className="flex-1 bg-transparent outline-none text-km-ink-dim font-km-mono text-[11px]"
-                autoFocus
               />
             </div>
           </form>
