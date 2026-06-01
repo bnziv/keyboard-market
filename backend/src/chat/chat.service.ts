@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ChatMessage, ChatMessageDocument } from './schemas/chat-message.schema';
+import {
+  ChatMessage,
+  ChatMessageDocument,
+} from './schemas/chat-message.schema';
 import { SendMessageDto } from './dto/send-message.dto';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ChatService {
   constructor(
-    @InjectModel(ChatMessage.name) private chatModel: Model<ChatMessageDocument>,
+    @InjectModel(ChatMessage.name)
+    private chatModel: Model<ChatMessageDocument>,
     private readonly usersService: UsersService,
   ) {}
 
@@ -16,7 +20,10 @@ export class ChatService {
     return this.chatModel.create(dto);
   }
 
-  async getChatHistory(userId1: string, userId2: string): Promise<ChatMessageDocument[]> {
+  async getChatHistory(
+    userId1: string,
+    userId2: string,
+  ): Promise<ChatMessageDocument[]> {
     return this.chatModel
       .find({
         $or: [
@@ -44,16 +51,15 @@ export class ChatService {
       { $sort: { timestamp: -1 } },
     ]);
 
-    return Promise.all(
-      results.map(async (r) => {
-        const user = await this.usersService.findById(r._id);
-        return {
-          userId: r._id,
-          username: user?.username ?? 'Unknown',
-          lastMessage: r.lastMessage,
-          timestamp: r.timestamp,
-        };
-      }),
-    );
+    const partnerIds = results.map((r) => r._id);
+    const users = await this.usersService.findByIds(partnerIds);
+    const userMap = new Map(users.map((u) => [u._id.toString(), u.username]));
+
+    return results.map((r) => ({
+      userId: r._id,
+      username: userMap.get(r._id) ?? 'Unknown',
+      lastMessage: r.lastMessage,
+      timestamp: r.timestamp,
+    }));
   }
 }

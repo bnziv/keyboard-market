@@ -11,7 +11,10 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [activeChat, setActiveChat] = useState<{ userId: string; username: string } | null>(null);
+  const [activeChat, setActiveChat] = useState<{
+    userId: string;
+    username: string;
+  } | null>(null);
   const [showConversations, setShowConversations] = useState(false);
 
   const startChat = (userId: string, username: string) => {
@@ -23,17 +26,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleConversations = () => {
-    setShowConversations(prev => !prev);
+    setShowConversations((prev) => !prev);
   };
 
   return (
-    <ChatContext.Provider value={{
-      activeChat,
-      showConversations,
-      startChat,
-      closeChat,
-      toggleConversations,
-    }}>
+    <ChatContext.Provider
+      value={{
+        activeChat,
+        showConversations,
+        startChat,
+        closeChat,
+        toggleConversations,
+      }}
+    >
       {children}
     </ChatContext.Provider>
   );

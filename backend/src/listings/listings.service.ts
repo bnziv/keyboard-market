@@ -7,9 +7,14 @@ import { ListingFilterDto } from './dto/listing-filter.dto';
 
 @Injectable()
 export class ListingsService {
-  constructor(@InjectModel(Listing.name) private listingModel: Model<ListingDocument>) {}
+  constructor(
+    @InjectModel(Listing.name) private listingModel: Model<ListingDocument>,
+  ) {}
 
-  async create(dto: ListingRequestDto, userId: string): Promise<ListingDocument> {
+  async create(
+    dto: ListingRequestDto,
+    userId: string,
+  ): Promise<ListingDocument> {
     return this.listingModel.create({ ...dto, userId });
   }
 
@@ -27,13 +32,16 @@ export class ListingsService {
     return this.listingModel.find({ userId }).sort({ createdOn: -1 }).exec();
   }
 
-  async findByUsername(username: string, userId: string): Promise<ListingDocument[]> {
+  async findByUsername(
+    username: string,
+    userId: string,
+  ): Promise<ListingDocument[]> {
     return this.listingModel.find({ userId }).sort({ createdOn: -1 }).exec();
   }
 
   async searchByTitle(title: string): Promise<ListingDocument[]> {
     return this.listingModel
-      .find({ title: { $regex: title, $options: 'i' } })
+      .find({ $text: { $search: title } })
       .sort({ createdOn: -1 })
       .exec();
   }
@@ -56,7 +64,7 @@ export class ListingsService {
     }
 
     if (filter.condition) query.condition = filter.condition;
-    if (filter.title) query.title = { $regex: filter.title, $options: 'i' };
+    if (filter.title) (query as any).$text = { $search: filter.title };
     if (filter.offers !== undefined) query.offers = filter.offers;
 
     const page = filter.page ?? 0;

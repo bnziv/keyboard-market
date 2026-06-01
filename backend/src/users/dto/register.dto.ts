@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -7,7 +13,8 @@ export class RegisterDto {
 
   @IsString()
   @Matches(/^[a-zA-Z0-9._-]{3,20}$/, {
-    message: 'Username must be 3-20 characters and contain only letters, numbers, dots, underscores, or hyphens',
+    message:
+      'Username must be 3-20 characters and contain only letters, numbers, dots, underscores, or hyphens',
   })
   username: string;
 

@@ -30,7 +30,9 @@ export class UsersController {
     const user = await this.usersService.findByUsername(username);
     if (!user) throw new NotFoundException('User not found');
 
-    const totalListings = await this.listingModel.countDocuments({ userId: user._id.toString() });
+    const totalListings = await this.listingModel.countDocuments({
+      userId: user._id.toString(),
+    });
 
     return {
       id: user._id.toString(),

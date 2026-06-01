@@ -5,7 +5,13 @@ import { useChat } from '@/utils/ChatProvider';
 
 export function ChatManager() {
   const { user } = useAuth();
-  const { activeChat, showConversations, startChat, closeChat, toggleConversations } = useChat();
+  const {
+    activeChat,
+    showConversations,
+    startChat,
+    closeChat,
+    toggleConversations,
+  } = useChat();
 
   if (!user) return null;
 
@@ -24,7 +30,10 @@ export function ChatManager() {
           otherUserId={activeChat.userId}
           otherUserName={activeChat.username}
           onClose={closeChat}
-          position={{ x: window.innerWidth - 400 - (showConversations ? 320 : 0), y: window.innerHeight - 580 }}
+          position={{
+            x: window.innerWidth - 400 - (showConversations ? 320 : 0),
+            y: window.innerHeight - 580,
+          }}
         />
       )}
     </>

@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import api from "@/utils/api";
-import NavBar from "@/components/NavBar";
-import { CardGroupBuy } from "@/components/GroupBuyCard";
-import { CATEGORY_PALETTES } from "@/components/GroupBuyImage";
-import { StatusBadge } from "@/components/StatusBadge";
-import { TabBar } from "@/components/TabBar";
-import { BadgeTone } from "@/utils/badgeTones";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import api from '@/utils/api';
+import { CardGroupBuy } from '@/components/GroupBuyCard';
+import { CATEGORY_PALETTES } from '@/components/GroupBuyImage';
+import { Badge, STAGE_BADGE_META } from '@/components/ui/badge';
+import { TabBar } from '@/components/TabBar';
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,99 +12,22 @@ import {
   Loader2,
   Pencil,
   Share2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/utils/ToastProvider";
-import { useAuth } from "@/utils/AuthProvider";
-import { GroupBuyEditModal, AdminGroupBuy } from "@/pages/admin/GroupBuyEditModal";
-
-interface ApiGroupBuy {
-  id: string;
-  topicId: string;
-  name: string;
-  type: string;
-  status: string;
-  gbStart: string | null;
-  gbEnd: string | null;
-  estimatedFulfillment: string | null;
-  basePrice: { amount: number; currency: string } | null;
-  designer: string;
-  overview: string | null;
-  images: string[];
-  sourceUrl: string;
-  vendors: { region: string; name: string; url: string }[];
-  discordUrl: string | null;
-  items: { name: string; price: number; currency: string }[];
-}
-
-function mapStatus(status: string): CardGroupBuy["stage"] {
-  switch (status) {
-    case "IC":
-      return "interest";
-    case "GB":
-      return "live";
-    case "shipping":
-      return "shipping";
-    case "closed":
-    case "fulfilled":
-    default:
-      return "closed";
-  }
-}
-
-function capitalizeType(type: string): string {
-  if (!type) return "Keyboard";
-  return type.charAt(0).toUpperCase() + type.slice(1);
-}
-
-function computeCloses(gbEnd: string | null): { label: string; soon: boolean } {
-  if (!gbEnd) return { label: "—", soon: false };
-  const end = new Date(gbEnd);
-  const now = new Date();
-  const diffMs = end.getTime() - now.getTime();
-  if (diffMs <= 0) return { label: "Closed", soon: false };
-  const diffHours = diffMs / (1000 * 60 * 60);
-  const days = Math.floor(diffHours / 24);
-  const hours = Math.floor(diffHours % 24);
-  const label = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-  return { label, soon: diffHours <= 48 };
-}
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/utils/ToastProvider';
+import { useAuth } from '@/utils/AuthProvider';
+import { GroupBuyEditModal } from '@/pages/admin/GroupBuyEditModal';
+import type { ApiGroupBuy, AdminGroupBuy } from '@/types/groupBuy';
+import { toCardData } from '@/utils/groupBuyTransforms';
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
-}
-
-function toCardData(gb: ApiGroupBuy): CardGroupBuy {
-  const { label: closes, soon: closingSoon } = computeCloses(gb.gbEnd);
-  const stage = closes === "Closed" ? "closed" : mapStatus(gb.status);
-  return {
-    id: gb.id,
-    name: gb.name,
-    designer: gb.designer ?? "—",
-    category: capitalizeType(gb.type),
-    stage,
-    price: gb.basePrice?.amount ?? 0,
-    closes,
-    gbStartMs: gb.gbStart ? new Date(gb.gbStart).getTime() : null,
-    gbEndMs: gb.gbEnd ? new Date(gb.gbEnd).getTime() : null,
-    gbStartIso: gb.gbStart,
-    gbEndIso: gb.gbEnd,
-    closingSoon,
-    eta: gb.estimatedFulfillment ?? "—",
-    desc: gb.overview ?? "",
-    sourceUrl: gb.sourceUrl,
-    imageUrl: gb.images?.[0] ?? null,
-    images: gb.images ?? [],
-    vendors: gb.vendors ?? [],
-    discordUrl: gb.discordUrl ?? null,
-    items: gb.items ?? [],
-  };
 }
 
 // ─── Carousel ─────────────────────────────────────────────────────────────────
@@ -120,7 +41,7 @@ function Carousel({
 }) {
   const [active, setActive] = useState(0);
   const thumbsRef = useRef<HTMLDivElement>(null);
-  const [bg, fg] = CATEGORY_PALETTES[category] ?? ["#1c1c2e", "#6366f1"];
+  const [bg, fg] = CATEGORY_PALETTES[category] ?? ['#1c1c2e', '#6366f1'];
 
   const prev = useCallback(
     () => setActive((i) => (i - 1 + images.length) % images.length),
@@ -134,9 +55,9 @@ function Carousel({
   useEffect(() => {
     const el = thumbsRef.current?.children[active] as HTMLElement | undefined;
     el?.scrollIntoView({
-      block: "nearest",
-      inline: "nearest",
-      behavior: "smooth",
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'smooth',
     });
   }, [active]);
 
@@ -145,16 +66,16 @@ function Carousel({
       <div
         className="w-full rounded border border-km-line overflow-hidden flex items-center justify-center"
         style={{
-          aspectRatio: "4 / 3",
+          aspectRatio: '4 / 3',
           background: `linear-gradient(135deg, ${bg} 0%, ${fg}44 100%)`,
         }}
       >
         <div
           className="w-[72px] h-[72px] rounded flex items-center justify-center font-km-mono text-xs tracking-[0.12em] uppercase"
           style={{
-            border: "1.5px solid rgba(255,255,255,0.12)",
-            background: "rgba(255,255,255,0.04)",
-            color: "rgba(255,255,255,0.25)",
+            border: '1.5px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.04)',
+            color: 'rgba(255,255,255,0.25)',
           }}
         >
           {category.slice(0, 3)}
@@ -168,7 +89,7 @@ function Carousel({
       {/* Main image */}
       <div
         className="rounded border border-km-line overflow-hidden relative"
-        style={{ aspectRatio: "4 / 3" }}
+        style={{ aspectRatio: '4 / 3' }}
       >
         {/* Blurred backdrop */}
         <img
@@ -176,7 +97,7 @@ function Carousel({
           src={images[active]}
           aria-hidden
           className="absolute inset-0 w-full h-full object-cover scale-110 opacity-30"
-          style={{ filter: "blur(12px)" }}
+          style={{ filter: 'blur(12px)' }}
         />
         {/* Foreground */}
         <img
@@ -185,7 +106,7 @@ function Carousel({
           alt={`image ${active + 1}`}
           className="relative w-full h-full object-contain"
           onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
+            (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
 
@@ -193,8 +114,8 @@ function Carousel({
           <div
             className="absolute bottom-2.5 right-3 z-[1] px-2 py-[3px] rounded font-km-mono text-[10px] tracking-[0.08em]"
             style={{
-              background: "rgba(0,0,0,0.55)",
-              color: "rgba(255,255,255,0.8)",
+              background: 'rgba(0,0,0,0.55)',
+              color: 'rgba(255,255,255,0.8)',
             }}
           >
             {active + 1} / {images.length}
@@ -207,8 +128,8 @@ function Carousel({
               onClick={prev}
               className="absolute left-2.5 top-1/2 -translate-y-1/2 z-[1] w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-white"
               style={{
-                background: "rgba(0,0,0,0.5)",
-                border: "1px solid rgba(255,255,255,0.15)",
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.15)',
               }}
             >
               <ArrowLeft size={14} />
@@ -217,8 +138,8 @@ function Carousel({
               onClick={next}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 z-[1] w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-white"
               style={{
-                background: "rgba(0,0,0,0.5)",
-                border: "1px solid rgba(255,255,255,0.15)",
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.15)',
               }}
             >
               <ArrowRight size={14} />
@@ -232,17 +153,17 @@ function Carousel({
         <div
           ref={thumbsRef}
           className="flex gap-1.5 mt-2.5 overflow-x-auto"
-          style={{ scrollbarWidth: "none" }}
+          style={{ scrollbarWidth: 'none' }}
         >
           {images.map((src, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
               className={cn(
-                "flex-shrink-0 p-0 rounded overflow-hidden cursor-pointer border-2 bg-transparent transition-[border-color,opacity] duration-[120ms]",
+                'flex-shrink-0 p-0 rounded overflow-hidden cursor-pointer border-2 bg-transparent transition-[border-color,opacity] duration-[120ms]',
                 i === active
-                  ? "border-km-gold opacity-100"
-                  : "border-km-line opacity-[0.55]",
+                  ? 'border-km-gold opacity-100'
+                  : 'border-km-line opacity-[0.55]',
               )}
               style={{ width: 64, height: 48 }}
             >
@@ -251,7 +172,7 @@ function Carousel({
                 alt={`view ${i + 1}`}
                 className="w-full h-full object-cover block"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.opacity = "0.3";
+                  (e.target as HTMLImageElement).style.opacity = '0.3';
                 }}
               />
             </button>
@@ -264,7 +185,7 @@ function Carousel({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type DetailTab = "overview" | "vendors";
+type DetailTab = 'overview' | 'vendors';
 
 export default function GroupBuyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -279,7 +200,7 @@ export default function GroupBuyDetails() {
   const [editGb, setEditGb] = useState<AdminGroupBuy | null>(null);
   const [loading, setLoading] = useState(!gb);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<DetailTab>("overview");
+  const [tab, setTab] = useState<DetailTab>('overview');
   const [selectedKitIdx, setSelectedKitIdx] = useState<number>(0);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -288,7 +209,7 @@ export default function GroupBuyDetails() {
     api
       .get<ApiGroupBuy>(`/api/groupbuys/${id}`)
       .then((res) => setGb(toCardData(res.data)))
-      .catch(() => setError("Failed to load group buy."))
+      .catch(() => setError('Failed to load group buy.'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -300,22 +221,14 @@ export default function GroupBuyDetails() {
       .catch(() => {});
   }, [id, isAdmin]);
 
-  const stageMeta: Record<string, { label: string; tone: BadgeTone }> = {
-    interest: { label: "Interest check", tone: "neutral" },
-    live: { label: "Live", tone: "ok" },
-    closed: { label: "In production", tone: "accent" },
-    shipping: { label: "Shipping", tone: "accent" },
-  };
-
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    showInfo("Link copied to clipboard");
+    showInfo('Link copied to clipboard');
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-km-bg">
-        <NavBar activePage="groupbuys" />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 size={24} className="animate-spin text-km-ink-mute" />
         </div>
@@ -326,15 +239,14 @@ export default function GroupBuyDetails() {
   if (error || !gb) {
     return (
       <div className="min-h-screen flex flex-col bg-km-bg">
-        <NavBar activePage="groupbuys" />
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <div className="font-km-mono text-sm text-km-ink-mute">
-            {error ?? "Not found."}
+            {error ?? 'Not found.'}
           </div>
           <Button
             variant="surface"
             size="sm"
-            onClick={() => navigate("/group-buys")}
+            onClick={() => navigate('/group-buys')}
           >
             ← Back to group buys
           </Button>
@@ -343,19 +255,19 @@ export default function GroupBuyDetails() {
     );
   }
 
-  const meta = stageMeta[gb.stage];
+  const meta = STAGE_BADGE_META[gb.stage];
 
   const selectedKit = gb.items[selectedKitIdx] ?? null;
   const displayPrice =
     selectedKit && selectedKit.price > 0 ? selectedKit.price : gb.price;
 
   const tabs: { key: DetailTab; label: string; count?: number }[] = [
-    { key: "overview", label: "Overview" },
+    { key: 'overview', label: 'Overview' },
     ...(gb.vendors.length > 0
       ? [
           {
-            key: "vendors" as DetailTab,
-            label: "Vendors",
+            key: 'vendors' as DetailTab,
+            label: 'Vendors',
             count: gb.vendors.length,
           },
         ]
@@ -364,9 +276,7 @@ export default function GroupBuyDetails() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="groupbuys" />
-
-      <main className="flex-1 max-w-7xl mx-auto w-full py-6 pb-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-8 py-6 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">
           <Link
@@ -379,12 +289,9 @@ export default function GroupBuyDetails() {
           <span className="text-km-ink truncate max-w-[320px]">{gb.name}</span>
         </div>
 
-        <div
-          className="grid gap-10"
-          style={{ gridTemplateColumns: "minmax(0, 6fr) minmax(0, 4fr)" }}
-        >
+        <div className="grid gap-10 grid-cols-1 lg:grid-cols-[minmax(0,6fr)_minmax(0,4fr)]">
           {/* ── LEFT — Carousel ── */}
-          <div style={{ position: "sticky", top: "72px", alignSelf: "start" }}>
+          <div className="lg:sticky lg:top-[72px] lg:self-start">
             <Carousel images={gb.images} category={gb.category} />
           </div>
 
@@ -393,10 +300,10 @@ export default function GroupBuyDetails() {
             {/* Header */}
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 flex-wrap">
-                <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-                <StatusBadge tone="neutral">{gb.category}</StatusBadge>
+                <Badge variant={meta.tone}>{meta.label}</Badge>
+                <Badge variant="neutral">{gb.category}</Badge>
                 {gb.closingSoon && (
-                  <StatusBadge tone="accent">⏱ {gb.closes} left</StatusBadge>
+                  <Badge variant="accent">⏱ {gb.closes} left</Badge>
                 )}
               </div>
               <h1 className="text-3xl font-semibold leading-[1.1] text-km-ink tracking-[-0.02em]">
@@ -408,8 +315,8 @@ export default function GroupBuyDetails() {
             </div>
 
             {/* Price panel */}
-            <div className="font-km-mono text-5xl font-semibold text-km-ink tracking-[-0.02em]">
-              {displayPrice > 0 ? `$${displayPrice}` : "—"}
+            <div className="font-km-mono text-3xl sm:text-4xl lg:text-5xl font-semibold text-km-ink tracking-[-0.02em]">
+              {displayPrice > 0 ? `$${displayPrice}` : '—'}
             </div>
 
             {/* Kit selector */}
@@ -426,10 +333,10 @@ export default function GroupBuyDetails() {
                         key={i}
                         onClick={() => setSelectedKitIdx(i)}
                         className={cn(
-                          "text-left p-[10px_12px] rounded border cursor-pointer transition-colors duration-100 bg-transparent",
+                          'text-left p-[10px_12px] rounded border cursor-pointer transition-colors duration-100 bg-transparent',
                           isSelected
-                            ? "border-km-gold bg-km-gold-soft"
-                            : "border-km-line hover:border-km-ink-mute",
+                            ? 'border-km-gold bg-km-gold-soft'
+                            : 'border-km-line hover:border-km-ink-mute',
                         )}
                       >
                         <div className="text-[12px] font-semibold text-km-ink leading-tight">
@@ -463,7 +370,7 @@ export default function GroupBuyDetails() {
                     <Button
                       asChild
                       className="flex-1 py-2.5"
-                      style={{ background: "#5865F2", color: "#fff" }}
+                      style={{ background: '#5865F2', color: '#fff' }}
                     >
                       <a
                         href={gb.discordUrl}
@@ -544,22 +451,22 @@ export default function GroupBuyDetails() {
               </div>
               <div
                 className="grid border-t border-km-line"
-                style={{ gridTemplateColumns: "1fr 1fr" }}
+                style={{ gridTemplateColumns: '1fr 1fr' }}
               >
                 {(
                   [
-                    { label: "GB start", value: formatDate(gb.gbStartIso) },
-                    { label: "GB end", value: formatDate(gb.gbEndIso) },
-                    { label: "Closes in", value: gb.closes },
-                    { label: "Est. fulfillment", value: gb.eta },
+                    { label: 'GB start', value: formatDate(gb.gbStartIso) },
+                    { label: 'GB end', value: formatDate(gb.gbEndIso) },
+                    { label: 'Closes in', value: gb.closes },
+                    { label: 'Est. fulfillment', value: gb.eta },
                   ] as const
                 ).map(({ label, value }, i) => (
                   <div
                     key={label}
                     className={cn(
-                      "p-[12px_16px] bg-km-surface",
-                      i % 2 === 0 && "border-r border-km-line",
-                      i >= 2 && "border-t border-km-line",
+                      'p-[12px_16px] bg-km-surface',
+                      i % 2 === 0 && 'border-r border-km-line',
+                      i >= 2 && 'border-t border-km-line',
                     )}
                   >
                     <div className="font-km-mono text-[10px] tracking-[0.1em] uppercase text-km-ink-mute mb-0.5">
@@ -581,12 +488,12 @@ export default function GroupBuyDetails() {
                 onChange={(t) => setTab(t as DetailTab)}
               />
               <div className="p-4">
-                {tab === "overview" && (
+                {tab === 'overview' && (
                   <div className="text-sm text-km-ink-dim whitespace-pre-line leading-[1.65]">
-                    {gb.desc || "No description provided."}
+                    {gb.desc || 'No description provided.'}
                   </div>
                 )}
-                {tab === "vendors" && (
+                {tab === 'vendors' && (
                   <div className="flex flex-col gap-2">
                     {gb.vendors.map((v, i) => (
                       <div
@@ -615,7 +522,7 @@ export default function GroupBuyDetails() {
                           <a
                             href={
                               v.url
-                                ? v.url.startsWith("http")
+                                ? v.url.startsWith('http')
                                   ? v.url
                                   : `https://${v.url}`
                                 : undefined

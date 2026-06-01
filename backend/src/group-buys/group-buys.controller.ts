@@ -1,22 +1,47 @@
-import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  MessageEvent,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Sse,
+  UseGuards,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { GroupBuysService } from './group-buys.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
+import { BulkImportDto } from './dto/bulk-import.dto';
 
 @Controller('groupbuys')
 export class GroupBuysController {
   constructor(private readonly groupBuysService: GroupBuysService) {}
 
   @Get()
-  findAll(@Query('status') status?: string) {
-    return this.groupBuysService.findAll(status);
+  findAll(@Query('stage') stage?: string) {
+    return this.groupBuysService.findAll(stage);
+  }
+
+  @Get('counts')
+  getCounts() {
+    return this.groupBuysService.getCounts();
   }
 
   @Get('admin/all')
   @UseGuards(JwtAuthGuard, AdminGuard)
   findAllAdmin(@Query('status') status?: string) {
     return this.groupBuysService.findAllAdmin(status);
+  }
+
+  @Get('admin/scrape/stream')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Sse()
+  scraperStream(): Observable<MessageEvent> {
+    return this.groupBuysService.scraperStream();
   }
 
   @Get('admin/:id')
@@ -29,6 +54,12 @@ export class GroupBuysController {
   @UseGuards(JwtAuthGuard, AdminGuard)
   update(@Param('id') id: string, @Body() dto: UpdateGroupBuyDto) {
     return this.groupBuysService.update(id, dto);
+  }
+
+  @Post('admin/import')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  bulkImport(@Body() dto: BulkImportDto) {
+    return this.groupBuysService.bulkImport(dto.items);
   }
 
   @Get(':id')

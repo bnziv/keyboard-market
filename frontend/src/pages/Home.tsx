@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import NavBar from "@/components/NavBar";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/utils/AuthProvider";
-import { useToast } from "@/utils/ToastProvider";
-import { GroupBuyCard, CardGroupBuy } from "@/components/GroupBuyCard";
-import { ArrowRight, Loader2 } from "lucide-react";
-import api from "@/utils/api";
-import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/utils/AuthProvider';
+import { useToast } from '@/utils/ToastProvider';
+import { GroupBuyCard } from '@/components/GroupBuyCard';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import api from '@/utils/api';
+import { Button } from '@/components/ui/button';
+import type { ApiGroupBuy } from '@/types/groupBuy';
+import { toFeaturedCard } from '@/utils/groupBuyTransforms';
 
 const STATS = [
   ['2,847', 'Active listings'],
@@ -15,16 +16,6 @@ const STATS = [
   ['99.2%', 'Ship-on-time rate'],
 ] as const;
 
-interface GroupBuy {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  basePrice: { amount: number; currency: string } | null;
-  designer: string;
-  images: string[];
-}
-
 function stagePriority(status: string): number {
   if (status === 'GB') return 0;
   if (status === 'IC') return 1;
@@ -32,37 +23,17 @@ function stagePriority(status: string): number {
   return 3;
 }
 
-function mapStage(status: string): CardGroupBuy['stage'] {
-  if (status === 'GB') return 'live';
-  if (status === 'IC') return 'interest';
-  if (status === 'shipping') return 'shipping';
-  return 'closed';
-}
-
-function toFeaturedCard(gb: GroupBuy): CardGroupBuy {
-  const category = gb.type ? gb.type.charAt(0).toUpperCase() + gb.type.slice(1) : 'Keyboard';
-  return {
-    id: gb.id, name: gb.name, designer: gb.designer,
-    category, stage: mapStage(gb.status),
-    price: gb.basePrice?.amount ?? 0,
-    imageUrl: gb.images?.[0] ?? null,
-    images: gb.images ?? [],
-    closes: '—', closingSoon: false, eta: '—', desc: '',
-    gbStartMs: null, gbEndMs: null, gbStartIso: null, gbEndIso: null,
-    sourceUrl: '', vendors: [], discordUrl: null, items: [],
-  };
-}
-
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { showInfo } = useToast();
-  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
+  const [groupBuys, setGroupBuys] = useState<ApiGroupBuy[]>([]);
   const [gbLoading, setGbLoading] = useState(true);
 
   useEffect(() => {
-    api.get<GroupBuy[]>('/api/groupbuys')
-      .then(res => setGroupBuys(res.data))
+    api
+      .get<ApiGroupBuy[]>('/api/groupbuys')
+      .then((res) => setGroupBuys(res.data))
       .finally(() => setGbLoading(false));
   }, []);
 
@@ -82,19 +53,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <NavBar activePage="home" />
-
       {/* Hero */}
-      <div className="border-b border-km-line px-8 py-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 gap-10 items-center">
+      <div className="border-b border-km-line px-4 sm:px-8 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
           <div>
             <h1
-              className="text-7xl font-bold leading-none mb-5 font-km-body"
+              className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-none mb-5 font-km-body"
               style={{ letterSpacing: '-0.04em' }}
             >
-              where the boards<br />change hands.
+              where the boards
+              <br />
+              change hands.
             </h1>
-            <p className="text-base leading-relaxed mb-7 text-km-ink-dim" style={{ maxWidth: '480px' }}>
+            <p className="text-base leading-relaxed mb-7 text-km-ink-dim max-w-sm lg:max-w-none">
               A members-only marketplace for enthusiast keyboards. No scalpers,
               no dropshippers — just people who care about the click.
             </p>
@@ -117,7 +88,8 @@ export default function Home() {
                 className="flex items-center justify-center bg-km-bg-sub"
                 style={{
                   aspectRatio: '4/3',
-                  backgroundImage: 'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
+                  backgroundImage:
+                    'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
                   backgroundSize: '8px 8px',
                 }}
               >
@@ -133,7 +105,7 @@ export default function Home() {
       </div>
 
       {/* Group buys section */}
-      <div className="px-8 py-10 max-w-6xl mx-auto w-full">
+      <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-6xl mx-auto w-full">
         <div className="flex items-baseline justify-between mb-5">
           <div>
             <div className="font-km-mono text-xs uppercase mb-1 text-km-gold tracking-[0.15em]">
@@ -156,18 +128,25 @@ export default function Home() {
             <Loader2 size={24} className="animate-spin text-km-ink-mute" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-5">
-            {featured.map(gb => (
-              <GroupBuyCard key={gb.id} gb={toFeaturedCard(gb)} variant="featured" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featured.map((gb) => (
+              <GroupBuyCard
+                key={gb.id}
+                gb={toFeaturedCard(gb)}
+                variant="featured"
+              />
             ))}
           </div>
         )}
 
         {/* Stats strip */}
-        <div className="mt-12 grid grid-cols-4 gap-8 p-7 rounded border bg-km-surface border-km-line">
+        <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 p-5 sm:p-7 rounded border bg-km-surface border-km-line">
           {STATS.map(([value, label]) => (
             <div key={label}>
-              <div className="text-3xl font-semibold font-km-body text-km-ink" style={{ letterSpacing: '-0.03em' }}>
+              <div
+                className="text-3xl font-semibold font-km-body text-km-ink"
+                style={{ letterSpacing: '-0.03em' }}
+              >
                 {value}
               </div>
               <div className="mt-1 text-xs uppercase tracking-widest font-km-mono text-km-ink-mute tracking-[0.12em]">

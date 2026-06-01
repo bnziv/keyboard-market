@@ -5,7 +5,11 @@ import { GroupBuysService } from './group-buys.service';
 import { GroupBuysController } from './group-buys.controller';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: GroupBuy.name, schema: GroupBuySchema }])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: GroupBuy.name, schema: GroupBuySchema },
+    ]),
+  ],
   providers: [GroupBuysService],
   controllers: [GroupBuysController],
 })
