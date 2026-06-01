@@ -223,7 +223,7 @@ export default function ScraperPreview() {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background: 'var(--km-bg)',
         color: 'var(--km-ink)',
       }}

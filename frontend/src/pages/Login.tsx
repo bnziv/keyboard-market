@@ -625,7 +625,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[1.1fr_1fr] bg-km-bg text-km-ink">
+    <div className="min-h-dvh grid grid-cols-1 md:grid-cols-[1.1fr_1fr] bg-km-bg text-km-ink">
       {/* ── Left: brand panel — hidden on mobile ── */}
       <aside className="hidden md:flex flex-col bg-km-bg-sub border-r border-km-line px-14 py-10 relative overflow-hidden">
         <div

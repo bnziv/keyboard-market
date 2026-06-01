@@ -75,7 +75,7 @@ export default function ListingDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-km-bg">
+      <div className="min-h-dvh flex flex-col bg-km-bg">
         <div className="flex-1 flex items-center justify-center">
           <div className="font-km-mono text-sm text-km-ink-mute">
             Loading listing…
@@ -88,7 +88,7 @@ export default function ListingDetailsPage() {
   const sellerInitial = (listing.seller?.username?.[0] ?? '?').toUpperCase();
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-5 text-xs font-km-mono text-km-ink-mute">

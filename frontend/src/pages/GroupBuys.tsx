@@ -112,7 +112,7 @@ export default function GroupBuys() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
       {/* Page header */}
       <div className="border-b border-km-line bg-km-surface px-4 sm:px-8 pt-8 sm:pt-10 pb-0">
         <div className="max-w-[1280px] mx-auto">

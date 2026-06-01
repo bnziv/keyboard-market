@@ -140,7 +140,7 @@ export default function CreateListing() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-8 py-8 pb-16">
         {/* Header */}
         <div className="font-km-mono text-[11px] uppercase text-km-gold tracking-[0.15em] mb-2">

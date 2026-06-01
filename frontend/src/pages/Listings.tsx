@@ -260,10 +260,10 @@ export default function Listings() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
-      <div className="flex flex-1" style={{ minHeight: 'calc(100vh - 56px)' }}>
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
+      <div className="flex flex-1" style={{ minHeight: 'calc(100dvh - 56px)' }}>
         {/* Desktop sidebar */}
-        <aside className="hidden md:block w-64 flex-shrink-0 h-[100vh] self-start sticky top-0 p-6 border-r overflow-y-auto bg-km-bg-sub border-km-line text-xs">
+        <aside className="hidden md:block w-64 flex-shrink-0 h-dvh self-start sticky top-0 p-6 border-r overflow-y-auto bg-km-bg-sub border-km-line text-xs">
           <FilterContent filters={filters} setFilters={setFilters} />
         </aside>
 

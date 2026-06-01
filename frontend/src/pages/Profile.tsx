@@ -91,7 +91,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-km-bg">
+      <div className="min-h-dvh flex flex-col bg-km-bg">
         <div className="flex-1 flex items-center justify-center">
           <div className="font-km-mono text-sm text-km-ink-mute">
             Loading profile…
@@ -102,7 +102,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
       {/* Banner */}
       <div className="border-b border-km-line px-4 sm:px-8 pt-6 sm:pt-9 pb-0 bg-km-bg-sub">
         <div className="max-w-6xl mx-auto">

@@ -52,7 +52,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
+    <div className="min-h-dvh flex flex-col bg-km-bg text-km-ink">
       {/* Hero */}
       <div className="border-b border-km-line px-4 sm:px-8 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
