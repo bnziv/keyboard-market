@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Group Buys public flow', () => {
-  test('can browse group buys page and see IC/GB tabs', async ({ page }) => {
+  test('can browse group buys page and see heading', async ({ page }) => {
     await page.goto('/group-buys');
 
     await expect(page).toHaveURL(/\/group-buys/);
-    await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /group buys/i })).toBeVisible();
   });
 
   test('Group Buys link is visible in the nav', async ({ page }) => {
@@ -24,16 +24,15 @@ test.describe('Listings public flow', () => {
     await expect(page).toHaveURL(/\/listings/);
   });
 
-  test('listings page shows a search/filter interface', async ({ page }) => {
+  test('listings page renders content area', async ({ page }) => {
     await page.goto('/listings');
-    await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.locator('section').first()).toBeVisible();
   });
 });
 
 test.describe('Protected route redirect', () => {
   test('visiting /create-listing while unauthenticated redirects to home', async ({ page }) => {
     await page.goto('/create-listing');
-    // Should be redirected to / because ProtectedRoute triggers
     await expect(page).not.toHaveURL(/\/create-listing/, { timeout: 3000 });
   });
 });
