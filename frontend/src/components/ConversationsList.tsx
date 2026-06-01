@@ -15,14 +15,20 @@ interface ConversationsListProps {
   onClose: () => void;
 }
 
-export function ConversationsList({ currentUserId, onSelectConversation, onClose }: ConversationsListProps) {
+export function ConversationsList({
+  currentUserId,
+  onSelectConversation,
+  onClose,
+}: ConversationsListProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await api.get(`/api/chat/conversations/${currentUserId}`);
+        const response = await api.get(
+          `/api/chat/conversations/${currentUserId}`,
+        );
         setConversations(response.data);
       } catch (error) {
         console.error('Failed to load conversations:', error);
@@ -52,15 +58,19 @@ export function ConversationsList({ currentUserId, onSelectConversation, onClose
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <span className="font-km-mono text-xs text-km-ink-mute">Loading…</span>
+            <span className="font-km-mono text-xs text-km-ink-mute">
+              Loading…
+            </span>
           </div>
         ) : conversations.length === 0 ? (
           <div className="flex justify-center items-center h-full">
-            <span className="font-km-mono text-xs text-km-ink-mute">No conversations yet</span>
+            <span className="font-km-mono text-xs text-km-ink-mute">
+              No conversations yet
+            </span>
           </div>
         ) : (
           <div className="py-2">
-            {conversations.map(c => (
+            {conversations.map((c) => (
               <button
                 key={c.userId}
                 onClick={() => onSelectConversation(c.userId, c.username)}
@@ -81,7 +91,10 @@ export function ConversationsList({ currentUserId, onSelectConversation, onClose
                 </div>
                 {c.timestamp && (
                   <span className="flex-shrink-0 font-km-mono text-[10px] text-km-ink-mute">
-                    {new Date(c.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                    {new Date(c.timestamp).toLocaleDateString([], {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </span>
                 )}
               </button>

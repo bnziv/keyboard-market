@@ -1,28 +1,35 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useToast } from "@/utils/ToastProvider"
-import { useAuth } from "@/utils/AuthProvider"
-import api from "@/utils/api"
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Check } from "lucide-react"
-import { FcGoogle } from "react-icons/fc"
-import { cn } from "@/lib/utils"
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/utils/ToastProvider';
+import { useAuth } from '@/utils/AuthProvider';
+import api from '@/utils/api';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
+import { cn } from '@/lib/utils';
 
-type Mode = 'signin' | 'signup'
+type Mode = 'signin' | 'signup';
 
 interface FormState {
-  identifier: string
-  email: string
-  username: string
-  password: string
-  rememberMe: boolean
-  interests: string[]
-  displayName: string
-  location: string
+  identifier: string;
+  email: string;
+  username: string;
+  password: string;
+  rememberMe: boolean;
+  interests: string[];
+  displayName: string;
+  location: string;
 }
 
-const inputCls = "w-full px-[14px] py-[11px] border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-sm font-km-body outline-none box-border"
+const inputCls =
+  'w-full px-[14px] py-[11px] border border-km-line-strong rounded-[6px] bg-km-surface text-km-ink text-sm font-km-body outline-none box-border';
 
-function FieldLabel({ label, right }: { label: string; right?: React.ReactNode }) {
+function FieldLabel({
+  label,
+  right,
+}: {
+  label: string;
+  right?: React.ReactNode;
+}) {
   return (
     <div className="flex items-baseline justify-between mb-1.5">
       <label className="font-km-mono text-[10px] text-km-ink-dim tracking-[0.1em] uppercase font-semibold">
@@ -30,18 +37,24 @@ function FieldLabel({ label, right }: { label: string; right?: React.ReactNode }
       </label>
       {right}
     </div>
-  )
+  );
 }
 
-function Field({ label, right, help, className, children }: {
-  label: string
-  right?: React.ReactNode
-  help?: string
-  className?: string
-  children: React.ReactNode
+function Field({
+  label,
+  right,
+  help,
+  className,
+  children,
+}: {
+  label: string;
+  right?: React.ReactNode;
+  help?: string;
+  className?: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className={cn("mb-[18px]", className)}>
+    <div className={cn('mb-[18px]', className)}>
       <FieldLabel label={label} right={right} />
       {children}
       {help && (
@@ -50,7 +63,7 @@ function Field({ label, right, help, className, children }: {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function OAuthBtn({ icon, label }: { icon: React.ReactNode; label: string }) {
@@ -62,15 +75,21 @@ function OAuthBtn({ icon, label }: { icon: React.ReactNode; label: string }) {
       {icon}
       <span>{label}</span>
     </button>
-  )
+  );
 }
 
-function PrimaryBtn({ children, onClick, type = 'button', className, disabled }: {
-  children: React.ReactNode
-  onClick?: () => void
-  type?: 'button' | 'submit'
-  className?: string
-  disabled?: boolean
+function PrimaryBtn({
+  children,
+  onClick,
+  type = 'button',
+  className,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  type?: 'button' | 'submit';
+  className?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
@@ -78,16 +97,22 @@ function PrimaryBtn({ children, onClick, type = 'button', className, disabled }:
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "w-full flex items-center justify-center gap-2 py-[13px] border border-km-ink rounded-[6px] bg-km-ink text-km-bg text-sm font-semibold cursor-pointer font-km-body transition-all duration-[120ms] disabled:opacity-60 disabled:cursor-not-allowed",
-        className
+        'w-full flex items-center justify-center gap-2 py-[13px] border border-km-ink rounded-[6px] bg-km-ink text-km-bg text-sm font-semibold cursor-pointer font-km-body transition-all duration-[120ms] disabled:opacity-60 disabled:cursor-not-allowed',
+        className,
       )}
     >
       {children}
     </button>
-  )
+  );
 }
 
-function GhostBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+function GhostBtn({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
@@ -96,45 +121,56 @@ function GhostBtn({ children, onClick }: { children: React.ReactNode; onClick?: 
     >
       {children}
     </button>
-  )
+  );
 }
 
-function Checkbox({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: React.ReactNode }) {
+function Checkbox({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-2">
       <div
         onClick={onChange}
         className={cn(
           'w-4 h-4 flex-shrink-0 mt-px border border-km-line-strong rounded-[3px] flex items-center justify-center text-km-bg cursor-pointer',
-          checked ? 'bg-km-ink' : 'bg-transparent'
+          checked ? 'bg-km-ink' : 'bg-transparent',
         )}
       >
         {checked && <Check size={11} strokeWidth={3} />}
       </div>
       <span className="text-[13px] text-km-ink-dim leading-[1.5]">{label}</span>
     </div>
-  )
+  );
 }
 
 function getPasswordStrength(pw: string): number {
-  if (!pw) return 0
-  let s = 0
-  if (pw.length >= 8) s++
-  if (/[0-9]/.test(pw)) s++
-  if (/[^a-zA-Z0-9]/.test(pw)) s++
-  if (pw.length >= 12) s++
-  return Math.min(s, 4)
+  if (!pw) return 0;
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^a-zA-Z0-9]/.test(pw)) s++;
+  if (pw.length >= 12) s++;
+  return Math.min(s, 4);
 }
 
 function PasswordStrengthBar({ strength }: { strength: number }) {
-  const activeColor = strength >= 2 ? 'bg-km-gold' : 'bg-km-line-strong'
+  const activeColor = strength >= 2 ? 'bg-km-gold' : 'bg-km-line-strong';
   return (
     <>
       <div className="flex gap-1 mt-2">
-        {[0, 1, 2, 3].map(i => (
+        {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className={cn('flex-1 h-[3px] rounded-[1px] transition-colors duration-200', i < strength ? activeColor : 'bg-km-line')}
+            className={cn(
+              'flex-1 h-[3px] rounded-[1px] transition-colors duration-200',
+              i < strength ? activeColor : 'bg-km-line',
+            )}
           />
         ))}
       </div>
@@ -142,22 +178,28 @@ function PasswordStrengthBar({ strength }: { strength: number }) {
         <span>min 8 chars · 1 number · 1 symbol</span>
         {strength > 0 && (
           <span className={strength >= 3 ? 'text-km-gold' : 'text-km-ink-mute'}>
-            {(['weak', 'okay', 'good', 'strong'])[strength - 1]}
+            {['weak', 'okay', 'good', 'strong'][strength - 1]}
           </span>
         )}
       </div>
     </>
-  )
+  );
 }
 
-function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
-  form: FormState
-  setForm: React.Dispatch<React.SetStateAction<FormState>>
-  onSubmit: (e: React.FormEvent) => void
-  switchMode: (m: Mode) => void
-  isLoading: boolean
+function SignInForm({
+  form,
+  setForm,
+  onSubmit,
+  switchMode,
+  isLoading,
+}: {
+  form: FormState;
+  setForm: React.Dispatch<React.SetStateAction<FormState>>;
+  onSubmit: (e: React.FormEvent) => void;
+  switchMode: (m: Mode) => void;
+  isLoading: boolean;
 }) {
-  const [showPw, setShowPw] = useState(false)
+  const [showPw, setShowPw] = useState(false);
 
   return (
     <form onSubmit={onSubmit}>
@@ -177,7 +219,9 @@ function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
 
       <div className="flex items-center gap-3 my-6">
         <div className="flex-1 h-px bg-km-line" />
-        <span className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.15em] uppercase">or with email</span>
+        <span className="font-km-mono text-[10px] text-km-ink-mute tracking-[0.15em] uppercase">
+          or with email
+        </span>
         <div className="flex-1 h-px bg-km-line" />
       </div>
 
@@ -185,7 +229,9 @@ function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
         <input
           type="text"
           value={form.identifier}
-          onChange={e => setForm(f => ({ ...f, identifier: e.target.value }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, identifier: e.target.value }))
+          }
           placeholder="you@example.com"
           className={inputCls}
         />
@@ -203,13 +249,15 @@ function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
           <input
             type={showPw ? 'text' : 'password'}
             value={form.password}
-            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, password: e.target.value }))
+            }
             placeholder="••••••••"
             className={inputCls}
           />
           <button
             type="button"
-            onClick={() => setShowPw(v => !v)}
+            onClick={() => setShowPw((v) => !v)}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-km-ink-mute p-1.5"
           >
             {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -220,13 +268,19 @@ function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
       <div className="mb-6">
         <Checkbox
           checked={form.rememberMe}
-          onChange={() => setForm(f => ({ ...f, rememberMe: !f.rememberMe }))}
+          onChange={() => setForm((f) => ({ ...f, rememberMe: !f.rememberMe }))}
           label="Keep me signed in on this device"
         />
       </div>
 
       <PrimaryBtn type="submit" disabled={isLoading}>
-        {isLoading ? 'Signing in…' : <><span>Sign in</span> <ArrowRight size={14} /></>}
+        {isLoading ? (
+          'Signing in…'
+        ) : (
+          <>
+            <span>Sign in</span> <ArrowRight size={14} />
+          </>
+        )}
       </PrimaryBtn>
 
       <div className="mt-6 text-center text-[13px] text-km-ink-dim">
@@ -239,26 +293,44 @@ function SignInForm({ form, setForm, onSubmit, switchMode, isLoading }: {
         </span>
       </div>
     </form>
-  )
+  );
 }
 
-function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
-  form: FormState
-  setForm: React.Dispatch<React.SetStateAction<FormState>>
-  onContinue: () => void
-  switchMode: (m: Mode) => void
-  showError: (msg: string) => void
+function SignUpStep1({
+  form,
+  setForm,
+  onContinue,
+  switchMode,
+  showError,
+}: {
+  form: FormState;
+  setForm: React.Dispatch<React.SetStateAction<FormState>>;
+  onContinue: () => void;
+  switchMode: (m: Mode) => void;
+  showError: (msg: string) => void;
 }) {
-  const [agreed, setAgreed] = useState(false)
-  const pwStrength = getPasswordStrength(form.password)
+  const [agreed, setAgreed] = useState(false);
+  const pwStrength = getPasswordStrength(form.password);
 
   const handleContinue = () => {
-    if (!form.username.trim()) { showError("Username cannot be empty"); return }
-    if (!form.email.trim()) { showError("Email cannot be empty"); return }
-    if (!form.password.trim()) { showError("Password cannot be empty"); return }
-    if (!agreed) { showError("Please agree to the terms"); return }
-    onContinue()
-  }
+    if (!form.username.trim()) {
+      showError('Username cannot be empty');
+      return;
+    }
+    if (!form.email.trim()) {
+      showError('Email cannot be empty');
+      return;
+    }
+    if (!form.password.trim()) {
+      showError('Password cannot be empty');
+      return;
+    }
+    if (!agreed) {
+      showError('Please agree to the terms');
+      return;
+    }
+    onContinue();
+  };
 
   return (
     <div>
@@ -296,9 +368,11 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
             <input
               type="text"
               value={form.username}
-              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, username: e.target.value }))
+              }
               placeholder="yourname"
-              className={cn(inputCls, "pl-8 font-km-mono")}
+              className={cn(inputCls, 'pl-8 font-km-mono')}
             />
           </div>
         </Field>
@@ -307,7 +381,7 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
           <input
             type="email"
             value={form.email}
-            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             placeholder="you@example.com"
             className={inputCls}
           />
@@ -317,7 +391,9 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
           <input
             type="password"
             value={form.password}
-            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, password: e.target.value }))
+            }
             placeholder="••••••••"
             className={inputCls}
           />
@@ -327,13 +403,15 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
         <div className="mb-5">
           <Checkbox
             checked={agreed}
-            onChange={() => setAgreed(v => !v)}
+            onChange={() => setAgreed((v) => !v)}
             label={
               <>
                 I agree to the{' '}
-                <span className="text-km-gold cursor-pointer">Terms</span>
-                {' '}and the{' '}
-                <span className="text-km-gold cursor-pointer">community guidelines</span>
+                <span className="text-km-gold cursor-pointer">Terms</span> and
+                the{' '}
+                <span className="text-km-gold cursor-pointer">
+                  community guidelines
+                </span>
                 . I'll only sell items I actually own.
               </>
             }
@@ -355,25 +433,41 @@ function SignUpStep1({ form, setForm, onContinue, switchMode, showError }: {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const INTERESTS = [
-  'Keyboards', 'Keycaps', 'Linear switches', 'Tactile switches',
-  'Clicky switches', 'PCBs / cases', 'Artisans', 'Cables', 'Group buys',
-]
+  'Keyboards',
+  'Keycaps',
+  'Linear switches',
+  'Tactile switches',
+  'Clicky switches',
+  'PCBs / cases',
+  'Artisans',
+  'Cables',
+  'Group buys',
+];
 
-function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
-  form: FormState
-  setForm: React.Dispatch<React.SetStateAction<FormState>>
-  onBack: () => void
-  onFinish: () => void
-  isLoading: boolean
+function SignUpStep2({
+  form,
+  setForm,
+  onBack,
+  onFinish,
+  isLoading,
+}: {
+  form: FormState;
+  setForm: React.Dispatch<React.SetStateAction<FormState>>;
+  onBack: () => void;
+  onFinish: () => void;
+  isLoading: boolean;
 }) {
-  const toggle = (o: string) => setForm(f => ({
-    ...f,
-    interests: f.interests.includes(o) ? f.interests.filter(x => x !== o) : [...f.interests, o],
-  }))
+  const toggle = (o: string) =>
+    setForm((f) => ({
+      ...f,
+      interests: f.interests.includes(o)
+        ? f.interests.filter((x) => x !== o)
+        : [...f.interests, o],
+    }));
 
   return (
     <div>
@@ -390,25 +484,28 @@ function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
         What are you into?
       </h2>
       <p className="mt-2 text-[13px] text-km-ink-dim">
-        We'll tailor your feed and notify you about group buys that match. You can change this any time.
+        We'll tailor your feed and notify you about group buys that match. You
+        can change this any time.
       </p>
 
       <div className="flex flex-wrap gap-2 mt-6">
-        {INTERESTS.map(o => {
-          const on = form.interests.includes(o)
+        {INTERESTS.map((o) => {
+          const on = form.interests.includes(o);
           return (
             <div
               key={o}
               onClick={() => toggle(o)}
               className={cn(
                 'px-3.5 py-2 border rounded-[6px] text-xs cursor-pointer inline-flex items-center gap-1.5 transition-all duration-[120ms]',
-                on ? 'border-km-ink bg-km-ink text-km-bg' : 'border-km-line-strong bg-transparent text-km-ink-dim'
+                on
+                  ? 'border-km-ink bg-km-ink text-km-bg'
+                  : 'border-km-line-strong bg-transparent text-km-ink-dim',
               )}
             >
               {on && <Check size={10} strokeWidth={3} />}
               {o}
             </div>
-          )
+          );
         })}
       </div>
 
@@ -416,7 +513,9 @@ function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
         <input
           type="text"
           value={form.displayName}
-          onChange={e => setForm(f => ({ ...f, displayName: e.target.value }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, displayName: e.target.value }))
+          }
           placeholder="Your name"
           className={inputCls}
         />
@@ -429,7 +528,7 @@ function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
         <input
           type="text"
           value={form.location}
-          onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
           placeholder="City, State"
           className={inputCls}
         />
@@ -440,21 +539,27 @@ function SignUpStep2({ form, setForm, onBack, onFinish, isLoading }: {
           <ArrowLeft size={14} /> Back
         </GhostBtn>
         <PrimaryBtn onClick={onFinish} className="flex-1" disabled={isLoading}>
-          {isLoading ? 'Creating account…' : <><span>Finish &amp; enter market</span> <ArrowRight size={14} /></>}
+          {isLoading ? (
+            'Creating account…'
+          ) : (
+            <>
+              <span>Finish &amp; enter market</span> <ArrowRight size={14} />
+            </>
+          )}
         </PrimaryBtn>
       </div>
     </div>
-  )
+  );
 }
 
 export default function Login() {
-  const { showError, showSuccess } = useToast()
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const { showError, showSuccess } = useToast();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const [mode, setMode] = useState<Mode>('signin')
-  const [step, setStep] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<Mode>('signin');
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState<FormState>({
     identifier: '',
     email: '',
@@ -464,51 +569,60 @@ export default function Login() {
     interests: ['Keyboards'],
     displayName: '',
     location: '',
-  })
+  });
 
-  const switchMode = (m: Mode) => { setMode(m); setStep(1) }
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setStep(1);
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.identifier.trim()) { showError("Email or username cannot be empty"); return }
-    if (!form.password.trim()) { showError("Password cannot be empty"); return }
-    setIsLoading(true)
+    e.preventDefault();
+    if (!form.identifier.trim()) {
+      showError('Email or username cannot be empty');
+      return;
+    }
+    if (!form.password.trim()) {
+      showError('Password cannot be empty');
+      return;
+    }
+    setIsLoading(true);
     try {
       const res = await api.post('/api/auth/login', {
         identifier: form.identifier,
         password: form.password,
-      })
+      });
       if (res.status === 201) {
-        login(res.data)
-        showSuccess("Welcome back!")
-        setTimeout(() => navigate("/listings"), 1500)
+        login(res.data);
+        showSuccess('Welcome back!');
+        setTimeout(() => navigate('/listings'), 1500);
       }
     } catch (err: any) {
-      showError(err.response?.data?.error ?? "Failed to sign in")
+      showError(err.response?.data?.error ?? 'Failed to sign in');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleRegister = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const res = await api.post('/api/auth/register', {
         email: form.email,
         username: form.username,
         password: form.password,
-      })
+      });
       if (res.status === 201) {
-        login(res.data)
-        showSuccess("Welcome to KBMARKET!")
-        setTimeout(() => navigate("/listings"), 1500)
+        login(res.data);
+        showSuccess('Welcome to KBMARKET!');
+        setTimeout(() => navigate('/listings'), 1500);
       }
     } catch (err: any) {
-      showError(err.response?.data?.error ?? "Failed to register")
+      showError(err.response?.data?.error ?? 'Failed to register');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-[1.1fr_1fr] bg-km-bg text-km-ink">
@@ -517,7 +631,8 @@ export default function Login() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at top right, rgba(212,178,76,0.08), transparent 60%), radial-gradient(ellipse at bottom left, rgba(139,122,212,0.12), transparent 50%)',
+            background:
+              'radial-gradient(ellipse at top right, rgba(212,178,76,0.08), transparent 60%), radial-gradient(ellipse at bottom left, rgba(139,122,212,0.12), transparent 50%)',
           }}
         />
 
@@ -539,13 +654,24 @@ export default function Login() {
             style={{ maxWidth: 460 }}
           >
             {mode === 'signin' ? (
-              <>The market is<br />where you left it.</>
+              <>
+                The market is
+                <br />
+                where you left it.
+              </>
             ) : (
-              <>Join the people<br />behind the keys.</>
+              <>
+                Join the people
+                <br />
+                behind the keys.
+              </>
             )}
           </h1>
 
-          <p className="mt-[22px] text-[15px] leading-[1.6] text-km-ink-dim" style={{ maxWidth: 420 }}>
+          <p
+            className="mt-[22px] text-[15px] leading-[1.6] text-km-ink-dim"
+            style={{ maxWidth: 420 }}
+          >
             {mode === 'signin'
               ? 'Pick up your saved searches, watchlist, and conversations. Your reputation comes with you.'
               : 'A small, verified community trading enthusiast keyboards, switches, and keycaps. No bots, no scalpers.'}
@@ -556,11 +682,13 @@ export default function Login() {
             className="mt-9 p-[18px_22px] border border-km-line rounded-[6px] bg-white/[0.02] grid gap-7"
             style={{ gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: 460 }}
           >
-            {([
-              ['18.2k', 'verified members'],
-              ['$1.4M', 'traded · 30d'],
-              ['99.2%', 'ship-on-time'],
-            ] as const).map(([v, l]) => (
+            {(
+              [
+                ['18.2k', 'verified members'],
+                ['$1.4M', 'traded · 30d'],
+                ['99.2%', 'ship-on-time'],
+              ] as const
+            ).map(([v, l]) => (
               <div key={l}>
                 <div className="font-km-body text-[22px] font-semibold text-km-ink tracking-[-0.02em]">
                   {v}
@@ -595,8 +723,13 @@ export default function Login() {
           </button>
 
           <div className="flex gap-1 p-1 border border-km-line rounded-[6px] bg-km-surface">
-            {([['signin', 'Sign in'], ['signup', 'Create account']] as [Mode, string][]).map(([v, l]) => {
-              const active = mode === v
+            {(
+              [
+                ['signin', 'Sign in'],
+                ['signup', 'Create account'],
+              ] as [Mode, string][]
+            ).map(([v, l]) => {
+              const active = mode === v;
               return (
                 <button
                   key={v}
@@ -604,12 +737,14 @@ export default function Login() {
                   onClick={() => switchMode(v)}
                   className={cn(
                     'py-[7px] px-[18px] border-none rounded text-xs cursor-pointer font-km-body whitespace-nowrap transition-all duration-[120ms]',
-                    active ? 'bg-km-ink text-km-bg font-semibold' : 'bg-transparent text-km-ink-dim font-medium'
+                    active
+                      ? 'bg-km-ink text-km-bg font-semibold'
+                      : 'bg-transparent text-km-ink-dim font-medium',
                   )}
                 >
                   {l}
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -656,5 +791,5 @@ export default function Login() {
         </div>
       </main>
     </div>
-  )
+  );
 }

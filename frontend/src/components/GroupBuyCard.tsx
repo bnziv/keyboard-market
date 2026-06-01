@@ -25,7 +25,6 @@ export interface CardGroupBuy {
   items: { name: string; price: number; currency: string }[];
 }
 
-
 type GroupBuyCardVariant = 'card' | 'featured';
 
 interface GroupBuyCardProps {
@@ -34,7 +33,11 @@ interface GroupBuyCardProps {
   onOpen?: () => void;
 }
 
-export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps) {
+export function GroupBuyCard({
+  gb,
+  variant = 'card',
+  onOpen,
+}: GroupBuyCardProps) {
   const meta = STAGE_BADGE_META[gb.stage];
 
   if (variant === 'featured') {
@@ -43,7 +46,10 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
         to={`/group-buys/${gb.id}`}
         className="block rounded border overflow-hidden transition-all duration-150 bg-km-surface border-km-line hover:border-km-ink hover:-translate-y-0.5 no-underline"
       >
-        <div className="relative" style={{ aspectRatio: '4/3', overflow: 'hidden' }}>
+        <div
+          className="relative"
+          style={{ aspectRatio: '4/3', overflow: 'hidden' }}
+        >
           <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
           <div className="absolute top-2.5 left-2.5">
             <Badge variant={meta.tone}>{meta.label}</Badge>
@@ -51,8 +57,12 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
         </div>
         <div className="px-4 py-3 border-t border-km-line">
           <div className="flex items-center justify-between">
-            <div className="font-semibold text-sm text-km-ink">{gb.name ?? '—'}</div>
-            <div className="font-semibold font-km-mono text-km-gold">{gb.price ? `$${gb.price}` : '—'}</div>
+            <div className="font-semibold text-sm text-km-ink">
+              {gb.name ?? '—'}
+            </div>
+            <div className="font-semibold font-km-mono text-km-gold">
+              {gb.price ? `$${gb.price}` : '—'}
+            </div>
           </div>
           <div className="mt-1 text-xs font-km-mono text-km-ink-mute">
             {gb ? `by ${gb.designer}` : '—'}
@@ -68,7 +78,13 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
       className="bg-km-surface border border-km-line hover:border-km-ink rounded-[6px] overflow-hidden cursor-pointer flex flex-col transition-colors duration-150"
     >
       {/* Image */}
-      <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
+      <div
+        style={{
+          aspectRatio: '16/10',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         <GroupBuyImage category={gb.category} imageUrl={gb.imageUrl} />
         <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
           <Badge variant={meta.tone}>{meta.label}</Badge>
@@ -108,7 +124,9 @@ export function GroupBuyCard({ gb, variant = 'card', onOpen }: GroupBuyCardProps
             <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase mb-0.5">
               {gb.stage === 'closed' ? 'Status' : 'Closes in'}
             </div>
-            <div className={`font-km-mono text-sm font-semibold ${gb.closingSoon ? 'text-km-gold' : 'text-km-ink'}`}>
+            <div
+              className={`font-km-mono text-sm font-semibold ${gb.closingSoon ? 'text-km-gold' : 'text-km-ink'}`}
+            >
               {gb.closes}
             </div>
           </div>

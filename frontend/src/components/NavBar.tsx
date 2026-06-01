@@ -1,8 +1,24 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
-import { Search, MessageSquare, User, LogOut, Plus, Sun, Moon, Menu, X } from 'lucide-react';
+import {
+  Search,
+  MessageSquare,
+  User,
+  LogOut,
+  Plus,
+  Sun,
+  Moon,
+  Menu,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { useToast } from '@/utils/ToastProvider';
 import { useTheme } from '@/utils/ThemeProvider';
@@ -14,12 +30,18 @@ interface NavBarProps {
 
 export default function NavBar({ className }: NavBarProps) {
   const { pathname } = useLocation();
-  const activePage = pathname === '/' ? 'home'
-    : pathname.startsWith('/listings') ? 'listings'
-    : pathname.startsWith('/create-listing') ? 'create'
-    : pathname.startsWith('/group-buys') ? 'groupbuys'
-    : pathname.startsWith('/profile') ? 'profile'
-    : undefined;
+  const activePage =
+    pathname === '/'
+      ? 'home'
+      : pathname.startsWith('/listings')
+        ? 'listings'
+        : pathname.startsWith('/create-listing')
+          ? 'create'
+          : pathname.startsWith('/group-buys')
+            ? 'groupbuys'
+            : pathname.startsWith('/profile')
+              ? 'profile'
+              : undefined;
 
   const { isAuthenticated, user, logout } = useAuth();
   const { showInfo } = useToast();
@@ -45,7 +67,12 @@ export default function NavBar({ className }: NavBarProps) {
   };
 
   return (
-    <header className={cn('sticky top-0 z-50 relative flex items-center gap-4 px-6 h-14 border-b bg-km-bg border-km-line', className)}>
+    <header
+      className={cn(
+        'sticky top-0 z-50 relative flex items-center gap-4 px-6 h-14 border-b bg-km-bg border-km-line',
+        className,
+      )}
+    >
       {/* Brand */}
       <Link
         to="/"
@@ -56,7 +83,10 @@ export default function NavBar({ className }: NavBarProps) {
       </Link>
 
       {/* Search — hidden on mobile */}
-      <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm ml-4">
+      <form
+        onSubmit={handleSearch}
+        className="hidden md:flex flex-1 max-w-sm ml-4"
+      >
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-text bg-km-surface-2 border-km-line text-km-ink-mute font-km-mono"
           onClick={() => document.getElementById('nav-search')?.focus()}
@@ -66,7 +96,7 @@ export default function NavBar({ className }: NavBarProps) {
             id="nav-search"
             type="text"
             value={searchValue}
-            onChange={e => setSearchValue(e.target.value)}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder="search keycaps, switches, PCBs…"
             className="flex-1 bg-transparent outline-none text-km-ink-dim font-km-mono text-[11px]"
           />
@@ -78,13 +108,24 @@ export default function NavBar({ className }: NavBarProps) {
       <nav className="ml-auto flex items-center gap-1">
         {[
           { id: 'listings' as const, label: 'Browse', href: '/listings' },
-          { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' },
+          {
+            id: 'groupbuys' as const,
+            label: 'Group Buys',
+            href: '/group-buys',
+          },
           { id: 'create' as const, label: 'Sell', href: '/create-listing' },
-        ].map(link => (
+        ].map((link) => (
           <Link
             key={link.id}
             to={link.href}
-            onClick={link.id === 'create' ? (e) => { e.preventDefault(); handleCreateListing(); } : undefined}
+            onClick={
+              link.id === 'create'
+                ? (e) => {
+                    e.preventDefault();
+                    handleCreateListing();
+                  }
+                : undefined
+            }
             className={cn(
               'relative hidden md:inline-flex px-3 py-2 text-sm font-medium transition-colors',
               activePage === link.id ? 'text-km-ink' : 'text-km-ink-dim',
@@ -108,7 +149,9 @@ export default function NavBar({ className }: NavBarProps) {
         {/* Theme toggle */}
         <button
           onClick={toggle}
-          title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          title={
+            theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+          }
           className="ml-1 w-8 h-8 flex items-center justify-center rounded-full border border-km-line text-km-ink-dim bg-transparent transition-colors cursor-pointer"
         >
           {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -122,14 +165,23 @@ export default function NavBar({ className }: NavBarProps) {
                 {(user?.username?.[0] ?? '?').toUpperCase()}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-km-surface border-km-line text-km-ink">
+            <DropdownMenuContent
+              align="end"
+              className="bg-km-surface border-km-line text-km-ink"
+            >
               <DropdownMenuItem asChild>
-                <Link to={`/profile/${user?.username}`} className="flex items-center gap-2 cursor-pointer text-km-ink">
+                <Link
+                  to={`/profile/${user?.username}`}
+                  className="flex items-center gap-2 cursor-pointer text-km-ink"
+                >
                   <User size={14} /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/create-listing" className="flex items-center gap-2 cursor-pointer text-km-ink">
+                <Link
+                  to="/create-listing"
+                  className="flex items-center gap-2 cursor-pointer text-km-ink"
+                >
                   <Plus size={14} /> Create Listing
                 </Link>
               </DropdownMenuItem>
@@ -153,7 +205,7 @@ export default function NavBar({ className }: NavBarProps) {
 
         {/* Hamburger — mobile only */}
         <button
-          onClick={() => setMobileOpen(v => !v)}
+          onClick={() => setMobileOpen((v) => !v)}
           className="ml-1 md:hidden w-8 h-8 flex items-center justify-center rounded-full border border-km-line text-km-ink-dim bg-transparent cursor-pointer"
           aria-label="Toggle menu"
         >
@@ -164,13 +216,19 @@ export default function NavBar({ className }: NavBarProps) {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="absolute top-14 left-0 right-0 z-40 bg-km-bg border-b border-km-line p-4 flex flex-col gap-1 md:hidden shadow-md">
-          <form onSubmit={(e) => { handleSearch(e); setMobileOpen(false); }} className="mb-2">
+          <form
+            onSubmit={(e) => {
+              handleSearch(e);
+              setMobileOpen(false);
+            }}
+            className="mb-2"
+          >
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-km-surface-2 border-km-line text-km-ink-mute font-km-mono">
               <Search size={12} className="text-km-ink-mute flex-shrink-0" />
               <input
                 type="text"
                 value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
+                onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="search keycaps, switches, PCBs…"
                 className="flex-1 bg-transparent outline-none text-km-ink-dim font-km-mono text-[11px]"
                 autoFocus
@@ -179,14 +237,21 @@ export default function NavBar({ className }: NavBarProps) {
           </form>
           {[
             { id: 'listings' as const, label: 'Browse', href: '/listings' },
-            { id: 'groupbuys' as const, label: 'Group Buys', href: '/group-buys' },
+            {
+              id: 'groupbuys' as const,
+              label: 'Group Buys',
+              href: '/group-buys',
+            },
             { id: 'create' as const, label: 'Sell', href: '/create-listing' },
-          ].map(link => (
+          ].map((link) => (
             <Link
               key={link.id}
               to={link.href}
               onClick={(e) => {
-                if (link.id === 'create') { e.preventDefault(); handleCreateListing(); }
+                if (link.id === 'create') {
+                  e.preventDefault();
+                  handleCreateListing();
+                }
                 setMobileOpen(false);
               }}
               className={cn(

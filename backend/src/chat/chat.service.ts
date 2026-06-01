@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ChatMessage, ChatMessageDocument } from './schemas/chat-message.schema';
+import {
+  ChatMessage,
+  ChatMessageDocument,
+} from './schemas/chat-message.schema';
 import { SendMessageDto } from './dto/send-message.dto';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ChatService {
   constructor(
-    @InjectModel(ChatMessage.name) private chatModel: Model<ChatMessageDocument>,
+    @InjectModel(ChatMessage.name)
+    private chatModel: Model<ChatMessageDocument>,
     private readonly usersService: UsersService,
   ) {}
 
@@ -16,7 +20,10 @@ export class ChatService {
     return this.chatModel.create(dto);
   }
 
-  async getChatHistory(userId1: string, userId2: string): Promise<ChatMessageDocument[]> {
+  async getChatHistory(
+    userId1: string,
+    userId2: string,
+  ): Promise<ChatMessageDocument[]> {
     return this.chatModel
       .find({
         $or: [

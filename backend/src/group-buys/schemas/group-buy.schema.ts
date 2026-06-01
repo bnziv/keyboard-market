@@ -16,8 +16,16 @@ export class GroupBuy {
   @Prop() gbEnd?: string;
   @Prop() estimatedFulfillment?: string;
   @Prop({ type: Object }) basePrice?: { amount: number; currency: string };
-  @Prop({ type: [Object] }) items?: { name: string; price: number; currency: string }[];
-  @Prop({ type: [Object] }) vendors?: { region: string; name: string; url: string }[];
+  @Prop({ type: [Object] }) items?: {
+    name: string;
+    price: number;
+    currency: string;
+  }[];
+  @Prop({ type: [Object] }) vendors?: {
+    region: string;
+    name: string;
+    url: string;
+  }[];
   @Prop() discordUrl?: string;
   @Prop() sourceUrl?: string;
   @Prop({ type: [String] }) images?: string[];

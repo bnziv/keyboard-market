@@ -2,8 +2,11 @@ import { load } from 'cheerio';
 import { GoogleGenAI } from '@google/genai';
 import { Model } from 'mongoose';
 
-const GEEKHACK_RSS = 'https://geekhack.org/index.php?action=.xml;type=rss;board=70';
-const FETCH_HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; keyboard-marketplace-bot/1.0)' };
+const GEEKHACK_RSS =
+  'https://geekhack.org/index.php?action=.xml;type=rss;board=70';
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (compatible; keyboard-marketplace-bot/1.0)',
+};
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite';
 const DELAY_MS = 2000;
 const MAX_PAGES = 10;
@@ -77,7 +80,7 @@ async function fetchUrl(url: string): Promise<string> {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseRssPage(xml: string): RssTopic[] {
@@ -119,15 +122,22 @@ async function fetchNewTopics(
     try {
       const xml = await fetchUrl(url);
       const items = parseRssPage(xml);
-      if (!items.length) { onLog('empty — stopping'); break; }
+      if (!items.length) {
+        onLog('empty — stopping');
+        break;
+      }
 
-      const fresh = items.filter(t => !existingIds.has(t.topic_id) && !newTopicIds.has(t.topic_id));
+      const fresh = items.filter(
+        (t) => !existingIds.has(t.topic_id) && !newTopicIds.has(t.topic_id),
+      );
       onLog(`${fresh.length} new topic(s) found`);
 
       if (!fresh.length) {
         consecutiveEmpty++;
         if (consecutiveEmpty >= 6) {
-          onLog('  Two consecutive pages with no new topics — done paginating.');
+          onLog(
+            '  Two consecutive pages with no new topics — done paginating.',
+          );
           break;
         }
       } else {
@@ -155,47 +165,67 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
   const $ = load(html);
   const results: PostData[] = [];
 
-  $('.post_wrapper').slice(0, maxPosts).each((_, wrapper) => {
-    const $w = $(wrapper);
+  $('.post_wrapper')
+    .slice(0, maxPosts)
+    .each((_, wrapper) => {
+      const $w = $(wrapper);
 
-    const poster = $w.find('div.poster h4 a[href*="action=profile"]').first().text().trim();
-    const post_title = $w.find('h5[id^="subject_"] a').first().text().trim();
+      const poster = $w
+        .find('div.poster h4 a[href*="action=profile"]')
+        .first()
+        .text()
+        .trim();
+      const post_title = $w.find('h5[id^="subject_"] a').first().text().trim();
 
-    let post_date = '';
-    $w.find('div.smalltext').each((_, el) => {
-      if (post_date) return;
-      const m = $(el).text().match(/on:\s*(\w+,\s+\d+\s+\w+\s+\d{4})/);
-      if (m) post_date = m[1];
+      let post_date = '';
+      $w.find('div.smalltext').each((_, el) => {
+        if (post_date) return;
+        const m = $(el)
+          .text()
+          .match(/on:\s*(\w+,\s+\d+\s+\w+\s+\d{4})/);
+        if (m) post_date = m[1];
+      });
+
+      const msgDiv = $w.find('div[id^="msg_"]').first();
+      const text = msgDiv.text().replace(/\s+/g, ' ').trim();
+
+      const imageSet = new Set<string>();
+      msgDiv.find('img').each((_, img) => {
+        const src = $(img).attr('src') ?? '';
+        if (
+          src &&
+          !src.includes('Smileys') &&
+          !src.includes('/post/') &&
+          !src.includes('useroff')
+        ) {
+          imageSet.add(src);
+        }
+      });
+
+      const links: { href: string; text: string }[] = [];
+      msgDiv.find('a').each((_, a) => {
+        const href = $(a).attr('href') ?? '';
+        const cls = $(a).attr('class') ?? '';
+        if (
+          href &&
+          !href.startsWith('javascript') &&
+          !href.includes('PHPSESSID') &&
+          !cls.includes('highslide') &&
+          !href.includes('action=profile')
+        ) {
+          links.push({ href, text: $(a).text().trim() });
+        }
+      });
+
+      results.push({
+        poster,
+        post_title,
+        post_date,
+        text,
+        images: [...imageSet],
+        links,
+      });
     });
-
-    const msgDiv = $w.find('div[id^="msg_"]').first();
-    const text = msgDiv.text().replace(/\s+/g, ' ').trim();
-
-    const imageSet = new Set<string>();
-    msgDiv.find('img').each((_, img) => {
-      const src = $(img).attr('src') ?? '';
-      if (src && !src.includes('Smileys') && !src.includes('/post/') && !src.includes('useroff')) {
-        imageSet.add(src);
-      }
-    });
-
-    const links: { href: string; text: string }[] = [];
-    msgDiv.find('a').each((_, a) => {
-      const href = $(a).attr('href') ?? '';
-      const cls = $(a).attr('class') ?? '';
-      if (
-        href &&
-        !href.startsWith('javascript') &&
-        !href.includes('PHPSESSID') &&
-        !cls.includes('highslide') &&
-        !href.includes('action=profile')
-      ) {
-        links.push({ href, text: $(a).text().trim() });
-      }
-    });
-
-    results.push({ poster, post_title, post_date, text, images: [...imageSet], links });
-  });
 
   return results;
 }
@@ -203,8 +233,8 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
 function buildPrompt(post: PostData): string {
   const poster = post.poster;
   const linksFormatted = post.links
-    .filter(l => l.href)
-    .map(l => `  - ${l.text}: ${l.href}`)
+    .filter((l) => l.href)
+    .map((l) => `  - ${l.text}: ${l.href}`)
     .join('\n');
 
   return `You are extracting structured data from a Geekhack mechanical keyboard group buy post.
@@ -293,8 +323,11 @@ overview rules — one sentence of card subtext describing the product's aesthet
 }
 
 function safeParseDate(dateStr: string): string | null {
-  try { return new Date(dateStr).toISOString().split('T')[0]; }
-  catch { return null; }
+  try {
+    return new Date(dateStr).toISOString().split('T')[0];
+  } catch {
+    return null;
+  }
 }
 
 async function parseWithGemini(
@@ -311,10 +344,14 @@ async function parseWithGemini(
 
     const usage = response.usageMetadata;
     if (usage) {
-      onLog(`  tokens — in: ${usage.promptTokenCount}, thinking: ${usage.thoughtsTokenCount}, out: ${usage.candidatesTokenCount}, total: ${usage.totalTokenCount}`);
+      onLog(
+        `  tokens — in: ${usage.promptTokenCount}, thinking: ${usage.thoughtsTokenCount}, out: ${usage.candidatesTokenCount}, total: ${usage.totalTokenCount}`,
+      );
     }
 
-    const parsed = JSON.parse((response.text ?? '').trim()) as ScrapedItem | null;
+    const parsed = JSON.parse(
+      (response.text ?? '').trim(),
+    ) as ScrapedItem | null;
     if (parsed === null) return null;
 
     if (!parsed.designer && post.poster) parsed.designer = post.poster;
@@ -336,16 +373,25 @@ async function parseWithGemini(
   }
 }
 
-export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]> {
+export async function runScraper(
+  opts: RunScraperOptions,
+): Promise<ScrapedItem[]> {
   const { maxTopics = 10, onLog = () => {}, groupBuyModel } = opts;
 
   const existingIds = groupBuyModel
     ? new Set<string>(
-        (await groupBuyModel.find({ topicId: { $exists: true } }, { topicId: 1 }).lean().exec() as any[])
-          .map((d: any) => d.topicId as string),
+        (
+          (await groupBuyModel
+            .find({ topicId: { $exists: true } }, { topicId: 1 })
+            .lean()
+            .exec()) as any[]
+        ).map((d: any) => d.topicId as string),
       )
     : new Set<string>();
-  if (groupBuyModel) onLog(`Loaded ${existingIds.size} topic IDs already in the database — will skip these.`);
+  if (groupBuyModel)
+    onLog(
+      `Loaded ${existingIds.size} topic IDs already in the database — will skip these.`,
+    );
 
   onLog('\nPaginating RSS feed to find new topics…');
   const topics = await fetchNewTopics(existingIds, maxTopics, onLog);
@@ -376,7 +422,9 @@ export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]
           onLog(`  ⚠ Post ${attempt + 1}: empty text — skipping`);
           continue;
         }
-        onLog(`  Trying post ${attempt + 1} (poster: ${post.poster || '?'}, ${post.text.length} chars)`);
+        onLog(
+          `  Trying post ${attempt + 1} (poster: ${post.poster || '?'}, ${post.text.length} chars)`,
+        );
         if (post.post_title) onLog(`  ↳ Title: ${post.post_title}`);
 
         const result = await parseWithGemini(post, topic.thread_url, onLog);
@@ -394,9 +442,10 @@ export async function runScraper(opts: RunScraperOptions): Promise<ScrapedItem[]
       }
 
       if (!extracted) {
-        onLog(hadError
-          ? `  ✗ Gemini error on all posts — will retry next run`
-          : `  ✗ Could not identify original GB post — skipping`,
+        onLog(
+          hadError
+            ? `  ✗ Gemini error on all posts — will retry next run`
+            : `  ✗ Could not identify original GB post — skipping`,
         );
         continue;
       }

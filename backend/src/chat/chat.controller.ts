@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Param, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

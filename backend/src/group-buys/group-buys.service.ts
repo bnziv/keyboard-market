@@ -33,8 +33,14 @@ export interface AdminGroupBuyShape extends PublicGroupBuyShape {
   hidden: boolean;
 }
 
-function toPublicShape(doc: any, now = new Date().toISOString()): PublicGroupBuyShape {
-  const status = doc.status === 'GB' && doc.gbEnd && doc.gbEnd <= now ? 'closed' : doc.status;
+function toPublicShape(
+  doc: any,
+  now = new Date().toISOString(),
+): PublicGroupBuyShape {
+  const status =
+    doc.status === 'GB' && doc.gbEnd && doc.gbEnd <= now
+      ? 'closed'
+      : doc.status;
 
   return {
     id: doc._id?.toString(),
@@ -60,7 +66,7 @@ function toPublicShape(doc: any, now = new Date().toISOString()): PublicGroupBuy
 function toAdminShape(doc: any): AdminGroupBuyShape {
   return {
     ...toPublicShape(doc),
-    status: doc.status,  // raw status so admin edit form reflects DB value
+    status: doc.status, // raw status so admin edit form reflects DB value
     poster: doc.poster ?? null,
     excludedImages: doc.excludedImages ?? [],
     hidden: doc.hidden ?? false,
@@ -88,15 +94,21 @@ function buildStageQuery(stage: string, now: string): Record<string, any> {
 
 @Injectable()
 export class GroupBuysService {
-  constructor(@InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>) {}
+  constructor(
+    @InjectModel(GroupBuy.name) private groupBuyModel: Model<GroupBuyDocument>,
+  ) {}
 
   private async mapScraperItems(parsed: any[]) {
-    const topicIds = parsed.map(i => i.topicId).filter(Boolean);
+    const topicIds = parsed.map((i) => i.topicId).filter(Boolean);
     const existingIds = new Set(
-      (await this.groupBuyModel.find({ topicId: { $in: topicIds } }, { topicId: 1 }).lean().exec() as any[])
-        .map(d => d.topicId as string),
+      (
+        (await this.groupBuyModel
+          .find({ topicId: { $in: topicIds } }, { topicId: 1 })
+          .lean()
+          .exec()) as any[]
+      ).map((d) => d.topicId as string),
     );
-    return parsed.map(item => ({
+    return parsed.map((item) => ({
       data: toAdminShape(item),
       alreadyExists: item.topicId ? existingIds.has(item.topicId) : false,
       hasError: !!item.parseError,
@@ -111,7 +123,7 @@ export class GroupBuysService {
       ...(stage ? buildStageQuery(stage, now) : {}),
     };
     const docs = await this.groupBuyModel.find(query).lean().exec();
-    return docs.map(doc => toPublicShape(doc, now));
+    return docs.map((doc) => toPublicShape(doc, now));
   }
 
   async getCounts() {
@@ -119,30 +131,36 @@ export class GroupBuysService {
     const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
     const [grouped, closingSoon] = await Promise.all([
-      this.groupBuyModel.aggregate([
-        { $match: { hidden: { $ne: true } } },
-        {
-          $addFields: {
-            effectiveStatus: {
-              $cond: {
-                if: { $and: [
-                  { $eq: ['$status', 'GB'] },
-                  { $ne: ['$gbEnd', null] },
-                  { $lte: ['$gbEnd', now] },
-                ]},
-                then: 'closed',
-                else: '$status',
+      this.groupBuyModel
+        .aggregate([
+          { $match: { hidden: { $ne: true } } },
+          {
+            $addFields: {
+              effectiveStatus: {
+                $cond: {
+                  if: {
+                    $and: [
+                      { $eq: ['$status', 'GB'] },
+                      { $ne: ['$gbEnd', null] },
+                      { $lte: ['$gbEnd', now] },
+                    ],
+                  },
+                  then: 'closed',
+                  else: '$status',
+                },
               },
             },
           },
-        },
-        { $group: { _id: '$effectiveStatus', count: { $sum: 1 } } },
-      ]).exec(),
-      this.groupBuyModel.countDocuments({
-        hidden: { $ne: true },
-        status: 'GB',
-        gbEnd: { $ne: null, $gt: now, $lte: in48h },
-      }).exec(),
+          { $group: { _id: '$effectiveStatus', count: { $sum: 1 } } },
+        ])
+        .exec(),
+      this.groupBuyModel
+        .countDocuments({
+          hidden: { $ne: true },
+          status: 'GB',
+          gbEnd: { $ne: null, $gt: now, $lte: in48h },
+        })
+        .exec(),
     ]);
 
     const byStatus: Record<string, number> = {};
@@ -166,19 +184,23 @@ export class GroupBuysService {
   }
 
   private async fetchDoc(id: string) {
-    const doc = await this.groupBuyModel.findById(id).lean().exec() as any;
+    const doc = (await this.groupBuyModel.findById(id).lean().exec()) as any;
     if (!doc) throw new NotFoundException('Group buy not found');
     return doc;
   }
 
-  async findOne(id: string) { return toPublicShape(await this.fetchDoc(id)); }
-  async findOneAdmin(id: string) { return toAdminShape(await this.fetchDoc(id)); }
+  async findOne(id: string) {
+    return toPublicShape(await this.fetchDoc(id));
+  }
+  async findOneAdmin(id: string) {
+    return toAdminShape(await this.fetchDoc(id));
+  }
 
   async update(id: string, dto: UpdateGroupBuyDto) {
-    const doc = await this.groupBuyModel
+    const doc = (await this.groupBuyModel
       .findByIdAndUpdate(id, { $set: dto }, { new: true })
       .lean()
-      .exec() as any;
+      .exec()) as any;
     if (!doc) throw new NotFoundException('Group buy not found');
     return toAdminShape(doc);
   }
@@ -189,7 +211,12 @@ export class GroupBuysService {
 
       const timeoutId = setTimeout(() => {
         aborted = true;
-        subscriber.next({ data: { type: 'error', message: 'Scraper timed out after 120 seconds' } });
+        subscriber.next({
+          data: {
+            type: 'error',
+            message: 'Scraper timed out after 120 seconds',
+          },
+        });
         subscriber.complete();
       }, 120_000);
 
@@ -221,9 +248,15 @@ export class GroupBuysService {
 
   async bulkImport(items: ImportGroupBuyDto[]): Promise<{ imported: number }> {
     if (!items.length) return { imported: 0 };
-    const ops = items.map(item =>
+    const ops = items.map((item) =>
       item.topicId
-        ? { updateOne: { filter: { topicId: item.topicId }, update: { $set: item }, upsert: true } }
+        ? {
+            updateOne: {
+              filter: { topicId: item.topicId },
+              update: { $set: item },
+              upsert: true,
+            },
+          }
         : { insertOne: { document: item } },
     );
     await this.groupBuyModel.bulkWrite(ops as any);

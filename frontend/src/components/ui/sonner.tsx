@@ -1,12 +1,12 @@
-import { Toaster as Sonner, ToasterProps } from "sonner"
-import { useTheme } from "@/utils/ThemeProvider"
+import { Toaster as Sonner, ToasterProps } from 'sonner';
+import { useTheme } from '@/utils/ThemeProvider';
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme as ToasterProps['theme']}
       toastOptions={{
         style: {
           background: 'var(--km-surface)',
@@ -21,7 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

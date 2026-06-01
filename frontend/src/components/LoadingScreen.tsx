@@ -1,10 +1,12 @@
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react';
 
 interface LoadingScreenProps {
   fullScreen?: boolean;
 }
 
-export default function LoadingScreen({ fullScreen = true }: LoadingScreenProps) {
+export default function LoadingScreen({
+  fullScreen = true,
+}: LoadingScreenProps) {
   if (fullScreen) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -13,7 +15,7 @@ export default function LoadingScreen({ fullScreen = true }: LoadingScreenProps)
           <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -23,5 +25,5 @@ export default function LoadingScreen({ fullScreen = true }: LoadingScreenProps)
         <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     </div>
-  )
-} 
+  );
+}

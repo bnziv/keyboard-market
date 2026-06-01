@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, Res, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Res,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from '../users/dto/register.dto';
@@ -17,14 +26,20 @@ export class AuthController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const token = await this.usersService.register(dto);
     res.cookie('jwt', token, COOKIE_OPTIONS);
     return { message: 'Registration successful' };
   }
 
   @Post('login')
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { token, id, username } = await this.usersService.login(dto);
     res.cookie('jwt', token, COOKIE_OPTIONS);
     return { id, username };

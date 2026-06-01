@@ -6,7 +6,10 @@ export function capitalizeType(type: string): string {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
-export function computeCloses(gbEnd: string | null): { label: string; soon: boolean } {
+export function computeCloses(gbEnd: string | null): {
+  label: string;
+  soon: boolean;
+} {
   if (!gbEnd) return { label: '—', soon: false };
   const end = new Date(gbEnd);
   const now = new Date();
@@ -71,4 +74,3 @@ export function toFeaturedCard(gb: ApiGroupBuy): CardGroupBuy {
     items: [],
   };
 }
-
