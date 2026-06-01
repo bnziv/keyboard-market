@@ -52,7 +52,7 @@ export default function ListingCard({ id, title, price, offers, condition, image
         <div className="flex items-center justify-between">
           <div>
             <span className="font-km-mono text-sm font-semibold text-km-ink">
-              {price ? `$${parseFloat(price.toFixed(2))}` : 'Open to Offers'}
+              {price ? `$${(price / 100).toFixed(2)}` : 'Open to Offers'}
             </span>
             {offers && price > 0 && (
               <span className="ml-1 font-km-mono text-[9px] text-km-gold">OBO</span>

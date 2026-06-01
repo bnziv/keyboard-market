@@ -4,7 +4,6 @@ import NavBar from '@/components/NavBar'
 import api from '@/utils/api'
 import { AdminGroupBuy, GroupBuyEditModal } from './GroupBuyEditModal'
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge'
-import { mapStatus } from '@/components/GroupBuyCard'
 
 const STATUS_FILTERS = ['All', 'IC', 'GB', 'closed'] as const
 type StatusFilter = (typeof STATUS_FILTERS)[number]
@@ -46,7 +45,7 @@ function TableRow({ gb, isLast, onEdit, onToggleHidden }: { gb: AdminGroupBuy; i
         </span>
       </td>
       <td style={{ padding: '12px 16px' }}>
-        <Badge variant={STAGE_BADGE_META[mapStatus(gb.status)].tone}>{gb.status}</Badge>
+        <Badge variant={STAGE_BADGE_META[gb.status ?? 'closed'].tone}>{gb.status}</Badge>
       </td>
       <td style={{ padding: '12px 16px', color: 'var(--km-ink-dim)', textTransform: 'capitalize' }}>
         {gb.type ?? '—'}

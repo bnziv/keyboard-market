@@ -33,7 +33,7 @@ export class ListingsService {
 
   async searchByTitle(title: string): Promise<ListingDocument[]> {
     return this.listingModel
-      .find({ title: { $regex: title, $options: 'i' } })
+      .find({ $text: { $search: title } })
       .sort({ createdOn: -1 })
       .exec();
   }
@@ -56,7 +56,7 @@ export class ListingsService {
     }
 
     if (filter.condition) query.condition = filter.condition;
-    if (filter.title) query.title = { $regex: filter.title, $options: 'i' };
+    if (filter.title) (query as any).$text = { $search: filter.title };
     if (filter.offers !== undefined) query.offers = filter.offers;
 
     const page = filter.page ?? 0;

@@ -28,9 +28,9 @@ const badgeVariants = cva(
 export type BadgeTone = NonNullable<VariantProps<typeof badgeVariants>["variant"]>
 
 export const STAGE_BADGE_META: Record<string, { label: string; tone: BadgeTone }> = {
-  interest: { label: "Interest check", tone: "neutral" },
-  live:     { label: "Live",           tone: "ok" },
-  closed:   { label: "Closed",         tone: "accent" },
+  IC:     { label: "Interest check", tone: "neutral" },
+  GB:     { label: "Live",           tone: "ok" },
+  closed: { label: "Closed",         tone: "accent" },
 }
 
 export interface BadgeProps

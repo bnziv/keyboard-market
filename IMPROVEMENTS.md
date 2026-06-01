@@ -44,10 +44,10 @@ The data model is straightforwardly relational (users own listings, messages ref
 
 ### Security
 
-- **WebSocket gateway has no authentication** — [backend/src/chat/chat.gateway.ts](backend/src/chat/chat.gateway.ts) — any client can connect claiming any `userId` via the handshake query string, then receive messages intended for that user. Fix: validate the JWT cookie in `handleConnection` and verify the claimed `userId` matches the token's `sub`.
-- **User endpoints expose password hashes** — [backend/src/users/users.controller.ts](backend/src/users/users.controller.ts) — `getByUsername`, `getByEmail`, and `getById` return raw `User` documents; the `User` schema has no `select: false` on `password`. Create response DTOs or add `@Exclude()` via class-transformer.
-- **ReDoS vulnerability** — [backend/src/listings/listings.service.ts:35,59](backend/src/listings/listings.service.ts) passes raw user input directly into `{ $regex: title, $options: 'i' }`. Wrap with an `escapeRegExp` helper to escape metacharacters.
-- **No pagination cap** — [backend/src/listings/dto/listing-filter.dto.ts](backend/src/listings/dto/listing-filter.dto.ts) accepts `size` with no upper bound. Add `@Max(100)` (class-validator) to `size`.
+- ~~**WebSocket gateway has no authentication**~~ ✓ — JWT cookie validated in `handleConnection`; clients whose `userId` doesn't match the token's `sub` are disconnected. `senderId` also verified on `chat.send` to prevent message forgery.
+- ~~**User endpoints expose password hashes**~~ ✓ — `.select('-password')` added to `findById`, `findByUsername`, and `findByEmail` in `UsersService`.
+- ~~**ReDoS vulnerability**~~ ✓ — title search switched from raw `$regex` to `{ $text: { $search: title } }`, which also activates the existing text index.
+- ~~**No pagination cap**~~ ✓ — `@Max(100) @Min(1)` added to `size` in `ListingFilterDto`.
 
 ### Error Handling
 
@@ -56,20 +56,20 @@ The data model is straightforwardly relational (users own listings, messages ref
 
 ### React Anti-patterns
 
-- **No loading state on form submit** — [frontend/src/pages/Login.tsx](frontend/src/pages/Login.tsx) and [frontend/src/pages/CreateListing.tsx](frontend/src/pages/CreateListing.tsx) — the submit button stays enabled during the request, allowing double-submission.
+- ~~**No loading state on form submit**~~ ✓ — Submit buttons in `Login.tsx` (sign-in and register) and `CreateListing.tsx` are disabled during in-flight requests and show contextual loading text.
 
 ### Database & Data Model
 
-- **N+1 query in `getUserConversations`** — [backend/src/chat/chat.service.ts:47](backend/src/chat/chat.service.ts) — calls `usersService.findById()` inside a `Promise.all` map, one DB round-trip per conversation. Fix: collect all partner IDs first, call `userModel.find({ _id: { $in: ids } })` once, build a lookup map.
-- **`price` stored as `Number`** — [backend/src/listings/schemas/listing.schema.ts:15](backend/src/listings/schemas/listing.schema.ts) — floating-point arithmetic is wrong for money. Store as an integer (cents, e.g. `$49.99` → `4999`) or use MongoDB's `Decimal128`.
+- ~~**N+1 query in `getUserConversations`**~~ ✓ — Replaced per-conversation `findById` calls with a single `findByIds` query using `{ _id: { $in: ids } }` and a lookup Map.
+- ~~**`price` stored as `Number`**~~ ✓ — Price is now stored as an integer (cents). Backend DTO enforces `@IsInt() @Min(0)`. Frontend multiplies by 100 on submit and divides by 100 on display; price filter slider stays in dollars and is converted before the API call.
 - **`condition` is a free string** — [backend/src/listings/schemas/listing.schema.ts:21](backend/src/listings/schemas/listing.schema.ts) — no enforcement of valid values. Replace with an enum (`NEW`, `LIKE_NEW`, `USED`, `FOR_PARTS`) and validate via class-validator on the DTO.
 - **`ChatMessage` missing `listingId`** — [backend/src/chat/schemas/chat-message.schema.ts](backend/src/chat/schemas/chat-message.schema.ts) — for a marketplace, conversations almost always refer to a specific listing. Without this field you can't show which listing is being discussed or scope history to a listing.
-- **Text index unused** — [backend/src/listings/schemas/listing.schema.ts:33](backend/src/listings/schemas/listing.schema.ts) already defines a MongoDB text index on `title`, but [backend/src/listings/listings.service.ts:35,59](backend/src/listings/listings.service.ts) still uses `$regex` instead of `{ $text: { $search: title } }`, so the index never kicks in.
+- ~~**Text index unused**~~ ✓ — `getFiltered` and `searchByTitle` now use `{ $text: { $search: title } }`. The text index on `title` is active and the ReDoS surface is eliminated.
 
 ### API Design
 
-- **No input validation on WebSocket messages** — [backend/src/chat/chat.gateway.ts](backend/src/chat/chat.gateway.ts) — the `chat.send` handler receives `SendMessageDto` with no validation pipe, so content length is unconstrained. Add `@UsePipes(ValidationPipe)` and a `@MaxLength` on `content`.
-- **No axios timeout configured** — [frontend/src/utils/api.ts](frontend/src/utils/api.ts) — all requests can hang indefinitely. Set a `timeout` on the axios instance.
+- ~~**No input validation on WebSocket messages**~~ ✓ — `@UsePipes(ValidationPipe)` added to `chat.send` handler; `SendMessageDto.content` has `@MaxLength(2000)`.
+- ~~**No axios timeout configured**~~ ✓ — `timeout: 10000` (10 s) set on the shared Axios instance.
 
 ### Code Organization
 
@@ -79,18 +79,18 @@ The data model is straightforwardly relational (users own listings, messages ref
 
 ## Priority Order
 
-| Priority | Item |
-|----------|------|
-| 1 | WebSocket gateway authentication — unauthenticated connections can impersonate any user |
-| 2 | User endpoints expose password hashes — stop leaking credentials |
-| 3 | Fix N+1 in `getUserConversations` — live performance issue |
-| 4 | Fix `price` to integer (cents) — silent money math bugs |
-| 5 | Use text index for title search — index exists but is never hit |
-| 6 | No loading state on form submit — allows double-submission |
-| 7 | Axios timeout — one slow request can lock the UI indefinitely |
-| 8 | Add `listingId` to `ChatMessage` — product gap, easy now, painful later |
-| 9 | `condition` enum — data integrity, bad values can be stored silently |
-| 10 | Introduce `Conversation` entity — bigger refactor, unlocks unread counts, typing indicators, listing context |
-| 11 | OAuth login — most worthwhile architectural addition |
-| 12 | Edit/delete listings + mark as sold — missing core marketplace functionality |
-| 13 | Ratings & reviews — scaffolding already exists, just needs wiring |
+| Priority | Item | Status |
+|----------|------|--------|
+| 1 | WebSocket gateway authentication — unauthenticated connections can impersonate any user | ✓ Done |
+| 2 | User endpoints expose password hashes — stop leaking credentials | ✓ Done |
+| 3 | Fix N+1 in `getUserConversations` — live performance issue | ✓ Done |
+| 4 | Fix `price` to integer (cents) — silent money math bugs | ✓ Done |
+| 5 | Use text index for title search — index exists but is never hit | ✓ Done |
+| 6 | No loading state on form submit — allows double-submission | ✓ Done |
+| 7 | Axios timeout — one slow request can lock the UI indefinitely | ✓ Done |
+| 8 | Add `listingId` to `ChatMessage` — product gap, easy now, painful later | |
+| 9 | `condition` enum — data integrity, bad values can be stored silently | |
+| 10 | Introduce `Conversation` entity — bigger refactor, unlocks unread counts, typing indicators, listing context | |
+| 11 | OAuth login — most worthwhile architectural addition | |
+| 12 | Edit/delete listings + mark as sold — missing core marketplace functionality | |
+| 13 | Ratings & reviews — scaffolding already exists, just needs wiring | |
