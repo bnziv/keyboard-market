@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-const trimEmpty = Transform(({ value }) => value === '' ? undefined : value);
+const trimEmpty = Transform(({ value }) => (value === '' ? undefined : value));
 
 class BasePriceDto {
   @IsOptional()

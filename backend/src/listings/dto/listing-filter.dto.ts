@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsBoolean, Max, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  Max,
+  Min,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class ListingFilterDto {

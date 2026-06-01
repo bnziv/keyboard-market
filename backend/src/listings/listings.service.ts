@@ -7,9 +7,14 @@ import { ListingFilterDto } from './dto/listing-filter.dto';
 
 @Injectable()
 export class ListingsService {
-  constructor(@InjectModel(Listing.name) private listingModel: Model<ListingDocument>) {}
+  constructor(
+    @InjectModel(Listing.name) private listingModel: Model<ListingDocument>,
+  ) {}
 
-  async create(dto: ListingRequestDto, userId: string): Promise<ListingDocument> {
+  async create(
+    dto: ListingRequestDto,
+    userId: string,
+  ): Promise<ListingDocument> {
     return this.listingModel.create({ ...dto, userId });
   }
 
@@ -27,7 +32,10 @@ export class ListingsService {
     return this.listingModel.find({ userId }).sort({ createdOn: -1 }).exec();
   }
 
-  async findByUsername(username: string, userId: string): Promise<ListingDocument[]> {
+  async findByUsername(
+    username: string,
+    userId: string,
+  ): Promise<ListingDocument[]> {
     return this.listingModel.find({ userId }).sort({ createdOn: -1 }).exec();
   }
 

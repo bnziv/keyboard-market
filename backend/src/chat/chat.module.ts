@@ -9,7 +9,9 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: ChatMessage.name, schema: ChatMessageSchema }]),
+    MongooseModule.forFeature([
+      { name: ChatMessage.name, schema: ChatMessageSchema },
+    ]),
     UsersModule,
     AuthModule,
   ],

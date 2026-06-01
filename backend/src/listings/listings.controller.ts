@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Param, Body, Query, UseGuards, Req, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ListingsService } from './listings.service';
 import { UsersService } from '../users/users.service';
@@ -48,7 +58,9 @@ export class ListingsController {
     const seller = await this.usersService.findById(listing.userId);
     if (!seller) throw new NotFoundException('Seller not found');
 
-    const totalListings = await this.listingsService.countByUserId(listing.userId);
+    const totalListings = await this.listingsService.countByUserId(
+      listing.userId,
+    );
 
     return {
       id: listing._id.toString(),

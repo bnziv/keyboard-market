@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, IsInt, IsBoolean, MaxLength, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsInt,
+  IsBoolean,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListingRequestDto {
