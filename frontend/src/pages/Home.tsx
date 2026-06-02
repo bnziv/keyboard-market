@@ -23,6 +23,22 @@ function stagePriority(status: string): number {
   return 3;
 }
 
+function pickFeatured(all: ApiGroupBuy[], count: number): ApiGroupBuy[] {
+  const marked = all.filter((gb) => gb.featured);
+  const pool =
+    marked.length >= count
+      ? marked
+      : [
+          ...marked,
+          ...all
+            .filter((gb) => !gb.featured)
+            .sort((a, b) => stagePriority(a.status) - stagePriority(b.status)),
+        ];
+  const maxStart = Math.max(0, pool.length - count);
+  const start = Math.floor(Math.random() * (maxStart + 1));
+  return pool.slice(start, start + count);
+}
+
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -37,9 +53,7 @@ export default function Home() {
       .finally(() => setGbLoading(false));
   }, []);
 
-  const featured = [...groupBuys]
-    .sort((a, b) => stagePriority(a.status) - stagePriority(b.status))
-    .slice(0, 3);
+  const featured = pickFeatured(groupBuys, 4);
 
   const heroGb = featured[0] ?? null;
 
@@ -129,7 +143,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {featured.map((gb) => (
+            {featured.slice(1).map((gb) => (
               <GroupBuyCard
                 key={gb.id}
                 gb={toFeaturedCard(gb)}

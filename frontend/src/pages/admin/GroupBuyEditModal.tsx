@@ -15,14 +15,13 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react';
+import { imgUrl } from '@/utils/imgUrl';
 import api from '@/utils/api';
 import * as Dialog from '@radix-ui/react-dialog';
 import { TabBar } from '@/components/TabBar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AdminGroupBuy } from '@/types/groupBuy';
-
-export type { AdminGroupBuy };
 
 type Tab = 'details' | 'dates' | 'pricing' | 'vendors' | 'images';
 
@@ -73,10 +72,12 @@ function SortableImageItem({
   url,
   index,
   onExclude,
+  onDelete,
 }: {
   url: string;
   index: number;
   onExclude: () => void;
+  onDelete: () => void;
 }) {
   const {
     attributes,
@@ -101,23 +102,36 @@ function SortableImageItem({
       {...listeners}
     >
       <img
-        src={url}
+        src={imgUrl(url, 200)}
         alt={`Image ${index + 1}`}
         draggable={false}
+        loading="lazy"
         className="w-full aspect-video object-cover block"
       />
       <span className="absolute bottom-1.5 left-1.5 font-km-mono text-[9px] bg-black/55 text-white/70 px-1.5 py-[2px] rounded-[3px] pointer-events-none">
         {index + 1}
       </span>
-      <button
-        type="button"
+      <div
+        className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={onExclude}
-        className="absolute top-1.5 right-1.5 w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-[#e07070] opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
-        title="Exclude image"
       >
-        <EyeOff size={12} />
-      </button>
+        <button
+          type="button"
+          onClick={onExclude}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-[#e07070]"
+          title="Exclude image"
+        >
+          <EyeOff size={12} />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-red-400 hover:text-red-300"
+          title="Delete image"
+        >
+          <Trash2 size={12} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -125,16 +139,19 @@ function SortableImageItem({
 function ExcludedImageItem({
   url,
   onRestore,
+  onDelete,
 }: {
   url: string;
   onRestore: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div className="group relative rounded overflow-hidden border border-km-line bg-km-bg-sub">
       <img
-        src={url}
+        src={imgUrl(url, 200)}
         alt="Excluded image"
         draggable={false}
+        loading="lazy"
         className="w-full aspect-video object-cover block opacity-25"
       />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -142,14 +159,24 @@ function ExcludedImageItem({
           Excluded
         </span>
       </div>
-      <button
-        type="button"
-        onClick={onRestore}
-        className="absolute top-1.5 right-1.5 w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-km-ok opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]"
-        title="Restore image"
-      >
-        <Eye size={12} />
-      </button>
+      <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+        <button
+          type="button"
+          onClick={onRestore}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-km-ok"
+          title="Restore image"
+        >
+          <Eye size={12} />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="w-[26px] h-[26px] rounded flex items-center justify-center cursor-pointer bg-black/60 border border-white/15 text-red-400 hover:text-red-300"
+          title="Delete image"
+        >
+          <Trash2 size={12} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -221,6 +248,10 @@ export function GroupBuyEditModal({
     setExcludedImages((prev) => prev.filter((u) => u !== url));
     setImages((prev) => [...prev, url]);
   };
+  const deleteImage = (url: string) => {
+    setImages((prev) => prev.filter((u) => u !== url));
+    setExcludedImages((prev) => prev.filter((u) => u !== url));
+  };
 
   const addItem = () =>
     setItems((prev) => [...prev, { name: '', price: '', currency: 'USD' }]);
@@ -258,6 +289,7 @@ export function GroupBuyEditModal({
       name: it.name,
       price: parseFloat(it.price) || 0,
       currency: it.currency,
+      ...(it.imageUrl ? { imageUrl: it.imageUrl } : {}),
     })),
     vendors,
     discordUrl: discordUrl || null,
@@ -293,6 +325,7 @@ export function GroupBuyEditModal({
           name: it.name,
           price: parseFloat(it.price) || 0,
           currency: it.currency,
+          ...(it.imageUrl ? { imageUrl: it.imageUrl } : {}),
         })),
         vendors,
         discordUrl: discordUrl || undefined,
@@ -483,39 +516,74 @@ export function GroupBuyEditModal({
                   {items.length === 0 && emptyNote('No items')}
                   <div className="flex flex-col gap-2">
                     {items.map((item, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <input
-                          className={cn(inputCls, 'flex-1')}
-                          value={item.name}
-                          onChange={(e) =>
-                            updateItem(i, 'name', e.target.value)
-                          }
-                          placeholder="Name"
-                        />
-                        <input
-                          type="number"
-                          className={cn(inputCls, 'w-[90px]')}
-                          value={item.price}
-                          onChange={(e) =>
-                            updateItem(i, 'price', e.target.value)
-                          }
-                          placeholder="Price"
-                        />
-                        <input
-                          className={cn(inputCls, 'w-[65px]')}
-                          value={item.currency}
-                          onChange={(e) =>
-                            updateItem(i, 'currency', e.target.value)
-                          }
-                          placeholder="USD"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeItem(i)}
-                          className="bg-transparent border-none cursor-pointer text-km-ink-mute p-1 flex"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <div key={i} className="flex flex-col gap-1.5">
+                        <div className="flex gap-2 items-center">
+                          <input
+                            className={cn(inputCls, 'flex-1')}
+                            value={item.name}
+                            onChange={(e) =>
+                              updateItem(i, 'name', e.target.value)
+                            }
+                            placeholder="Name"
+                          />
+                          <input
+                            type="number"
+                            className={cn(inputCls, 'w-[90px]')}
+                            value={item.price}
+                            onChange={(e) =>
+                              updateItem(i, 'price', e.target.value)
+                            }
+                            placeholder="Price"
+                          />
+                          <input
+                            className={cn(inputCls, 'w-[65px]')}
+                            value={item.currency}
+                            onChange={(e) =>
+                              updateItem(i, 'currency', e.target.value)
+                            }
+                            placeholder="USD"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeItem(i)}
+                            className="bg-transparent border-none cursor-pointer text-km-ink-mute p-1 flex"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        {images.length > 0 && (
+                          <div
+                            className="flex gap-1.5 overflow-x-auto pb-1"
+                            style={{ scrollbarWidth: 'none' }}
+                          >
+                            {images.map((url) => (
+                              <button
+                                key={url}
+                                type="button"
+                                onClick={() =>
+                                  updateItem(
+                                    i,
+                                    'imageUrl',
+                                    item.imageUrl === url ? '' : url,
+                                  )
+                                }
+                                className={cn(
+                                  'flex-shrink-0 rounded overflow-hidden border-2 transition-[border-color,opacity] duration-[120ms] p-0 bg-transparent cursor-pointer',
+                                  item.imageUrl === url
+                                    ? 'border-km-gold opacity-100'
+                                    : 'border-km-line opacity-40 hover:opacity-70',
+                                )}
+                                style={{ width: 48, height: 36 }}
+                              >
+                                <img
+                                  src={imgUrl(url, 200)}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover block"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -618,6 +686,7 @@ export function GroupBuyEditModal({
                               url={url}
                               index={i}
                               onExclude={() => excludeImage(url)}
+                              onDelete={() => deleteImage(url)}
                             />
                           ))}
                         </div>
@@ -634,6 +703,7 @@ export function GroupBuyEditModal({
                           key={url}
                           url={url}
                           onRestore={() => restoreImage(url)}
+                          onDelete={() => deleteImage(url)}
                         />
                       ))}
                     </div>

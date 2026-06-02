@@ -6,7 +6,6 @@ import { AuthModule } from './auth/auth.module';
 import { ListingsModule } from './listings/listings.module';
 import { GroupBuysModule } from './group-buys/group-buys.module';
 import { ChatModule } from './chat/chat.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),

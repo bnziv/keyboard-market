@@ -34,6 +34,10 @@ class ItemDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
 
 class VendorDto {
@@ -141,4 +145,8 @@ export class UpdateGroupBuyDto {
   @IsOptional()
   @IsBoolean()
   hidden?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
 }

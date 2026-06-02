@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import api from '@/utils/api';
+import { imgUrl } from '@/utils/imgUrl';
 import { CardGroupBuy } from '@/components/GroupBuyCard';
 import { CATEGORY_PALETTES } from '@/components/GroupBuyImage';
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge';
@@ -35,21 +36,25 @@ function formatDate(iso: string | null): string {
 function Carousel({
   images,
   category,
+  active,
+  onActiveChange,
 }: {
   images: string[];
   category: string;
+  active: number;
+  onActiveChange: (i: number) => void;
 }) {
-  const [active, setActive] = useState(0);
+  const setActive = onActiveChange;
   const thumbsRef = useRef<HTMLDivElement>(null);
   const [bg, fg] = CATEGORY_PALETTES[category] ?? ['#1c1c2e', '#6366f1'];
 
   const prev = useCallback(
-    () => setActive((i) => (i - 1 + images.length) % images.length),
-    [images.length],
+    () => setActive((active - 1 + images.length) % images.length),
+    [active, images.length],
   );
   const next = useCallback(
-    () => setActive((i) => (i + 1) % images.length),
-    [images.length],
+    () => setActive((active + 1) % images.length),
+    [active, images.length],
   );
 
   useEffect(() => {
@@ -93,7 +98,6 @@ function Carousel({
       >
         {/* Blurred backdrop */}
         <img
-          key={`bg-${active}`}
           src={images[active]}
           aria-hidden
           className="absolute inset-0 w-full h-full object-cover scale-110 opacity-30"
@@ -101,7 +105,6 @@ function Carousel({
         />
         {/* Foreground */}
         <img
-          key={active}
           src={images[active]}
           alt={`image ${active + 1}`}
           className="relative w-full h-full object-contain"
@@ -168,8 +171,9 @@ function Carousel({
               style={{ width: 64, height: 48 }}
             >
               <img
-                src={src}
+                src={imgUrl(src, 200)}
                 alt={`view ${i + 1}`}
+                loading="lazy"
                 className="w-full h-full object-cover block"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.opacity = '0.3';
@@ -202,6 +206,7 @@ export default function GroupBuyDetails() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<DetailTab>('overview');
   const [selectedKitIdx, setSelectedKitIdx] = useState<number>(0);
+  const [carouselActive, setCarouselActive] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
@@ -292,7 +297,12 @@ export default function GroupBuyDetails() {
         <div className="grid gap-10 grid-cols-1 lg:grid-cols-[minmax(0,6fr)_minmax(0,4fr)]">
           {/* ── LEFT — Carousel ── */}
           <div className="lg:sticky lg:top-[72px] lg:self-start">
-            <Carousel images={gb.images} category={gb.category} />
+            <Carousel
+              images={gb.images}
+              category={gb.category}
+              active={carouselActive}
+              onActiveChange={setCarouselActive}
+            />
           </div>
 
           {/* ── RIGHT — Info panel ── */}
@@ -331,7 +341,14 @@ export default function GroupBuyDetails() {
                     return (
                       <button
                         key={i}
-                        onClick={() => setSelectedKitIdx(i)}
+                        onClick={() => {
+                          setSelectedKitIdx(i);
+                          const url = gb.items[i]?.imageUrl;
+                          if (url) {
+                            const idx = gb.images.indexOf(url);
+                            if (idx !== -1) setCarouselActive(idx);
+                          }
+                        }}
                         className={cn(
                           'text-left p-[10px_12px] rounded border cursor-pointer transition-colors duration-100 bg-transparent',
                           isSelected
@@ -550,6 +567,10 @@ export default function GroupBuyDetails() {
           onSaved={(updated) => {
             setEditGb(updated);
             setEditOpen(false);
+            api
+              .get<ApiGroupBuy>(`/api/groupbuys/${id}`)
+              .then((res) => setGb(toCardData(res.data)))
+              .catch(() => {});
           }}
         />
       )}
