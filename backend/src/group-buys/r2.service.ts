@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DeleteObjectCommand, S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  S3Client,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -81,8 +85,7 @@ export class R2Service {
     try {
       const response = await fetch(sourceUrl, { signal: controller.signal });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const contentType =
-        response.headers.get('content-type') ?? 'image/jpeg';
+      const contentType = response.headers.get('content-type') ?? 'image/jpeg';
       const buffer = Buffer.from(await response.arrayBuffer());
       await this.client.send(
         new PutObjectCommand({

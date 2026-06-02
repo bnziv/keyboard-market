@@ -134,7 +134,9 @@ function TableRow({
             variant="outline"
             size="icon"
             onClick={onToggleFeatured}
-            title={gb.featured ? 'Remove from featured' : 'Feature on home page'}
+            title={
+              gb.featured ? 'Remove from featured' : 'Feature on home page'
+            }
             className={cn(
               'w-[30px] h-[30px]',
               gb.featured && 'border-km-gold text-km-gold',

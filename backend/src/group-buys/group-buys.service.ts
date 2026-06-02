@@ -1,4 +1,9 @@
-import { Injectable, Logger, MessageEvent, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  MessageEvent,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
@@ -217,9 +222,11 @@ export class GroupBuysService {
     );
     await Promise.all(
       toDelete.map((u) =>
-        this.r2.deleteObject(u).catch((err: any) =>
-          this.logger.warn(`R2 delete failed for ${u}: ${err.message}`),
-        ),
+        this.r2
+          .deleteObject(u)
+          .catch((err: any) =>
+            this.logger.warn(`R2 delete failed for ${u}: ${err.message}`),
+          ),
       ),
     );
 
@@ -285,7 +292,9 @@ export class GroupBuysService {
       }
     };
     const [images, poster] = await Promise.all([
-      doc.images ? Promise.all(doc.images.map(migrateUrl)) : Promise.resolve(undefined),
+      doc.images
+        ? Promise.all(doc.images.map(migrateUrl))
+        : Promise.resolve(undefined),
       doc.poster ? migrateUrl(doc.poster) : Promise.resolve(undefined),
     ]);
     return {
@@ -328,5 +337,4 @@ export class GroupBuysService {
     await this.groupBuyModel.bulkWrite(ops as any);
     return { imported: items.length };
   }
-
 }
