@@ -22,7 +22,7 @@ export interface CardGroupBuy {
   images: string[];
   vendors: { region: string; name: string; url: string }[];
   discordUrl: string | null;
-  items: { name: string; price: number; currency: string }[];
+  items: { name: string; price: number; currency: string; imageUrl?: string }[];
 }
 
 type GroupBuyCardVariant = 'card' | 'featured';

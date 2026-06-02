@@ -7,6 +7,7 @@ export interface Item {
   name: string;
   price: number;
   currency: string;
+  imageUrl?: string;
 }
 
 export interface Vendor {
@@ -35,6 +36,7 @@ export interface ApiGroupBuy extends GroupBuyBase {
   id: string;
   topicId: string;
   sourceUrl: string;
+  featured?: boolean;
 }
 
 export interface AdminGroupBuy extends GroupBuyBase {
@@ -44,4 +46,5 @@ export interface AdminGroupBuy extends GroupBuyBase {
   poster: string | null;
   excludedImages: string[];
   hidden: boolean;
+  featured?: boolean;
 }

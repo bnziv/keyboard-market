@@ -37,6 +37,7 @@ export default function ListingCard({
           <img
             src={imageUrl}
             alt={title}
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
