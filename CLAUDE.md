@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Keyboard Market is a full-stack marketplace for buying and selling keyboards. The repo has two separate apps:
 - **`frontend/`** — React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui, hosted on Vercel
-- **`backend/`** — NestJS + MongoDB Atlas + JWT auth (httpOnly cookies) + Socket.io, hosted on Fly.io at api.benzivillaruel.com
+- **`backend/`** — NestJS + MongoDB Atlas + JWT auth (httpOnly cookies) + Socket.io, hosted on Fly.io
 
 ## Commands
 
@@ -20,6 +20,7 @@ npm run dev   # Start both backend (watch) and frontend concurrently
 npm run dev       # Vite dev server on port 5173
 npm run build     # TypeScript check + Vite build
 npm run lint      # ESLint
+npm run format    # Prettier
 npm run preview   # Preview production build
 ```
 
@@ -27,10 +28,14 @@ npm run preview   # Preview production build
 ```bash
 npm run start:dev          # NestJS watch mode on port 8080
 npm run build              # Compile TypeScript to dist/
+npm run lint               # ESLint with auto-fix
+npm run format             # Prettier
 npm test                   # Run Jest unit tests (*.spec.ts in src/)
-npm run test:e2e           # Run Jest E2E tests (test/jest-e2e.json config)
+npm run test:cov           # Unit tests with coverage report
 npm run test -- --testPathPattern=group-buys  # Run a single test file
 ```
+
+> `npm run test:e2e` exists but the test in `backend/test/app.e2e-spec.ts` is stale (expects "Hello World!" from a route that no longer exists).
 
 ## Architecture
 
@@ -38,7 +43,7 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 
 - **Routing:** React Router v7 — routes in [frontend/src/App.tsx](frontend/src/App.tsx); `ProtectedRoute` guards auth-required pages; `AdminRoute` guards `/admin/*` by comparing `user.id` to `VITE_ADMIN_USER_ID` env var
 - **Auth:** `AuthProvider` calls `GET /api/auth/me` on mount to restore session; JWT stored in httpOnly cookie (no manual token handling); 401 response triggers logout + redirect to `/`
-- **API:** Axios instance at `src/utils/api.ts` with `withCredentials: true`; Vite proxies `/api` → `localhost:8080` in dev via [frontend/vite.config.ts](frontend/vite.config.ts); production uses `vercel.json` rewrite to `api.benzivillaruel.com/keyboard-market/api/*`
+- **API:** Axios instance at `src/utils/api.ts` with `withCredentials: true`; `baseURL` is `VITE_API_URL` (empty in dev, full backend URL in prod); Vite proxies `/api` → `localhost:8080` in dev via [frontend/vite.config.ts](frontend/vite.config.ts)
 - **Real-time chat:** Socket.io managed by `websocketService.ts` (singleton); connects with `?userId=X` query param; listens for `chat.message`, emits `chat.send`; `ChatProvider` tracks activeChat state; `ChatManager` renders floating, draggable `Chat` and `ConversationsList` windows
 - **UI:** shadcn/ui (Radix UI + Tailwind); path alias `@/` → `src/`; theme uses `--km-*` CSS custom properties; dark/light mode via `ThemeProvider`
 - **Admin pages:** `frontend/src/pages/admin/` — `GroupBuysAdmin` (table view with hide/edit), `GroupBuyEditModal` (tabbed editor, DND image reorder), `ScraperPreview` (SSE live log + bulk import)
@@ -46,7 +51,8 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 ### Backend
 
 - **Entry point:** [backend/src/main.ts](backend/src/main.ts) — global `/api` prefix, validation pipe (whitelist + transform), `AllExceptionsFilter`, CORS from `CORS_ORIGINS` env
-- **Modules:** `AuthModule`, `UsersModule`, `ListingsModule`, `GroupBuysModule`, `ChatModule`
+- **Modules:** `AuthModule`, `UsersModule`, `ListingsModule`, `GroupBuysModule`, `ChatModule` (`ImagesModule` is scaffolded but empty)
+- **Image storage:** `R2Service` (`backend/src/group-buys/r2.service.ts`) wraps Cloudflare R2 (S3-compatible) for group buy image upload/delete; injected into `GroupBuysModule`
 - **JWT:** Stored in httpOnly cookie (`jwt`); `JwtStrategy` reads `req.cookies.jwt`; `JwtAuthGuard` (Passport) protects endpoints; payload is `{ sub: userId }`, 2-hour expiration signed with `JWT_SECRET`
 - **Admin guard:** `AdminGuard` compares `req.user.userId` to `ADMIN_USER_ID` env var; throws `ForbiddenException` if mismatch; applied alongside `JwtAuthGuard` on admin endpoints
 - **WebSocket:** Socket.io gateway (`ChatGateway`); clients join a room named by their userId on connect; `chat.send` event saves message to DB and emits `chat.message` to both sender and receiver rooms
@@ -71,7 +77,7 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 | `User` | email, username, password (hashed), dateJoined |
 | `Listing` | title, description (max 1000), price (optional), offers (bool), condition (string), imageUrl, userId, createdOn |
 | `ChatMessage` | senderId, receiverId, content, timestamp, read; collection: `messages` |
-| `GroupBuy` | topic_id, name, type, status, designer, overview, poster, gb_start/gb_end, estimated_fulfillment, base_price (Object), items[], vendors[], images[], excludedImages[], hidden (bool), scraped_at; collection: `group-buys` |
+| `GroupBuy` | topic_id, name, type, status, designer, overview, poster, gb_start/gb_end, estimated_fulfillment, base_price (Object), items[], vendors[], images[], excludedImages[], hidden (bool), featured (bool), sourceUrl, discordUrl, scraped_at; collection: `group-buys` |
 
 ### Group Buy Status Logic
 
@@ -95,6 +101,9 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 - `ADMIN_USER_ID` — MongoDB `_id` of the admin user; checked by `AdminGuard`
 - `GEMINI_API_KEY` — Google Gemini API key; required for the scraper to run
 - `GEMINI_MODEL` — Gemini model ID (optional; defaults to `gemini-3.1-flash-lite`)
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` — Cloudflare R2 credentials
+- `R2_BUCKET_NAME` — R2 bucket for group buy images
+- `R2_PUBLIC_URL` — Public CDN base URL for serving R2 images
 
 **Frontend** (`frontend/.env`):
 - `VITE_API_URL` — Backend URL (leave empty in dev; proxy handles it)
@@ -102,5 +111,6 @@ npm run test -- --testPathPattern=group-buys  # Run a single test file
 
 ## Deployment
 
-- **Frontend:** Vercel — `vercel.json` rewrites `/api/*` to `https://api.benzivillaruel.com/keyboard-market/api/*` and catches all routes for SPA history fallback
+- **Frontend:** Vercel — `frontend/vercel.json` catches all routes (`/(.*) → /`) for SPA history fallback; API calls go directly to `VITE_API_URL` (no proxy needed)
 - **Backend:** Fly.io (`fly.toml`, app: `kbm-backend`, region: `ewr`); multi-stage `Dockerfile` builds from Node 22 Alpine; health check at `GET /health` every 30s; auto-scales to 0 when idle
+- **CI/CD:** `.github/workflows/backend-deploy.yml` auto-deploys the backend to Fly.io on push to `main` or `dev`
