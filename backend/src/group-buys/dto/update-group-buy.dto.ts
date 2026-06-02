@@ -145,4 +145,8 @@ export class UpdateGroupBuyDto {
   @IsOptional()
   @IsBoolean()
   hidden?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
 }

@@ -25,6 +25,7 @@ export interface PublicGroupBuyShape {
   discordUrl: string | null;
   sourceUrl: string | null;
   images: string[];
+  featured: boolean;
   scrapedAt: Date | null;
 }
 
@@ -60,6 +61,7 @@ function toPublicShape(
     discordUrl: doc.discordUrl ?? null,
     sourceUrl: doc.sourceUrl ?? null,
     images: doc.images ?? [],
+    featured: doc.featured ?? false,
     scrapedAt: doc.scrapedAt ?? null,
   };
 }

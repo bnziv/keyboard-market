@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Eye, EyeOff, Loader2, Pencil, Play } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Pencil, Play, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/utils/api';
 import { GroupBuyEditModal } from './GroupBuyEditModal';
@@ -33,11 +33,13 @@ function TableRow({
   isLast,
   onEdit,
   onToggleHidden,
+  onToggleFeatured,
 }: {
   gb: AdminGroupBuy;
   isLast: boolean;
   onEdit: () => void;
   onToggleHidden: () => void;
+  onToggleFeatured: () => void;
 }) {
   return (
     <tr
@@ -131,6 +133,18 @@ function TableRow({
           <Button
             variant="outline"
             size="icon"
+            onClick={onToggleFeatured}
+            title={gb.featured ? 'Remove from featured' : 'Feature on home page'}
+            className={cn(
+              'w-[30px] h-[30px]',
+              gb.featured && 'border-km-gold text-km-gold',
+            )}
+          >
+            <Star size={12} fill={gb.featured ? 'currentColor' : 'none'} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={onToggleHidden}
             title={gb.hidden ? 'Restore visibility' : 'Hide from public'}
             className={cn(
@@ -181,6 +195,18 @@ export default function GroupBuysAdmin() {
     const next = !gb.hidden;
     api
       .patch(`/api/groupbuys/admin/${gb.id}`, { hidden: next })
+      .then((res) =>
+        setGroupBuys((prev) =>
+          prev.map((g) => (g.id === gb.id ? res.data : g)),
+        ),
+      )
+      .catch(() => {});
+  };
+
+  const handleToggleFeatured = (gb: AdminGroupBuy) => {
+    const next = !gb.featured;
+    api
+      .patch(`/api/groupbuys/admin/${gb.id}`, { featured: next })
       .then((res) =>
         setGroupBuys((prev) =>
           prev.map((g) => (g.id === gb.id ? res.data : g)),
@@ -380,6 +406,7 @@ export default function GroupBuysAdmin() {
                     isLast={idx === groupBuys.length - 1}
                     onEdit={() => setEditing(gb)}
                     onToggleHidden={() => handleToggleHidden(gb)}
+                    onToggleFeatured={() => handleToggleFeatured(gb)}
                   />
                 ))}
               </tbody>
