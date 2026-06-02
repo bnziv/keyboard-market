@@ -25,10 +25,15 @@ function stagePriority(status: string): number {
 
 function pickFeatured(all: ApiGroupBuy[], count: number): ApiGroupBuy[] {
   const marked = all.filter((gb) => gb.featured);
-  const pool = marked.length >= count ? marked : [
-    ...marked,
-    ...all.filter((gb) => !gb.featured).sort((a, b) => stagePriority(a.status) - stagePriority(b.status)),
-  ];
+  const pool =
+    marked.length >= count
+      ? marked
+      : [
+          ...marked,
+          ...all
+            .filter((gb) => !gb.featured)
+            .sort((a, b) => stagePriority(a.status) - stagePriority(b.status)),
+        ];
   const maxStart = Math.max(0, pool.length - count);
   const start = Math.floor(Math.random() * (maxStart + 1));
   return pool.slice(start, start + count);
