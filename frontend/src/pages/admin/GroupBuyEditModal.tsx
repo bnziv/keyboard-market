@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react';
+import { imgUrl } from '@/utils/imgUrl';
 import api from '@/utils/api';
 import * as Dialog from '@radix-ui/react-dialog';
 import { TabBar } from '@/components/TabBar';
@@ -101,7 +102,7 @@ function SortableImageItem({
       {...listeners}
     >
       <img
-        src={url}
+        src={imgUrl(url, 200)}
         alt={`Image ${index + 1}`}
         draggable={false}
         loading="lazy"
@@ -147,7 +148,7 @@ function ExcludedImageItem({
   return (
     <div className="group relative rounded overflow-hidden border border-km-line bg-km-bg-sub">
       <img
-        src={url}
+        src={imgUrl(url, 200)}
         alt="Excluded image"
         draggable={false}
         loading="lazy"
@@ -575,7 +576,7 @@ export function GroupBuyEditModal({
                                 style={{ width: 48, height: 36 }}
                               >
                                 <img
-                                  src={url}
+                                  src={imgUrl(url, 200)}
                                   loading="lazy"
                                   className="w-full h-full object-cover block"
                                 />

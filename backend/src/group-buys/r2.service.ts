@@ -90,6 +90,7 @@ export class R2Service {
           Key: key,
           Body: buffer,
           ContentType: contentType,
+          CacheControl: 'public, max-age=31536000, immutable',
         }),
       );
       return `${this.publicUrl}/${key}`;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import api from '@/utils/api';
+import { imgUrl } from '@/utils/imgUrl';
 import { CardGroupBuy } from '@/components/GroupBuyCard';
 import { CATEGORY_PALETTES } from '@/components/GroupBuyImage';
 import { Badge, STAGE_BADGE_META } from '@/components/ui/badge';
@@ -97,7 +98,6 @@ function Carousel({
       >
         {/* Blurred backdrop */}
         <img
-          key={`bg-${active}`}
           src={images[active]}
           aria-hidden
           className="absolute inset-0 w-full h-full object-cover scale-110 opacity-30"
@@ -105,7 +105,6 @@ function Carousel({
         />
         {/* Foreground */}
         <img
-          key={active}
           src={images[active]}
           alt={`image ${active + 1}`}
           className="relative w-full h-full object-contain"
@@ -172,7 +171,7 @@ function Carousel({
               style={{ width: 64, height: 48 }}
             >
               <img
-                src={src}
+                src={imgUrl(src, 200)}
                 alt={`view ${i + 1}`}
                 loading="lazy"
                 className="w-full h-full object-cover block"
