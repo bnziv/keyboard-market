@@ -135,7 +135,10 @@ export default function ScraperPreview() {
     setLogs('');
     setItems([]);
 
-    const es = new EventSource('/api/groupbuys/admin/scrape/stream');
+    const base = import.meta.env.VITE_API_URL ?? '';
+    const es = new EventSource(`${base}/api/groupbuys/admin/scrape/stream`, {
+      withCredentials: true,
+    });
     evtSourceRef.current = es;
 
     es.onmessage = (e) => {
