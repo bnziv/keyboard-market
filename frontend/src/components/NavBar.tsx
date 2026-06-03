@@ -43,7 +43,7 @@ export default function NavBar({ className }: NavBarProps) {
               ? 'profile'
               : undefined;
 
-  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
+  const { isAuthenticated, authLoading, user, logout } = useAuth();
   const { showInfo } = useToast();
   const { theme, toggle } = useTheme();
   const { toggleConversations } = useChat();

@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
-  isLoading: boolean;
+  authLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const { showSuccess } = useToast();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAuthenticated(false);
       setUser(null);
     } finally {
-      setIsLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, login, logout, isLoading }}
+      value={{ isAuthenticated, user, login, logout, authLoading }}
     >
       {children}
     </AuthContext.Provider>

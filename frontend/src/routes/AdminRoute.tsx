@@ -1,14 +1,13 @@
 import { useAuth } from '@/utils/AuthProvider';
 import { Navigate, Outlet } from 'react-router-dom';
-import LoadingScreen from '@/components/LoadingScreen';
 
 const ADMIN_USER_ID = import.meta.env.VITE_ADMIN_USER_ID;
 
 const AdminRoute = () => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, authLoading, user } = useAuth();
 
-  if (isLoading) {
-    return <LoadingScreen />;
+  if (authLoading) {
+    return null;
   }
 
   if (!isAuthenticated || user?.id !== ADMIN_USER_ID) {
