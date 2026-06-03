@@ -64,7 +64,7 @@ interface PostData {
   links: { href: string; text: string }[];
 }
 
-export async function fetchUrl(url: string): Promise<string> {
+async function fetchUrl(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: FETCH_HEADERS,
     signal: AbortSignal.timeout(15_000),
@@ -161,7 +161,7 @@ async function fetchNewTopics(
   return newTopics.slice(0, maxTopics);
 }
 
-export function parsePosts(html: string, maxPosts = 2): PostData[] {
+function parsePosts(html: string, maxPosts = 2): PostData[] {
   const $ = load(html);
   const results: PostData[] = [];
 
@@ -190,7 +190,7 @@ export function parsePosts(html: string, maxPosts = 2): PostData[] {
       const text = msgDiv.text().replace(/\s+/g, ' ').trim();
 
       const imageSet = new Set<string>();
-      $w.find('div[id^="msg_"] img').each((_, img) => {
+      msgDiv.find('img').each((_, img) => {
         const src = $(img).attr('src') ?? '';
         if (
           src &&
@@ -203,7 +203,7 @@ export function parsePosts(html: string, maxPosts = 2): PostData[] {
       });
 
       const links: { href: string; text: string }[] = [];
-      $w.find('div[id^="msg_"] a').each((_, a) => {
+      msgDiv.find('a').each((_, a) => {
         const href = $(a).attr('href') ?? '';
         const cls = $(a).attr('class') ?? '';
         if (
