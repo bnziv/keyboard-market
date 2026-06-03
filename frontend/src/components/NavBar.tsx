@@ -43,7 +43,7 @@ export default function NavBar({ className }: NavBarProps) {
               ? 'profile'
               : undefined;
 
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const { showInfo } = useToast();
   const { theme, toggle } = useTheme();
   const { toggleConversations } = useChat();
@@ -158,7 +158,9 @@ export default function NavBar({ className }: NavBarProps) {
         </button>
 
         {/* User auth */}
-        {isAuthenticated ? (
+        {authLoading ? (
+          <div className="ml-2 w-8 h-8 rounded-full bg-km-line animate-pulse" />
+        ) : isAuthenticated ? (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button className="ml-2 w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold border font-km-mono bg-km-gold-soft border-km-gold/33 text-km-gold cursor-pointer">

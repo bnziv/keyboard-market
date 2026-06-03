@@ -3,11 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
 import { useToast } from '@/utils/ToastProvider';
 import { GroupBuyCard } from '@/components/GroupBuyCard';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import api from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import type { ApiGroupBuy } from '@/types/groupBuy';
 import { toFeaturedCard } from '@/utils/groupBuyTransforms';
+
+function FeaturedCardSkeleton() {
+  return (
+    <div className="rounded border overflow-hidden bg-km-surface border-km-line animate-pulse">
+      <div style={{ aspectRatio: '4/3' }} className="bg-km-bg-sub" />
+      <div className="px-4 py-4 border-t border-km-line">
+        <div className="flex items-center justify-between">
+          <div className="h-4 w-28 rounded bg-km-line" />
+          <div className="h-4 w-10 rounded bg-km-line" />
+        </div>
+        <div className="mt-2 h-3 w-20 rounded bg-km-line" />
+      </div>
+    </div>
+  );
+}
 
 const STATS = [
   ['2,847', 'Active listings'],
@@ -40,7 +55,7 @@ function pickFeatured(all: ApiGroupBuy[], count: number): ApiGroupBuy[] {
 }
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { showInfo } = useToast();
   const [groupBuys, setGroupBuys] = useState<ApiGroupBuy[]>([]);
@@ -53,6 +68,7 @@ export default function Home() {
       .finally(() => setGbLoading(false));
   }, []);
 
+  const isLoading = authLoading || gbLoading;
   const featured = pickFeatured(groupBuys, 4);
 
   const heroGb = featured[0] ?? null;
@@ -96,22 +112,8 @@ export default function Home() {
           </div>
 
           {/* Hero group buy card */}
-          {gbLoading ? (
-            <div className="rounded-lg overflow-hidden border bg-km-surface border-km-line">
-              <div
-                className="flex items-center justify-center bg-km-bg-sub"
-                style={{
-                  aspectRatio: '4/3',
-                  backgroundImage:
-                    'repeating-linear-gradient(-20deg, rgba(212,178,76,0.07) 0, rgba(212,178,76,0.07) 1px, transparent 0, transparent 50%)',
-                  backgroundSize: '8px 8px',
-                }}
-              >
-                <div className="font-km-mono text-xs tracking-widest uppercase text-km-ink-mute">
-                  [ loading ]
-                </div>
-              </div>
-            </div>
+          {isLoading ? (
+            <FeaturedCardSkeleton />
           ) : heroGb ? (
             <GroupBuyCard gb={toFeaturedCard(heroGb)} variant="featured" />
           ) : null}
@@ -137,21 +139,17 @@ export default function Home() {
           </Link>
         </div>
 
-        {gbLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 size={24} className="animate-spin text-km-ink-mute" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {featured.slice(1).map((gb) => (
-              <GroupBuyCard
-                key={gb.id}
-                gb={toFeaturedCard(gb)}
-                variant="featured"
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {isLoading
+            ? [0, 1, 2].map((i) => <FeaturedCardSkeleton key={i} />)
+            : featured.slice(1).map((gb) => (
+                <GroupBuyCard
+                  key={gb.id}
+                  gb={toFeaturedCard(gb)}
+                  variant="featured"
+                />
+              ))}
+        </div>
 
         {/* Stats strip */}
         <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 p-5 sm:p-7 rounded border bg-km-surface border-km-line">

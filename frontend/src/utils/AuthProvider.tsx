@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/utils/api';
 import { useToast } from '@/utils/ToastProvider';
-import LoadingScreen from '@/components/LoadingScreen';
 
 interface User {
   id: string;
@@ -76,10 +75,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate('/');
     }
   };
-
-  if (isLoading && !user && !isAuthenticated) {
-    return <LoadingScreen />;
-  }
 
   return (
     <AuthContext.Provider
