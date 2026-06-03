@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -15,6 +16,7 @@ import { GroupBuysService } from './group-buys.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
+import { SetFlagsDto } from './dto/set-flags.dto';
 import { BulkImportDto } from './dto/bulk-import.dto';
 
 @Controller('groupbuys')
@@ -44,10 +46,23 @@ export class GroupBuysController {
     return this.groupBuysService.scraperStream();
   }
 
+  @Post('admin/scrape/single')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  scrapeTopicPreview(@Body('topicUrl') topicUrl: string) {
+    if (!topicUrl) throw new BadRequestException('topicUrl is required');
+    return this.groupBuysService.scrapeTopicPreview(topicUrl);
+  }
+
   @Get('admin/:id')
   @UseGuards(JwtAuthGuard, AdminGuard)
   findOneAdmin(@Param('id') id: string) {
     return this.groupBuysService.findOneAdmin(id);
+  }
+
+  @Patch('admin/:id/flags')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  setFlags(@Param('id') id: string, @Body() dto: SetFlagsDto) {
+    return this.groupBuysService.setFlags(id, dto);
   }
 
   @Patch('admin/:id')

@@ -186,7 +186,7 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
         if (m) post_date = m[1];
       });
 
-      const msgDiv = $w.find('div[id^="msg_"]').first();
+      const msgDiv = $w.find('div.inner[id^="msg_"]').first();
       const text = msgDiv.text().replace(/\s+/g, ' ').trim();
 
       const imageSet = new Set<string>();
@@ -371,6 +371,25 @@ async function parseWithGemini(
       scrapedAt: new Date().toISOString(),
     };
   }
+}
+
+export async function scrapeTopicUrl(
+  topicUrl: string,
+  onLog: (msg: string) => void = () => {},
+): Promise<ScrapedItem | null> {
+  const match = topicUrl.match(/topic=(\d+)/);
+  const topicId = match?.[1];
+  const html = await fetchUrl(topicUrl);
+  const posts = parsePosts(html);
+
+  for (const post of posts) {
+    if (!post.text) continue;
+    const result = await parseWithGemini(post, topicUrl, onLog);
+    if (result === null || result.parseError) continue;
+    if (topicId) result.topicId = topicId;
+    return result;
+  }
+  return null;
 }
 
 export async function runScraper(

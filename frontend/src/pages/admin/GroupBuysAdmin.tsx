@@ -194,9 +194,8 @@ export default function GroupBuysAdmin() {
   };
 
   const handleToggleHidden = (gb: AdminGroupBuy) => {
-    const next = !gb.hidden;
     api
-      .patch(`/api/groupbuys/admin/${gb.id}`, { hidden: next })
+      .patch(`/api/groupbuys/admin/${gb.id}/flags`, { hidden: !gb.hidden })
       .then((res) =>
         setGroupBuys((prev) =>
           prev.map((g) => (g.id === gb.id ? res.data : g)),
@@ -206,9 +205,8 @@ export default function GroupBuysAdmin() {
   };
 
   const handleToggleFeatured = (gb: AdminGroupBuy) => {
-    const next = !gb.featured;
     api
-      .patch(`/api/groupbuys/admin/${gb.id}`, { featured: next })
+      .patch(`/api/groupbuys/admin/${gb.id}/flags`, { featured: !gb.featured })
       .then((res) =>
         setGroupBuys((prev) =>
           prev.map((g) => (g.id === gb.id ? res.data : g)),
