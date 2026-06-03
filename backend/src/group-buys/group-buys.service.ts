@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { Model } from 'mongoose';
 import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
+import { SetFlagsDto } from './dto/set-flags.dto';
 import { ImportGroupBuyDto } from './dto/import-group-buy.dto';
 import { runScraper } from './scraper';
 import { R2Service } from './r2.service';
@@ -205,6 +206,15 @@ export class GroupBuysService {
   }
   async findOneAdmin(id: string) {
     return toAdminShape(await this.fetchDoc(id));
+  }
+
+  async setFlags(id: string, dto: SetFlagsDto) {
+    const doc = (await this.groupBuyModel
+      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .lean()
+      .exec()) as any;
+    if (!doc) throw new NotFoundException('Group buy not found');
+    return toAdminShape(doc);
   }
 
   async update(id: string, dto: UpdateGroupBuyDto) {
