@@ -186,7 +186,7 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
         if (m) post_date = m[1];
       });
 
-      const msgDiv = $w.find('div[id^="msg_"]').first();
+      const msgDiv = $w.find('div.inner[id^="msg_"]').first();
       const text = msgDiv.text().replace(/\s+/g, ' ').trim();
 
       const imageSet = new Set<string>();
