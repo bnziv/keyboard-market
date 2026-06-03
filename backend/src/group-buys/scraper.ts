@@ -64,7 +64,7 @@ interface PostData {
   links: { href: string; text: string }[];
 }
 
-async function fetchUrl(url: string): Promise<string> {
+export async function fetchUrl(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: FETCH_HEADERS,
     signal: AbortSignal.timeout(15_000),
@@ -161,7 +161,7 @@ async function fetchNewTopics(
   return newTopics.slice(0, maxTopics);
 }
 
-function parsePosts(html: string, maxPosts = 2): PostData[] {
+export function parsePosts(html: string, maxPosts = 2): PostData[] {
   const $ = load(html);
   const results: PostData[] = [];
 
@@ -190,7 +190,7 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
       const text = msgDiv.text().replace(/\s+/g, ' ').trim();
 
       const imageSet = new Set<string>();
-      msgDiv.find('img').each((_, img) => {
+      $w.find('div[id^="msg_"] img').each((_, img) => {
         const src = $(img).attr('src') ?? '';
         if (
           src &&
@@ -203,7 +203,7 @@ function parsePosts(html: string, maxPosts = 2): PostData[] {
       });
 
       const links: { href: string; text: string }[] = [];
-      msgDiv.find('a').each((_, a) => {
+      $w.find('div[id^="msg_"] a').each((_, a) => {
         const href = $(a).attr('href') ?? '';
         const cls = $(a).attr('class') ?? '';
         if (
@@ -371,6 +371,25 @@ async function parseWithGemini(
       scrapedAt: new Date().toISOString(),
     };
   }
+}
+
+export async function scrapeTopicUrl(
+  topicUrl: string,
+  onLog: (msg: string) => void = () => {},
+): Promise<ScrapedItem | null> {
+  const match = topicUrl.match(/topic=(\d+)/);
+  const topicId = match?.[1];
+  const html = await fetchUrl(topicUrl);
+  const posts = parsePosts(html);
+
+  for (const post of posts) {
+    if (!post.text) continue;
+    const result = await parseWithGemini(post, topicUrl, onLog);
+    if (result === null || result.parseError) continue;
+    if (topicId) result.topicId = topicId;
+    return result;
+  }
+  return null;
 }
 
 export async function runScraper(

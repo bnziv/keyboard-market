@@ -14,7 +14,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { imgUrl } from '@/utils/imgUrl';
 import api from '@/utils/api';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -223,6 +223,8 @@ export function GroupBuyEditModal({
     groupBuy.excludedImages ?? [],
   );
   const [saving, setSaving] = useState(false);
+  const [rescraping, setRescraping] = useState(false);
+  const [rescrapeUrl, setRescrapeUrl] = useState(groupBuy.sourceUrl ?? '');
   const [error, setError] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -237,6 +239,37 @@ export function GroupBuyEditModal({
         const newIndex = prev.indexOf(over.id as string);
         return arrayMove(prev, oldIndex, newIndex);
       });
+    }
+  };
+
+  const handleRescrape = async () => {
+    if (!rescrapeUrl) return;
+    setRescraping(true);
+    setError(null);
+    try {
+      const res = await api.post('/api/groupbuys/admin/scrape/single', { topicUrl: rescrapeUrl });
+      const d = res.data;
+      if (d.name) setName(d.name);
+      if (d.type) setType(d.type);
+      if (d.status) setStatus(d.status);
+      if (d.designer) setDesigner(d.designer);
+      if (d.overview !== undefined) setOverview(d.overview ?? '');
+      if (d.poster !== undefined) setPoster(d.poster ?? '');
+      if (d.gbStart !== undefined) setGbStart(toDateInput(d.gbStart ?? null));
+      if (d.gbEnd !== undefined) setGbEnd(toDateInput(d.gbEnd ?? null));
+      if (d.estimatedFulfillment !== undefined) setEstimatedFulfillment(d.estimatedFulfillment ?? '');
+      if (d.basePrice !== undefined) {
+        setBasePriceAmount(String(d.basePrice?.amount ?? ''));
+        setBasePriceCurrency(d.basePrice?.currency ?? 'USD');
+      }
+      if (d.items) setItems(d.items.map((it: any) => ({ ...it, price: String(it.price) })));
+      if (d.vendors) setVendors(d.vendors);
+      if (d.discordUrl !== undefined) setDiscordUrl(d.discordUrl ?? '');
+      if (d.sourceUrl) setSourceUrl(d.sourceUrl);
+    } catch (e: any) {
+      setError(e.response?.data?.message ?? 'Re-scrape failed');
+    } finally {
+      setRescraping(false);
     }
   };
 
@@ -452,6 +485,31 @@ export function GroupBuyEditModal({
                     placeholder="https://..."
                   />
                 </Field>
+                <div className="border border-km-line rounded p-3 flex flex-col gap-2">
+                  <label className={labelCls}>Re-scrape from source</label>
+                  <div className="flex gap-2">
+                    <input
+                      className={cn(inputCls, 'flex-1')}
+                      value={rescrapeUrl}
+                      onChange={(e) => setRescrapeUrl(e.target.value)}
+                      placeholder="https://geekhack.org/index.php?topic=..."
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRescrape}
+                      disabled={rescraping || !rescrapeUrl}
+                      className="flex items-center gap-1.5 px-3 py-[9px] border border-km-line-strong rounded text-km-ink text-[13px] font-km-body bg-km-bg disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      {rescraping
+                        ? <Loader2 size={12} className="animate-spin" />
+                        : <RefreshCw size={12} />}
+                      Re-scrape
+                    </button>
+                  </div>
+                  <p className="font-km-mono text-[10px] text-km-ink-mute m-0">
+                    Refills fields from the Geekhack thread via AI. Images are not replaced.
+                  </p>
+                </div>
               </div>
             )}
 

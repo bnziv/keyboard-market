@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -43,6 +44,13 @@ export class GroupBuysController {
   @Sse()
   scraperStream(): Observable<MessageEvent> {
     return this.groupBuysService.scraperStream();
+  }
+
+  @Post('admin/scrape/single')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  scrapeTopicPreview(@Body('topicUrl') topicUrl: string) {
+    if (!topicUrl) throw new BadRequestException('topicUrl is required');
+    return this.groupBuysService.scrapeTopicPreview(topicUrl);
   }
 
   @Get('admin/:id')

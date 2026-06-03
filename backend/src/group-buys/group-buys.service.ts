@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   MessageEvent,
@@ -11,7 +12,7 @@ import { GroupBuy, GroupBuyDocument } from './schemas/group-buy.schema';
 import { UpdateGroupBuyDto } from './dto/update-group-buy.dto';
 import { SetFlagsDto } from './dto/set-flags.dto';
 import { ImportGroupBuyDto } from './dto/import-group-buy.dto';
-import { runScraper } from './scraper';
+import { runScraper, scrapeTopicUrl } from './scraper';
 import { R2Service } from './r2.service';
 
 export interface PublicGroupBuyShape {
@@ -246,6 +247,12 @@ export class GroupBuysService {
       .exec()) as any;
     if (!doc) throw new NotFoundException('Group buy not found');
     return toAdminShape(doc);
+  }
+
+  async scrapeTopicPreview(topicUrl: string) {
+    const item = await scrapeTopicUrl(topicUrl);
+    if (!item) throw new BadRequestException('Could not extract group buy data from this URL');
+    return item;
   }
 
   scraperStream(): Observable<MessageEvent> {
