@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TabItem<T extends string> {
   key: T;
@@ -11,6 +12,7 @@ interface TabBarProps<T extends string> {
   active: T;
   onChange: (key: T) => void;
   variant?: 'mono' | 'body';
+  countsLoading?: boolean;
 }
 
 export function TabBar<T extends string>({
@@ -18,6 +20,7 @@ export function TabBar<T extends string>({
   active,
   onChange,
   variant = 'mono',
+  countsLoading = false,
 }: TabBarProps<T>) {
   const isBody = variant === 'body';
   return (
@@ -42,7 +45,16 @@ export function TabBar<T extends string>({
             )}
           >
             {tab.label}
-            {tab.count !== undefined && (
+            {countsLoading ? (
+              <Skeleton
+                variant="rectangular"
+                sx={{
+                  width: 20,
+                  height: 14,
+                  bgcolor: isActive ? 'var(--km-gold-soft)' : 'var(--km-surface-2)',
+                }}
+              />
+            ) : tab.count !== undefined ? (
               <span
                 className={cn(
                   'font-km-mono text-[10px] text-km-ink-mute px-1.5 py-[1px] rounded-full transition-colors',
@@ -51,7 +63,7 @@ export function TabBar<T extends string>({
               >
                 {tab.count}
               </span>
-            )}
+            ) : null}
           </button>
         );
       })}

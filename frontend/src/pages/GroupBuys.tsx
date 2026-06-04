@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { ApiGroupBuy } from '@/types/groupBuy';
 import { toCardData } from '@/utils/groupBuyTransforms';
 
@@ -105,11 +106,11 @@ export default function GroupBuys() {
   const liveCount = counts?.GB ?? 0;
   const closingSoonCount = counts?.closingSoon ?? 0;
 
-  const tabCount = (v: StageFilter): number | undefined => {
-    if (!counts) return undefined;
-    if (v === 'all') return counts.total;
-    return counts[v];
-  };
+  // const tabCount = (v: StageFilter): number | undefined => {
+  //   if (!counts) return undefined;
+  //   if (v === 'all') return counts.total;
+  //   return counts[v];
+  // };
 
   return (
     <div className="min-h-screen flex flex-col bg-km-bg text-km-ink">
@@ -150,9 +151,13 @@ export default function GroupBuys() {
                     i < 1 && 'border-r border-km-line',
                   )}
                 >
-                  <div className="font-km-body text-[22px] font-bold text-km-ink tracking-[-0.02em]">
-                    {v}
-                  </div>
+                  {counts === null ? (
+                    <Skeleton variant="text" sx={{ fontSize: '22px', lineHeight: 1.5, width: 36 }} />
+                  ) : (
+                    <div className="font-km-body text-[22px] font-bold text-km-ink tracking-[-0.02em]">
+                      {v}
+                    </div>
+                  )}
                   <div className="font-km-mono text-[9px] text-km-ink-mute tracking-[0.15em] uppercase mt-0.5">
                     {l}
                   </div>
@@ -212,8 +217,7 @@ export default function GroupBuys() {
               <TabBar
                 tabs={STAGE_TABS.map(({ value, label }) => ({
                   key: value,
-                  label,
-                  count: tabCount(value),
+                  label
                 }))}
                 active={stage}
                 onChange={setStage}
