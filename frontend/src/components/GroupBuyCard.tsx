@@ -42,7 +42,7 @@ export function GroupBuyCard({
     if (variant === 'featured') {
       return (
         <div className="rounded border overflow-hidden bg-km-surface border-km-line animate-pulse">
-          <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '4/3', height: 'auto', borderRadius: 0, border: '1px solid var(--km-line)' }} />
+          <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '4/3', height: 'auto', borderRadius: 0 }} />
           <div className="px-4 py-3 border-t border-km-line">
             <div className="flex items-center justify-between">
               <Skeleton variant="text" sx={{ fontSize: '0.875rem', lineHeight: '1.25rem', width: 112 }} />

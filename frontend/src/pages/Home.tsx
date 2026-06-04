@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/utils/AuthProvider';
 import { useToast } from '@/utils/ToastProvider';
@@ -45,7 +45,6 @@ export default function Home() {
   const { showInfo } = useToast();
   const [groupBuys, setGroupBuys] = useState<ApiGroupBuy[]>([]);
   const [gbLoading, setGbLoading] = useState(true);
-  const [previewSkeleton, setPreviewSkeleton] = useState(false);
 
   useEffect(() => {
     api
@@ -54,13 +53,8 @@ export default function Home() {
       .finally(() => setGbLoading(false));
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => setPreviewSkeleton((v) => !v), 2000);
-    return () => clearInterval(id);
-  }, []);
-
-  const isLoading = authLoading || gbLoading || previewSkeleton;
-  const featured = pickFeatured(groupBuys, 4);
+  const isLoading = authLoading || gbLoading;
+  const featured = useMemo(() => pickFeatured(groupBuys, 4), [groupBuys]);
 
   const heroGb = featured[0] ?? null;
 

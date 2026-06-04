@@ -139,3 +139,7 @@
 ::-webkit-scrollbar-track { background: var(--km-bg-sub); }
 ::-webkit-scrollbar-thumb { background: var(--km-line-strong); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--km-ink-mute); }
+
+/* Skeleton text variant — preserves line-box height, visually scales to cap-height */
+.sk-text { display: block; transform: scale(1, 0.6); transform-origin: 0 55%; }
+.sk-text::before { content: '\00a0'; }
