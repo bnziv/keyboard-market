@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export interface ListingCardProps {
+export interface ListingData {
   id: string;
   title: string;
   price: number;
@@ -10,14 +11,27 @@ export interface ListingCardProps {
   imageUrl?: string;
 }
 
-export default function ListingCard({
-  id,
-  title,
-  price,
-  offers,
-  condition,
-  imageUrl,
-}: ListingCardProps) {
+export type ListingCardProps = { loading: true } | ({ loading?: false } & ListingData);
+
+export default function ListingCard(props: ListingCardProps) {
+  if (props.loading) {
+    return (
+      <div className="rounded border overflow-hidden bg-km-surface border-km-line animate-pulse">
+        <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '4/3', height: 'auto', borderRadius: 0, bgcolor: 'var(--km-bg-sub)' }} />
+        <div className="p-3">
+          {/* text-[10px], lineHeight ~1.2 → 12px, mb-1.5 */}
+          <Skeleton variant="text" sx={{ fontSize: '10px', lineHeight: 1.2, width: 64, mb: '6px' }} />
+          {/* text-sm leading-tight → 14px / 1.25 → 17.5px, mb-2 */}
+          <Skeleton variant="text" sx={{ fontSize: '0.875rem', lineHeight: 1.25, width: '75%', mb: '8px' }} />
+          {/* text-sm → 14px / 1.25rem → 20px */}
+          <Skeleton variant="text" sx={{ fontSize: '0.875rem', lineHeight: '1.25rem', width: 80 }} />
+        </div>
+      </div>
+    );
+  }
+
+  const { id, title, price, offers, condition, imageUrl } = props;
+
   return (
     <Link
       to={`/listings/${id}`}

@@ -5,7 +5,7 @@ import { GroupBuyCard, CardGroupBuy } from '@/components/GroupBuyCard';
 import { TabBar } from '@/components/TabBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -286,9 +286,11 @@ export default function GroupBuys() {
           </div>
         )}
 
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 size={28} className="animate-spin text-km-ink-mute" />
+        {loading && cards.length === 0 ? (
+          <div className="grid gap-5 grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <GroupBuyCard key={i} loading />
+            ))}
           </div>
         ) : error ? (
           <div className="py-16 px-8 text-center text-km-ink-mute font-km-mono text-[13px]">

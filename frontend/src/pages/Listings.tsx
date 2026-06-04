@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import api from '@/utils/api';
-import ListingCard, { ListingCardProps } from '@/components/ListingCard';
+import ListingCard, { ListingData } from '@/components/ListingCard';
 import { Slider } from '@/components/ui/slider';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, LayoutGrid, List, SlidersHorizontal, X } from 'lucide-react';
@@ -183,7 +183,7 @@ function FilterContent({
 
 export default function Listings() {
   const [searchParams] = useSearchParams();
-  const [listings, setListings] = useState<ListingCardProps[]>([]);
+  const [listings, setListings] = useState<ListingData[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
@@ -344,14 +344,18 @@ export default function Listings() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
               }}
             >
-              {listings.map((listing, i) => (
-                <div
-                  key={listing.id}
-                  ref={i === listings.length - 1 ? lastListingRef : undefined}
-                >
-                  <ListingCard {...listing} />
-                </div>
-              ))}
+              {listings.length === 0 && loading
+                ? Array.from({ length: 12 }, (_, i) => (
+                    <ListingCard key={i} loading />
+                  ))
+                : listings.map((listing, i) => (
+                    <div
+                      key={listing.id}
+                      ref={i === listings.length - 1 ? lastListingRef : undefined}
+                    >
+                      <ListingCard {...listing} />
+                    </div>
+                  ))}
             </div>
           ) : (
             <div className="flex flex-col border rounded overflow-hidden border-km-line">

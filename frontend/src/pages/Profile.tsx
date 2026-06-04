@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { TabBar } from '@/components/TabBar';
-import ListingCard, { ListingCardProps } from '@/components/ListingCard';
+import ListingCard, { ListingData } from '@/components/ListingCard';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MessageCircle, Plus } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '@/utils/api';
@@ -36,7 +37,7 @@ export default function Profile() {
   const [tab, setTab] = useState('listings');
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<UserProps>({} as UserProps);
-  const [userListings, setUserListings] = useState<ListingCardProps[]>([]);
+  const [userListings, setUserListings] = useState<ListingData[]>([]);
   const { user, isAuthenticated } = useAuth();
   const { startChat } = useChat();
   const { showError, showInfo } = useToast();
@@ -91,10 +92,30 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-km-bg">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="font-km-mono text-sm text-km-ink-mute">
-            Loading profile…
+      <div className="min-h-screen flex flex-col bg-km-bg animate-pulse">
+        <div className="border-b border-km-line px-4 sm:px-8 pt-6 pb-8 bg-km-bg-sub">
+          <div className="max-w-6xl mx-auto">
+            {/* breadcrumb — text-xs */}
+            <Skeleton variant="text" sx={{ fontSize: '0.75rem', lineHeight: '1rem', width: 128, mb: '20px' }} />
+            <div className="flex items-center gap-4">
+              <Skeleton variant="circular" width={64} height={64} sx={{ flexShrink: 0 }} />
+              <div>
+                {/* username — text-3xl */}
+                <Skeleton variant="text" sx={{ fontSize: '1.875rem', lineHeight: '2.25rem', width: 128, mb: '8px' }} />
+                {/* joined — text-xs */}
+                <Skeleton variant="text" sx={{ fontSize: '0.75rem', lineHeight: '1rem', width: 96 }} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-8">
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <ListingCard key={i} loading />
+            ))}
           </div>
         </div>
       </div>

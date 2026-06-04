@@ -9,21 +9,6 @@ import { Button } from '@/components/ui/button';
 import type { ApiGroupBuy } from '@/types/groupBuy';
 import { toFeaturedCard } from '@/utils/groupBuyTransforms';
 
-function FeaturedCardSkeleton() {
-  return (
-    <div className="rounded border overflow-hidden bg-km-surface border-km-line animate-pulse">
-      <div style={{ aspectRatio: '4/3' }} className="bg-km-bg-sub" />
-      <div className="px-4 py-4 border-t border-km-line">
-        <div className="flex items-center justify-between">
-          <div className="h-4 w-28 rounded bg-km-line" />
-          <div className="h-4 w-10 rounded bg-km-line" />
-        </div>
-        <div className="mt-2 h-3 w-20 rounded bg-km-line" />
-      </div>
-    </div>
-  );
-}
-
 const STATS = [
   ['2,847', 'Active listings'],
   ['18,204', 'Verified members'],
@@ -55,11 +40,12 @@ function pickFeatured(all: ApiGroupBuy[], count: number): ApiGroupBuy[] {
 }
 
 export default function Home() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, authLoading } = useAuth();
   const navigate = useNavigate();
   const { showInfo } = useToast();
   const [groupBuys, setGroupBuys] = useState<ApiGroupBuy[]>([]);
   const [gbLoading, setGbLoading] = useState(true);
+  const [previewSkeleton, setPreviewSkeleton] = useState(false);
 
   useEffect(() => {
     api
@@ -68,7 +54,12 @@ export default function Home() {
       .finally(() => setGbLoading(false));
   }, []);
 
-  const isLoading = authLoading || gbLoading;
+  useEffect(() => {
+    const id = setInterval(() => setPreviewSkeleton((v) => !v), 2000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isLoading = authLoading || gbLoading || previewSkeleton;
   const featured = pickFeatured(groupBuys, 4);
 
   const heroGb = featured[0] ?? null;
@@ -113,7 +104,7 @@ export default function Home() {
 
           {/* Hero group buy card */}
           {isLoading ? (
-            <FeaturedCardSkeleton />
+            <GroupBuyCard loading variant="featured" />
           ) : heroGb ? (
             <GroupBuyCard gb={toFeaturedCard(heroGb)} variant="featured" />
           ) : null}
@@ -141,7 +132,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {isLoading
-            ? [0, 1, 2].map((i) => <FeaturedCardSkeleton key={i} />)
+            ? [0, 1, 2].map((i) => <GroupBuyCard key={i} loading variant="featured" />)
             : featured.slice(1).map((gb) => (
                 <GroupBuyCard
                   key={gb.id}
